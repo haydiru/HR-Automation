@@ -14,7 +14,10 @@ export interface AnalysisResult {
   is_qualified: boolean;
   reasoning: string;
   summary: string; // Ditambahkan sesuai tipe data UI
-  skills_found: string[]; // Diubah dari found_skills
+  candidate_name: string;
+  candidate_email: string;
+  candidate_phone?: string;
+  skills_found: string[];
   extracted_text: string;
   mandatory_check: {
     criteria: string;
@@ -28,10 +31,16 @@ export async function analyzeCandidate(
   jobTitle: string,
   mandatoryCriteria: string[],
   optionalCriteria: string[],
-  passingGrade: number
+  passingGrade: number,
+  emailBody?: string,
+  emailSubject?: string
 ): Promise<AnalysisResult> {
   const prompt = `
     Analisis CV (Curriculum Vitae) terlampir untuk posisi "${jobTitle}".
+    
+    Konteks Tambahan (Email Pengirim):
+    Subjek: ${emailSubject || "Tidak ada"}
+    Isi Email: ${emailBody || "Tidak ada"}
     
     Syarat Wajib (SEMUA harus terpenuhi agar is_qualified = true):
     ${mandatoryCriteria.map((c) => `- ${c}`).join("\n")}
@@ -48,9 +57,12 @@ export async function analyzeCandidate(
     4. Ekstrak seluruh teks mentah dari CV ke 'extracted_text'.
     5. Berikan alasan mendalam (reasoning) dalam Bahasa Indonesia.
     6. Untuk setiap syarat wajib, berikan 'note' singkat kenapa lulus/gagal.
+    7. EKSTRAK NAMA LENGKAP DAN EMAIL kandidat yang tertera di dalam dokumen CV ke properti 'candidate_name' dan 'candidate_email'. Jika tidak ditemukan, kosongkan ("").
     
     Hasilkan output dalam format JSON berikut:
     {
+      "candidate_name": "string",
+      "candidate_email": "string",
       "total_score": number,
       "is_qualified": boolean,
       "summary": "string (max 100 karakter)",

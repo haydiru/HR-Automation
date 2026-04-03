@@ -122,7 +122,11 @@ export default function JobDetailPage({
                 {job.status === "active" ? "Aktif" : "Ditutup"}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">{job.description}</p>
+            <div className="mt-4 prose prose-sm dark:prose-invert max-w-none">
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                {job.description}
+              </p>
+            </div>
           </div>
         </div>
 

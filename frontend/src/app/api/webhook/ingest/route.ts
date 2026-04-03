@@ -62,6 +62,9 @@ export async function POST(request: Request) {
       throw new Error(`Storage error: ${storageError.message}`);
     }
 
+    const emailBody = formData.get("email_body") as string;
+    const subject = formData.get("subject") as string;
+
     // 3. Extract Text & Analyze with Gemini (Direct PDF)
     const arrayBuffer = await cvFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -71,20 +74,25 @@ export async function POST(request: Request) {
       job.title,
       job.mandatory_criteria,
       job.optional_criteria,
-      job.passing_grade
+      job.passing_grade,
+      emailBody,
+      subject
     );
 
     const rawText = analysis.extracted_text;
 
-    // 5. Save to Database
+    // 5. Save to Database (Prioritize data extracted by AI from PDF)
+    const finalName = analysis.candidate_name || fullName || "Anonymous Applicant";
+    const finalEmail = analysis.candidate_email || email || "no-email@provided.com";
+
     const { data: candidate, error: candidateError } = await supabase
       .from("candidates")
       .insert([
         {
           job_id: jobId,
-          full_name: fullName || "Anonymous Applicant",
-          email: email || "no-email@provided.com",
-          phone: phone || "",
+          full_name: finalName,
+          email: finalEmail,
+          phone: phone || analysis.candidate_phone || "",
           cv_url: storageData.path,
           raw_text: rawText,
           analysis_result: analysis,
