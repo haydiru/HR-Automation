@@ -1,0 +1,114 @@
+import { createAdminClient } from "@/lib/supabase/server";
+import { analyzeCandidate } from "@/lib/gemini";
+import { NextResponse } from "next/server";
+
+export async function POST(request: Request) {
+  // 1. Validasi Keamanan (Webhook Secret)
+  const { searchParams } = new URL(request.url);
+  const secret = searchParams.get("secret");
+  
+  if (secret !== process.env.WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const supabase = await createAdminClient();
+  
+  try {
+    const formData = await request.formData();
+    let jobId = formData.get("job_id") as string;
+    const aliasEmail = formData.get("alias_email") as string; // Optional: can be used to find job
+    const fullName = formData.get("full_name") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+    const cvFile = formData.get("cv_file") as File;
+
+    if (!jobId && !aliasEmail) {
+      return NextResponse.json({ error: "Missing job_id or alias_email" }, { status: 400 });
+    }
+
+    if (!cvFile) {
+      return NextResponse.json({ error: "Missing cv_file" }, { status: 400 });
+    }
+
+    // 1. Get Job details (by ID or Alias)
+    let query = supabase.from("jobs").select("*");
+    
+    if (jobId) {
+      query = query.eq("id", jobId);
+    } else {
+      query = query.eq("alias_email", aliasEmail);
+    }
+
+    const { data: job, error: jobError } = await query.single();
+
+    if (jobError || !job) {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    // Since we found the job, ensure we have the real ID
+    jobId = job.id;
+
+    if (job.status !== "active") {
+      return NextResponse.json({ error: "Job is no longer active" }, { status: 400 });
+    }
+
+    // 2. Upload to Supabase Storage (Private)
+    const fileName = `${jobId}/${Date.now()}-${cvFile.name}`;
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from("cv-documents")
+      .upload(fileName, cvFile);
+
+    if (storageError) {
+      throw new Error(`Storage error: ${storageError.message}`);
+    }
+
+    // 3. Extract Text & Analyze with Gemini (Direct PDF)
+    const arrayBuffer = await cvFile.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const analysis = await analyzeCandidate(
+      buffer,
+      job.title,
+      job.mandatory_criteria,
+      job.optional_criteria,
+      job.passing_grade
+    );
+
+    const rawText = analysis.extracted_text;
+
+    // 5. Save to Database
+    const { data: candidate, error: candidateError } = await supabase
+      .from("candidates")
+      .insert([
+        {
+          job_id: jobId,
+          full_name: fullName || "Anonymous Applicant",
+          email: email || "no-email@provided.com",
+          phone: phone || "",
+          cv_url: storageData.path,
+          raw_text: rawText,
+          analysis_result: analysis,
+          total_score: analysis.total_score,
+          is_qualified: analysis.is_qualified,
+          status: analysis.is_qualified ? "Ready to Interview" : "Pending",
+        },
+      ])
+      .select()
+      .single();
+
+    if (candidateError) {
+      throw new Error(`Database error: ${candidateError.message}`);
+    }
+
+    return NextResponse.json({
+      success: true,
+      candidate_id: candidate.id,
+      score: analysis.total_score,
+      qualified: analysis.is_qualified
+    });
+
+  } catch (error: any) {
+    console.error("Ingest Error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
