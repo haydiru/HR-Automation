@@ -32,15 +32,14 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Sederhananya, jika di rute (dashboard) dan tidak ada user, redirect ke login
-  if (
-    !user &&
-    request.nextUrl.pathname.startsWith("/(dashboard)") ||
-    (!user && request.nextUrl.pathname.startsWith("/dashboard")) ||
-    (!user && request.nextUrl.pathname.startsWith("/jobs")) ||
-    (!user && request.nextUrl.pathname.startsWith("/candidates")) ||
-    (!user && request.nextUrl.pathname.startsWith("/settings"))
-  ) {
+  // Sederhananya: Lindungi rute dashboard, jobs, candidates, dan settings
+  const isProtectedRoute = 
+    request.nextUrl.pathname.startsWith("/dashboard") ||
+    request.nextUrl.pathname.startsWith("/jobs") ||
+    request.nextUrl.pathname.startsWith("/candidates") ||
+    request.nextUrl.pathname.startsWith("/settings");
+
+  if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone()
     url.pathname = "/login"
     return NextResponse.redirect(url)
