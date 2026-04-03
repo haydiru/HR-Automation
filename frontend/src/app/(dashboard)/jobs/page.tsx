@@ -36,6 +36,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 
 export default function JobsPage() {
@@ -43,6 +53,10 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     async function fetchJobs() {
@@ -57,6 +71,51 @@ export default function JobsPage() {
     }
     fetchJobs();
   }, []);
+
+  const handleDelete = async () => {
+    if (!selectedJob) return;
+    setIsProcessing(true);
+    try {
+      const res = await fetch(`/api/jobs/${selectedJob.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setJobs((prev) => prev.filter((j) => j.id !== selectedJob.id));
+        setIsDeleteDialogOpen(false);
+        // toast.success("Lowongan berhasil dihapus");
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsProcessing(false);
+      setSelectedJob(null);
+    }
+  };
+
+  const handleClose = async () => {
+    if (!selectedJob) return;
+    setIsProcessing(true);
+    try {
+      const res = await fetch(`/api/jobs/${selectedJob.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "closed" }),
+      });
+      if (res.ok) {
+        setJobs((prev) =>
+          prev.map((j) =>
+            j.id === selectedJob.id ? { ...j, status: "closed" } : j
+          )
+        );
+        setIsCloseDialogOpen(false);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsProcessing(false);
+      setSelectedJob(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -207,12 +266,27 @@ export default function JobsPage() {
                   <MoreHorizontal className="w-4 h-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <Link href={`/jobs/${job.id}`}>Lihat Detail</Link>
+                  <DropdownMenuItem onClick={() => window.location.href = `/jobs/${job.id}`}>
+                    Lihat Detail
                   </DropdownMenuItem>
-                  <DropdownMenuItem>Edit Lowongan</DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive">
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setSelectedJob(job);
+                      setIsCloseDialogOpen(true);
+                    }}
+                    className="text-orange-500"
+                    disabled={job.status === "closed"}
+                  >
                     Tutup Lowongan
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setSelectedJob(job);
+                      setIsDeleteDialogOpen(true);
+                    }}
+                    className="text-destructive font-semibold"
+                  >
+                    Hapus Permanen
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -226,6 +300,46 @@ export default function JobsPage() {
           <p className="text-muted-foreground">Tidak ada lowongan ditemukan.</p>
         </div>
       )}
+
+      {/* Delete Confirmation */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hapus Lowongan Permanen?</DialogTitle>
+            <DialogDescription>
+              Tindakan ini tidak dapat dibatalkan. Seluruh data pelamar dan analisis AI untuk <strong>{selectedJob?.title}</strong> akan dihapus selamanya.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose>
+              <Button variant="outline" disabled={isProcessing}>Batal</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={handleDelete} disabled={isProcessing}>
+              {isProcessing ? "Menghapus..." : "Ya, Hapus Permanen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Close Confirmation */}
+      <Dialog open={isCloseDialogOpen} onOpenChange={setIsCloseDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tutup Lowongan Ini?</DialogTitle>
+            <DialogDescription>
+              Lowongan <strong>{selectedJob?.title}</strong> tidak akan lagi menerima lamaran baru melalui email alias maupun form publik.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose>
+              <Button variant="outline" disabled={isProcessing}>Batal</Button>
+            </DialogClose>
+            <Button onClick={handleClose} disabled={isProcessing}>
+              {isProcessing ? "Memproses..." : "Ya, Tutup Lowongan"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
