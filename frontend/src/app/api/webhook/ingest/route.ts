@@ -3,11 +3,17 @@ import { analyzeCandidate } from "@/lib/gemini";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  // 1. Validasi Keamanan (Webhook Secret)
+  // 1. Validasi Keamanan
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get("secret");
   
-  if (secret !== process.env.WEBHOOK_SECRET) {
+  // Periksa apakah request datang dari origin yang sama (Formulir Website kita sendiri)
+  const origin = request.headers.get("origin");
+  const host = request.headers.get("host");
+  const isSameOrigin = origin && host && origin.includes(host);
+  
+  // Jika bukan dari website sendiri DAN secret tidak cocok, maka Unauthorized
+  if (!isSameOrigin && secret !== process.env.WEBHOOK_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
