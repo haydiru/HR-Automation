@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -6,7 +6,9 @@ export async function GET(
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   const { jobId } = await params;
-  const supabase = await createClient();
+  
+  // Use admin client for public GET to allow applicants to see job details
+  const supabase = await createAdminClient();
   
   const { data: job, error } = await supabase
     .from("jobs")
@@ -14,8 +16,8 @@ export async function GET(
     .eq("id", jobId)
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error || !job) {
+    return NextResponse.json({ error: "Lowongan tidak ditemukan" }, { status: 404 });
   }
 
   return NextResponse.json(job);
