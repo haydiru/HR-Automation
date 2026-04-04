@@ -44,7 +44,7 @@ export default function CreateJobPage() {
   const jobSlug = title?.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 20) || "job";
   // Generate a short random suffix to ensure uniqueness
   const [randomSuffix] = useState(() => Math.random().toString(36).substring(2, 6));
-  const generatedAlias = `hrinnovation.id+${companySlug}+${jobSlug}+${randomSuffix}@gmail.com`;
+  const generatedAlias = `useirbar+${companySlug}+${jobSlug}+${randomSuffix}@gmail.com`;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
