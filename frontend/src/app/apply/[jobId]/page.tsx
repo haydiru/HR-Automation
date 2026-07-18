@@ -21,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { MapPicker } from "@/components/ui/map-picker";
+import { MapPin } from "lucide-react";
 
 interface Education {
   id: string;
@@ -56,6 +58,7 @@ export default function PublicApplyPage({
   const [educations, setEducations] = useState<Education[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [skills, setSkills] = useState("");
+  const [domicileLocation, setDomicileLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
 
   useEffect(() => {
     async function fetchJob() {
@@ -136,6 +139,11 @@ export default function PublicApplyPage({
       return;
     }
     
+    if (job?.distance_mandatory && (!domicileLocation || !domicileLocation.address)) {
+      alert("Penting: Lowongan ini mewajibkan verifikasi jarak lokasi tinggal. Harap pilih domisili Anda pada peta.");
+      return;
+    }
+    
     setLoading(true);
     
     const formData = new FormData();
@@ -144,6 +152,12 @@ export default function PublicApplyPage({
     formData.append("email", email);
     formData.append("phone", phone);
     formData.append("cv_file", file);
+
+    if (domicileLocation) {
+      formData.append("domicile_latitude", String(domicileLocation.lat));
+      formData.append("domicile_longitude", String(domicileLocation.lng));
+      formData.append("domicile_address", domicileLocation.address);
+    }
     // Optional additional data could be appended here if needed
     
     try {
@@ -237,6 +251,27 @@ export default function PublicApplyPage({
               <p className="text-sm font-semibold italic text-primary">AI Auto-Screening Enabled</p>
             </div>
           </div>
+
+          {job.work_address && (
+            <div className="px-4 py-3 rounded-xl bg-muted/30 border border-border space-y-1.5 animate-in fade-in duration-300">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
+                Lokasi Kerja / Penempatan
+              </p>
+              <p className="text-sm font-semibold text-foreground">
+                {job.work_address}
+              </p>
+              {job.max_distance && (
+                <p className="text-xs text-muted-foreground">
+                  Syarat Jarak Domisili: Radius maksimal <span className="font-mono text-primary font-bold">{job.max_distance} KM</span> 
+                  {job.distance_mandatory ? (
+                    <span className="text-destructive font-semibold"> (Wajib)</span>
+                  ) : (
+                    <span className="text-primary font-semibold"> (Opsional)</span>
+                  )}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Application Form */}
@@ -294,6 +329,27 @@ export default function PublicApplyPage({
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Section: Domisili */}
+          <div className="rounded-2xl border border-border bg-card p-6 md:p-8 space-y-6 shadow-sm">
+            <div className="flex items-center gap-2 pb-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              <h3 className="font-bold">Domisili Saat Ini</h3>
+            </div>
+            
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Tandai lokasi tempat tinggal Anda saat ini pada peta. 
+              {job.work_address && (
+                <span> Koordinat ini digunakan untuk mengukur radius jarak ke kantor (<strong>{job.work_address}</strong>).</span>
+              )}
+            </p>
+
+            <MapPicker
+              value={domicileLocation}
+              onChange={setDomicileLocation}
+              label="Pilih Lokasi Tempat Tinggal"
+            />
           </div>
 
           {/* Section: Pendidikan */}

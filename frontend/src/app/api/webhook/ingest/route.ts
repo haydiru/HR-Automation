@@ -28,6 +28,14 @@ export async function POST(request: Request) {
     const phone = formData.get("phone") as string;
     const cvFile = formData.get("cv_file") as File;
 
+    // Extract location fields
+    const domicileLatStr = formData.get("domicile_latitude") as string;
+    const domicileLngStr = formData.get("domicile_longitude") as string;
+    const domicileAddress = formData.get("domicile_address") as string;
+    
+    const domicile_latitude = domicileLatStr ? parseFloat(domicileLatStr) : null;
+    const domicile_longitude = domicileLngStr ? parseFloat(domicileLngStr) : null;
+
     if (!jobId && !aliasEmail) {
       return NextResponse.json({ error: "Missing job_id or alias_email" }, { status: 400 });
     }
@@ -87,6 +95,45 @@ export async function POST(request: Request) {
 
     const rawText = analysis.extracted_text;
 
+    // 4. Calculate Distance & Perform Radius Screening
+    let distanceToWork: number | null = null;
+    if (
+      job.work_latitude !== null &&
+      job.work_longitude !== null &&
+      domicile_latitude !== null &&
+      domicile_longitude !== null
+    ) {
+      distanceToWork = calculateDistance(
+        job.work_latitude,
+        job.work_longitude,
+        domicile_latitude,
+        domicile_longitude
+      );
+
+      if (job.max_distance) {
+        const passedDistance = distanceToWork <= job.max_distance;
+        
+        // Ensure mandatory_check exists
+        if (!analysis.mandatory_check) {
+          analysis.mandatory_check = [];
+        }
+
+        // Add to checks array
+        analysis.mandatory_check.push({
+          criteria: `Radius Domisili (< ${job.max_distance} km)`,
+          passed: passedDistance,
+          note: passedDistance
+            ? `Jarak domisili Anda: ${distanceToWork.toFixed(1)} km (Memenuhi kriteria)`
+            : `Jarak domisili Anda (${distanceToWork.toFixed(1)} km) melebihi batas maksimal ${job.max_distance} km${job.distance_mandatory ? "" : " (Opsional)"}`
+        });
+
+        // If mandatory and failed, reject applicant
+        if (job.distance_mandatory && !passedDistance) {
+          analysis.is_qualified = false;
+        }
+      }
+    }
+
     // 5. Save to Database (Prioritize data extracted by AI from PDF)
     const finalName = analysis.candidate_name || fullName || "Anonymous Applicant";
     const finalEmail = analysis.candidate_email || email || "no-email@provided.com";
@@ -105,6 +152,10 @@ export async function POST(request: Request) {
           total_score: analysis.total_score,
           is_qualified: analysis.is_qualified,
           status: analysis.is_qualified ? "Ready to Interview" : "Pending",
+          domicile_latitude,
+          domicile_longitude,
+          domicile_address: domicileAddress || null,
+          distance_to_work: distanceToWork,
         },
       ])
       .select()
@@ -125,4 +176,20 @@ export async function POST(request: Request) {
     console.error("Ingest Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+}
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function deg2rad(deg: number): number {
+  return deg * (Math.PI / 180);
 }

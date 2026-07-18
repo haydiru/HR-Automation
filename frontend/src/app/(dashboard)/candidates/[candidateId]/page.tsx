@@ -12,7 +12,9 @@ import {
   CheckCircle2,
   XCircle,
   Sparkles,
+  MapPin,
 } from "lucide-react";
+import { DistanceMap } from "@/components/ui/distance-map";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -121,8 +123,19 @@ export default function CandidateDetailPage({
                 locale: localeId,
               })}
             </span>
+            {candidate.domicile_address && (
+              <span className="flex items-center gap-1.5 text-xs text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10">
+                <MapPin className="w-3.5 h-3.5" />
+                Domisili: {candidate.domicile_address} 
+                {candidate.distance_to_work !== null && candidate.distance_to_work !== undefined && (
+                  <span className="font-bold">
+                    &nbsp;({candidate.distance_to_work.toFixed(1)} km dari kantor)
+                  </span>
+                )}
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex items-center gap-2 pt-1.5">
             <Badge variant="secondary" className="text-xs">
               {candidate.job_title}
             </Badge>
@@ -256,6 +269,31 @@ export default function CandidateDetailPage({
               ))}
             </div>
           </div>
+
+          {/* Distance Map Visualization */}
+          {candidate.domicile_latitude !== null &&
+            candidate.domicile_latitude !== undefined &&
+            candidate.domicile_longitude !== null &&
+            candidate.domicile_longitude !== undefined &&
+            job?.work_latitude !== null &&
+            job?.work_latitude !== undefined &&
+            job?.work_longitude !== null &&
+            job?.work_longitude !== undefined && (
+              <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+                <DistanceMap
+                  workLocation={{
+                    lat: job.work_latitude,
+                    lng: job.work_longitude,
+                    address: job.work_address
+                  }}
+                  domicileLocation={{
+                    lat: candidate.domicile_latitude,
+                    lng: candidate.domicile_longitude,
+                    address: candidate.domicile_address
+                  }}
+                />
+              </div>
+            )}
 
           {/* Skills Found */}
           <div className="rounded-xl border border-border bg-card p-5 space-y-3">

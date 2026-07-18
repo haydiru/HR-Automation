@@ -41,7 +41,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { title, description, mandatory_criteria, optional_criteria, passing_grade, alias_email } = body;
+  const { 
+    title, 
+    description, 
+    mandatory_criteria, 
+    optional_criteria, 
+    passing_grade, 
+    alias_email,
+    work_latitude,
+    work_longitude,
+    work_address,
+    max_distance,
+    distance_mandatory
+  } = body;
 
   const { data: job, error } = await supabase
     .from("jobs")
@@ -55,6 +67,11 @@ export async function POST(request: Request) {
         passing_grade,
         alias_email,
         status: "active",
+        work_latitude,
+        work_longitude,
+        work_address,
+        max_distance,
+        distance_mandatory,
       },
     ])
     .select()

@@ -13,6 +13,8 @@ import { Separator } from "@/components/ui/separator";
 import { CriteriaBuilder } from "@/components/ui/criteria-builder";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { Switch } from "@/components/ui/switch";
+import { MapPicker } from "@/components/ui/map-picker";
 
 export default function CreateJobPage() {
   const router = useRouter();
@@ -22,6 +24,10 @@ export default function CreateJobPage() {
   const [passingGrade, setPassingGrade] = useState(70);
   const [mandatoryCriteria, setMandatoryCriteria] = useState<string[]>([]);
   const [optionalCriteria, setOptionalCriteria] = useState<string[]>([]);
+  const [enableLocation, setEnableLocation] = useState(false);
+  const [workLocation, setWorkLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
+  const [maxDistance, setMaxDistance] = useState(10);
+  const [distanceMandatory, setDistanceMandatory] = useState(false);
   const [saving, setSaving] = useState(false);
   const supabase = createClient();
 
@@ -48,6 +54,12 @@ export default function CreateJobPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (enableLocation && !workLocation) {
+      alert("Harap pilih lokasi kantor/usaha pada peta terlebih dahulu.");
+      return;
+    }
+
     setSaving(true);
     
     try {
@@ -60,6 +72,11 @@ export default function CreateJobPage() {
           mandatory_criteria: mandatoryCriteria,
           optional_criteria: optionalCriteria,
           alias_email: generatedAlias,
+          work_latitude: enableLocation && workLocation ? workLocation.lat : null,
+          work_longitude: enableLocation && workLocation ? workLocation.lng : null,
+          work_address: enableLocation && workLocation ? workLocation.address : null,
+          max_distance: enableLocation ? maxDistance : null,
+          distance_mandatory: enableLocation ? distanceMandatory : false,
         }),
       });
 
@@ -131,6 +148,70 @@ export default function CreateJobPage() {
             </p>
             <p className="text-sm font-mono text-primary">{generatedAlias}</p>
           </div>
+        </div>
+
+        <Separator />
+
+        {/* Lokasi Kerja & Radius */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold">Filter Berbasis Jarak Domisili</h3>
+              <p className="text-xs text-muted-foreground mt-0.5 font-medium">
+                Aktifkan opsi ini untuk menilai kelayakan kandidat berdasarkan radius jarak dari tempat tinggal ke tempat kerja
+              </p>
+            </div>
+            <Switch
+              checked={enableLocation}
+              onCheckedChange={setEnableLocation}
+            />
+          </div>
+
+          {enableLocation && (
+            <div className="space-y-4 pt-3 border-t border-border animate-in fade-in duration-300">
+              <MapPicker
+                value={workLocation}
+                onChange={setWorkLocation}
+                label="Tentukan Lokasi Kantor / Usaha"
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <div className="space-y-2">
+                  <Label htmlFor="maxDistance">Batas Radius Maksimal (KM)</Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      id="maxDistance"
+                      type="number"
+                      min={1}
+                      max={1000}
+                      value={maxDistance}
+                      onChange={(e) => setMaxDistance(Math.max(1, parseInt(e.target.value) || 0))}
+                      className="text-xs font-mono"
+                    />
+                    <span className="text-xs text-muted-foreground font-medium">KM</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2 flex flex-col justify-end pb-1.5">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="distanceMandatory"
+                      checked={distanceMandatory}
+                      onChange={(e) => setDistanceMandatory(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary"
+                    />
+                    <Label htmlFor="distanceMandatory" className="text-xs font-medium cursor-pointer">
+                      Jadikan sebagai Syarat Wajib (Gagal jika di luar radius)
+                    </Label>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-normal mt-1">
+                    Jika dicentang, pelamar di luar radius otomatis berstatus <strong>Not Qualified</strong>. Jika tidak dicentang, ini akan dianggap sebagai Syarat Opsional.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <Separator />

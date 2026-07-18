@@ -177,6 +177,12 @@ export default function JobDetailPage({
               Syarat Wajib
             </h4>
             <div className="space-y-1">
+              {job.distance_mandatory && job.max_distance && (
+                <div className="flex items-start gap-2 text-xs font-medium text-destructive">
+                  <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <span>Domisili dalam radius maks {job.max_distance} KM dari {job.work_address || "kantor"}</span>
+                </div>
+              )}
               {job.mandatory_criteria.map((c: string, i: number) => (
                 <div key={i} className="flex items-start gap-2 text-xs">
                   <XCircle className="w-3.5 h-3.5 text-destructive shrink-0 mt-0.5" />
@@ -190,6 +196,12 @@ export default function JobDetailPage({
               Syarat Opsional
             </h4>
             <div className="space-y-1">
+              {!job.distance_mandatory && job.max_distance && (
+                <div className="flex items-start gap-2 text-xs font-medium text-primary">
+                  <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <span>Domisili dalam radius maks {job.max_distance} KM dari {job.work_address || "kantor"}</span>
+                </div>
+              )}
               {job.optional_criteria.map((c: string, i: number) => (
                 <div key={i} className="flex items-start gap-2 text-xs">
                   <Sparkles className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
