@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Input } from "./input";
 import { Button } from "./button";
-import { MapPin, Search, AlertCircle } from "lucide-react";
+import { MapPin, Search, Loader2 } from "lucide-react";
 
 interface MapPickerProps {
   value: {
@@ -24,131 +24,108 @@ export function MapPicker({
 }: MapPickerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [marker, setMarker] = useState<google.maps.Marker | null>(null);
-  const [apiLoaded, setApiLoaded] = useState(false);
-  const [apiError, setApiError] = useState(false);
-  
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+  const [map, setMap] = useState<any>(null);
+  const [marker, setMarker] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  // Load Google Maps Script
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    
-    // Check if script is already loaded
-    if (window.google?.maps) {
-      setApiLoaded(true);
-      return;
-    }
-
-    const existingScript = document.getElementById("google-maps-script");
-    if (existingScript) {
-      const checkLoaded = setInterval(() => {
-        if (window.google?.maps) {
-          setApiLoaded(true);
-          clearInterval(checkLoaded);
-        }
-      }, 100);
-      return;
-    }
-
-    // If no API Key is provided, we can still attempt loading, but warn the user.
-    // However, Google Maps might fail completely without a key or display developer warning.
-    const script = document.createElement("script");
-    script.id = "google-maps-script";
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      setApiLoaded(true);
-    };
-    script.onerror = () => {
-      setApiError(true);
-    };
-
-    document.head.appendChild(script);
-  }, [apiKey]);
+    setIsClient(true);
+  }, []);
 
   // Initialize Map
   useEffect(() => {
-    if (!apiLoaded || !mapRef.current || typeof window === "undefined" || !window.google?.maps) return;
+    if (!isClient || !mapRef.current) return;
 
-    const center = value ? { lat: value.lat, lng: value.lng } : defaultCenter;
-    
-    const mapInstance = new window.google.maps.Map(mapRef.current, {
-      center,
-      zoom: 13,
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: false,
-    });
+    let mapInstance: any = null;
+    let markerInstance: any = null;
 
-    const markerInstance = new window.google.maps.Marker({
-      position: center,
-      map: mapInstance,
-      draggable: true,
-      animation: window.google.maps.Animation.DROP,
-    });
+    const initMap = async () => {
+      const L = (await import("leaflet")).default;
 
-    setMap(mapInstance);
-    setMarker(markerInstance);
+      // Fix Leaflet default marker icon issue in Next.js
+      const defaultIcon = L.icon({
+        iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
 
-    // Map Click Listener
-    mapInstance.addListener("click", (e: google.maps.MapMouseEvent) => {
-      const latLng = e.latLng;
-      if (latLng) {
-        const lat = latLng.lat();
-        const lng = latLng.lng();
-        markerInstance.setPosition({ lat, lng });
-        geocodePosition(lat, lng);
+      const center = value ? [value.lat, value.lng] : [defaultCenter.lat, defaultCenter.lng];
+      
+      // Create map
+      mapInstance = L.map(mapRef.current!).setView(center as any, 13);
+      
+      // Load OpenStreetMap tiles
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(mapInstance);
+
+      // Create draggable marker
+      markerInstance = L.marker(center as any, {
+        draggable: true,
+        icon: defaultIcon,
+      }).addTo(mapInstance);
+
+      setMap(mapInstance);
+      setMarker(markerInstance);
+
+      // Map Click Event
+      mapInstance.on("click", (e: any) => {
+        const { lat, lng } = e.latlng;
+        markerInstance.setLatLng([lat, lng]);
+        reverseGeocode(lat, lng);
+      });
+
+      // Marker Drag End Event
+      markerInstance.on("dragend", (e: any) => {
+        const { lat, lng } = e.target.getLatLng();
+        reverseGeocode(lat, lng);
+      });
+
+      // Geocode initial coords if address is empty
+      if (value && !value.address) {
+        reverseGeocode(value.lat, value.lng);
       }
-    });
-
-    // Marker Drag Listener
-    markerInstance.addListener("dragend", () => {
-      const position = markerInstance.getPosition();
-      if (position) {
-        const lat = position.lat();
-        const lng = position.lng();
-        geocodePosition(lat, lng);
-      }
-    });
-
-    // Initial Geocode if address is empty but lat/lng exists
-    if (value && !value.address) {
-      geocodePosition(value.lat, value.lng);
-    }
-
-    // Cleanup
-    return () => {
-      window.google.maps.event.clearInstanceListeners(mapInstance);
-      window.google.maps.event.clearInstanceListeners(markerInstance);
     };
-  }, [apiLoaded]);
+
+    initMap();
+
+    return () => {
+      if (mapInstance) {
+        mapInstance.remove();
+      }
+    };
+  }, [isClient]);
 
   // Sync marker position when external value changes
   useEffect(() => {
     if (map && marker && value) {
-      const pos = { lat: value.lat, lng: value.lng };
-      // Avoid infinite loop if position is already very close
-      const currentPos = marker.getPosition();
-      if (!currentPos || Math.abs(currentPos.lat() - pos.lat) > 0.0001 || Math.abs(currentPos.lng() - pos.lng) > 0.0001) {
-        marker.setPosition(pos);
-        map.setCenter(pos);
+      const currentLatLng = marker.getLatLng();
+      if (
+        Math.abs(currentLatLng.lat - value.lat) > 0.0001 ||
+        Math.abs(currentLatLng.lng - value.lng) > 0.0001
+      ) {
+        marker.setLatLng([value.lat, value.lng]);
+        map.setView([value.lat, value.lng], map.getZoom());
       }
     }
   }, [value, map, marker]);
 
-  // Geocode Latitude and Longitude to get address
-  const geocodePosition = (lat: number, lng: number) => {
-    if (!window.google?.maps) return;
-    const geocoder = new window.google.maps.Geocoder();
-    geocoder.geocode({ location: { lat, lng } }, (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
-      if (status === "OK" && results && results[0]) {
+  // Reverse Geocoding with OpenStreetMap Nominatim
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=id,en`
+      );
+      if (res.ok) {
+        const data = await res.json();
         onChange({
           lat,
           lng,
-          address: results[0].formatted_address,
+          address: data.display_name || `Koordinat: ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
         });
       } else {
         onChange({
@@ -157,33 +134,51 @@ export function MapPicker({
           address: `Koordinat: ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
         });
       }
-    });
+    } catch (err) {
+      console.error(err);
+      onChange({
+        lat,
+        lng,
+        address: `Koordinat: ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+      });
+    }
   };
 
-  // Search Address
-  const handleSearch = () => {
-    if (!searchQuery || !window.google?.maps || !map || !marker) return;
-    
-    const geocoder = new window.google.maps.Geocoder();
-    geocoder.geocode({ address: searchQuery }, (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
-      if (status === "OK" && results && results[0] && results[0].geometry.location) {
-        const loc = results[0].geometry.location;
-        const lat = loc.lat();
-        const lng = loc.lng();
-        
-        map.setCenter({ lat, lng });
-        map.setZoom(15);
-        marker.setPosition({ lat, lng });
-        
-        onChange({
-          lat,
-          lng,
-          address: results[0].formatted_address,
-        });
-      } else {
-        alert("Lokasi tidak ditemukan. Harap masukkan kata kunci lain.");
+  // Search Address with OpenStreetMap Nominatim
+  const handleSearch = async () => {
+    if (!searchQuery || !map || !marker) return;
+    setLoading(true);
+
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          searchQuery
+        )}&accept-language=id,en&limit=1`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lng = parseFloat(data[0].lon);
+          
+          map.setView([lat, lng], 15);
+          marker.setLatLng([lat, lng]);
+          
+          onChange({
+            lat,
+            lng,
+            address: data[0].display_name,
+          });
+        } else {
+          alert("Lokasi tidak ditemukan. Harap masukkan kata kunci lain.");
+        }
       }
-    });
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat mencari lokasi.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleManualCoords = (latStr: string, lngStr: string) => {
@@ -198,101 +193,84 @@ export function MapPicker({
     }
   };
 
+  if (!isClient) {
+    return (
+      <div className="w-full h-[250px] rounded-xl border border-border bg-muted/20 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <label className="text-sm font-semibold">{label}</label>
-        {!apiKey && (
-          <span className="flex items-center gap-1 text-[10px] text-amber-500 font-medium">
-            <AlertCircle className="w-3.5 h-3.5" />
-            Mode Manual (API Key Maps belum di-set)
-          </span>
-        )}
       </div>
 
-      {apiKey && !apiError ? (
-        <div className="space-y-2">
-          {/* Search bar */}
-          <div className="flex gap-2">
-            <Input
-              placeholder="Cari lokasi/alamat..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleSearch())}
-              className="text-xs"
-            />
-            <Button type="button" onClick={handleSearch} size="sm" className="h-9 px-3">
-              <Search className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Map canvas */}
-          <div
-            ref={mapRef}
-            className="w-full h-[250px] rounded-xl border border-border bg-muted/20"
-            style={{ minHeight: "250px" }}
+      <div className="space-y-2">
+        {/* Search bar */}
+        <div className="flex gap-2">
+          <Input
+            placeholder="Cari lokasi/alamat..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleSearch())}
+            className="text-xs"
           />
-          
-          {value && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/40 border border-border text-xs">
-              <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-foreground">Lokasi Terpilih:</p>
-                <p className="text-muted-foreground mt-0.5">{value.address}</p>
-                <p className="text-[10px] text-muted-foreground font-mono mt-1">
-                  Lat: {value.lat.toFixed(6)}, Lng: {value.lng.toFixed(6)}
-                </p>
+          <Button
+            type="button"
+            onClick={handleSearch}
+            disabled={loading}
+            size="sm"
+            className="h-9 px-3"
+          >
+            {loading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Search className="w-4 h-4" />
+            )}
+          </Button>
+        </div>
+
+        {/* Map canvas */}
+        <div
+          ref={mapRef}
+          className="w-full h-[250px] rounded-xl border border-border bg-muted/20 z-0"
+          style={{ minHeight: "250px" }}
+        />
+        
+        {value && (
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/40 border border-border text-xs">
+            <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-foreground">Lokasi Terpilih:</p>
+              <p className="text-muted-foreground mt-0.5 truncate-2-lines">{value.address}</p>
+              <div className="flex items-center gap-4 mt-2">
+                <div className="flex-1">
+                  <label className="text-[10px] text-muted-foreground font-mono">Latitude</label>
+                  <Input
+                    type="number"
+                    step="any"
+                    value={value.lat}
+                    onChange={(e) => handleManualCoords(e.target.value, String(value.lng))}
+                    className="h-7 text-xs font-mono px-2 py-0"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-[10px] text-muted-foreground font-mono">Longitude</label>
+                  <Input
+                    type="number"
+                    step="any"
+                    value={value.lng}
+                    onChange={(e) => handleManualCoords(String(value.lat), e.target.value)}
+                    className="h-7 text-xs font-mono px-2 py-0"
+                  />
+                </div>
               </div>
             </div>
-          )}
-        </div>
-      ) : (
-        // Fallback Form when Google Maps is not available / API key not set
-        <div className="rounded-xl border border-border bg-card p-4 space-y-4 shadow-sm">
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Alamat / Domisili Lengkap</label>
-            <Input
-              placeholder="Contoh: Jl. Sudirman No. 12, Jakarta Selatan"
-              value={value?.address || ""}
-              onChange={(e) => onChange({
-                lat: value?.lat || defaultCenter.lat,
-                lng: value?.lng || defaultCenter.lng,
-                address: e.target.value
-              })}
-              className="text-xs"
-            />
           </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Latitude</label>
-              <Input
-                type="number"
-                step="any"
-                placeholder="-6.200000"
-                value={value?.lat !== undefined ? value.lat : ""}
-                onChange={(e) => handleManualCoords(e.target.value, String(value?.lng || defaultCenter.lng))}
-                className="text-xs font-mono"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Longitude</label>
-              <Input
-                type="number"
-                step="any"
-                placeholder="106.816666"
-                value={value?.lng !== undefined ? value.lng : ""}
-                onChange={(e) => handleManualCoords(String(value?.lat || defaultCenter.lat), e.target.value)}
-                className="text-xs font-mono"
-              />
-            </div>
-          </div>
-          
-          <p className="text-[10px] text-amber-500 bg-amber-500/10 p-2 rounded-lg leading-normal">
-            Input koordinat secara manual atau ketik alamat di atas. Untuk pengalaman peta visual, silakan konfigurasikan <strong>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</strong> di file <code>.env.local</code>.
-          </p>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

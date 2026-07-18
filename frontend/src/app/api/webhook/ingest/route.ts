@@ -79,9 +79,22 @@ export async function POST(request: Request) {
     const emailBody = formData.get("email_body") as string;
     const subject = formData.get("subject") as string;
 
-    // 3. Extract Text & Analyze with Gemini (Direct PDF)
+    // 3. Extract Text & Analyze with Gemini/Custom AI (Direct PDF)
     const arrayBuffer = await cvFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+
+    // Fetch custom AI settings from the employer's profile
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("ai_provider, ai_api_key, ai_proxy_url")
+      .eq("id", job.user_id)
+      .single();
+
+    const aiConfig = {
+      provider: (profile?.ai_provider || "gemini") as "gemini" | "openai" | "anthropic",
+      apiKey: profile?.ai_api_key || null,
+      proxyUrl: profile?.ai_proxy_url || null,
+    };
 
     const analysis = await analyzeCandidate(
       buffer,
@@ -90,7 +103,8 @@ export async function POST(request: Request) {
       job.optional_criteria,
       job.passing_grade,
       emailBody,
-      subject
+      subject,
+      aiConfig
     );
 
     const rawText = analysis.extracted_text;

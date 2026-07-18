@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { AlertCircle, MapPin } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface DistanceMapProps {
   workLocation: { lat: number; lng: number; address?: string };
@@ -10,105 +10,97 @@ interface DistanceMapProps {
 
 export function DistanceMap({ workLocation, domicileLocation }: DistanceMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [apiLoaded, setApiLoaded] = useState(false);
-  const [apiError, setApiError] = useState(false);
-  
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    
-    if (window.google?.maps) {
-      setApiLoaded(true);
-      return;
-    }
-
-    const existingScript = document.getElementById("google-maps-script");
-    if (existingScript) {
-      const checkLoaded = setInterval(() => {
-        if (window.google?.maps) {
-          setApiLoaded(true);
-          clearInterval(checkLoaded);
-        }
-      }, 100);
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.id = "google-maps-script";
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setApiLoaded(true);
-    script.onerror = () => setApiError(true);
-
-    document.head.appendChild(script);
-  }, [apiKey]);
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
-    if (!apiLoaded || !mapRef.current || typeof window === "undefined" || !window.google?.maps) return;
+    if (!isClient || !mapRef.current) return;
 
-    const bounds = new window.google.maps.LatLngBounds();
-    bounds.extend(workLocation);
-    bounds.extend(domicileLocation);
+    let mapInstance: any = null;
+    let workMarker: any = null;
+    let domicileMarker: any = null;
+    let polyline: any = null;
 
-    const mapInstance = new window.google.maps.Map(mapRef.current, {
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: false,
-    });
+    const initMap = async () => {
+      const L = (await import("leaflet")).default;
 
-    mapInstance.fitBounds(bounds);
+      // Fix default marker icon issues in Leaflet + Next.js
+      const workIcon = L.icon({
+        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
 
-    // Add Work/Office Marker
-    const officeMarker = new window.google.maps.Marker({
-      position: workLocation,
-      map: mapInstance,
-      title: "Lokasi Kerja / Kantor",
-      icon: {
-        url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
-      }
-    });
+      const domicileIcon = L.icon({
+        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
 
-    // Add Domicile Marker
-    const domicileMarker = new window.google.maps.Marker({
-      position: domicileLocation,
-      map: mapInstance,
-      title: "Domisili Kandidat",
-      icon: {
-        url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-      }
-    });
+      const workLatLng = [workLocation.lat, workLocation.lng];
+      const domicileLatLng = [domicileLocation.lat, domicileLocation.lng];
 
-    // Draw Line between them
-    const path = new window.google.maps.Polyline({
-      path: [workLocation, domicileLocation],
-      geodesic: true,
-      strokeColor: "#3b82f6",
-      strokeOpacity: 0.8,
-      strokeWeight: 3,
-      map: mapInstance,
-    });
+      // Create map instance
+      mapInstance = L.map(mapRef.current!).setView(workLatLng as any, 13);
 
-    // Adjust zoom after fitting bounds
-    const listener = window.google.maps.event.addListener(mapInstance, "bounds_changed", () => {
-      if (mapInstance.getZoom()! > 15) {
-        mapInstance.setZoom(15);
-      }
-      window.google.maps.event.removeListener(listener);
-    });
+      // Load OpenStreetMap tiles
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(mapInstance);
+
+      // Add Red marker for workplace
+      workMarker = L.marker(workLatLng as any, { icon: workIcon })
+        .addTo(mapInstance)
+        .bindPopup(`<b>Lokasi Kantor</b><br>${workLocation.address || "Tempat Kerja"}`);
+
+      // Add Blue marker for candidate's domicile
+      domicileMarker = L.marker(domicileLatLng as any, { icon: domicileIcon })
+        .addTo(mapInstance)
+        .bindPopup(`<b>Domisili Kandidat</b><br>${domicileLocation.address || "Tempat Tinggal"}`);
+
+      // Draw blue connecting line
+      polyline = L.polyline([workLatLng, domicileLatLng] as any[], {
+        color: "#3b82f6",
+        weight: 3,
+        opacity: 0.8,
+        dashArray: "5, 5" // Dashed line
+      }).addTo(mapInstance);
+
+      // Fit map to contain both markers
+      const group = new L.FeatureGroup([workMarker, domicileMarker]);
+      mapInstance.fitBounds(group.getBounds().pad(0.15));
+    };
+
+    initMap();
 
     return () => {
-      officeMarker.setMap(null);
-      domicileMarker.setMap(null);
-      path.setMap(null);
+      if (mapInstance) {
+        mapInstance.remove();
+      }
     };
-  }, [apiLoaded, workLocation, domicileLocation]);
+  }, [isClient, workLocation, domicileLocation]);
+
+  if (!isClient) {
+    return (
+      <div className="w-full h-[200px] rounded-xl border border-border bg-muted/20 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-        <span>Peta Rute Domisili ke Kantor</span>
+        <span>Peta Rute Domisili ke Kantor (OpenStreetMap)</span>
         <div className="flex gap-3">
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" /> Kantor
@@ -119,17 +111,11 @@ export function DistanceMap({ workLocation, domicileLocation }: DistanceMapProps
         </div>
       </div>
 
-      {apiKey && !apiError ? (
-        <div
-          ref={mapRef}
-          className="w-full h-[200px] rounded-xl border border-border bg-muted/20"
-        />
-      ) : (
-        <div className="rounded-xl border border-border bg-muted/10 p-3 text-xs text-muted-foreground flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
-          <span>Google Maps API Key belum di-set. Peta rute tidak dapat ditampilkan secara visual, namun data radius jarak tetap dihitung.</span>
-        </div>
-      )}
+      <div
+        ref={mapRef}
+        className="w-full h-[200px] rounded-xl border border-border bg-muted/20 z-0"
+        style={{ minHeight: "200px" }}
+      />
     </div>
   );
 }

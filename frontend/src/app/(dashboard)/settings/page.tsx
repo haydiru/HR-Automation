@@ -10,12 +10,22 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [strictness, setStrictness] = useState(70);
+  const [aiProvider, setAiProvider] = useState<"gemini" | "openai" | "anthropic">("gemini");
+  const [aiApiKey, setAiApiKey] = useState("");
+  const [aiProxyUrl, setAiProxyUrl] = useState("");
   const supabase = createClient();
 
   useEffect(() => {
@@ -28,6 +38,11 @@ export default function SettingsPage() {
           .eq("id", user.id)
           .single();
         setProfile(data);
+        if (data) {
+          setAiProvider(data.ai_provider || "gemini");
+          setAiApiKey(data.ai_api_key || "");
+          setAiProxyUrl(data.ai_proxy_url || "");
+        }
       }
       setLoading(false);
     }
@@ -41,17 +56,25 @@ export default function SettingsPage() {
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     const updates = {
       company_name: formData.get("company-name"),
+      ai_provider: aiProvider,
+      ai_api_key: aiApiKey || null,
+      ai_proxy_url: aiProxyUrl || null,
     };
 
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase
+      const { error } = await supabase
         .from("profiles")
         .update(updates)
         .eq("id", user.id);
+        
+      if (error) {
+        alert(`Gagal menyimpan pengaturan: ${error.message}`);
+      } else {
+        alert("Pengaturan disimpan!");
+      }
     }
     
-    alert("Pengaturan disimpan!");
     setSaving(false);
   };
 
@@ -134,16 +157,78 @@ export default function SettingsPage() {
 
             <Separator />
 
+            {/* Provider and key settings */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="ai-provider">Penyedia Layanan AI (Model Format)</Label>
+                <Select
+                  value={aiProvider}
+                  onValueChange={(val: any) => setAiProvider(val)}
+                >
+                  <SelectTrigger id="ai-provider" className="w-full">
+                    <SelectValue placeholder="Pilih Penyedia AI" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gemini">Google Gemini AI (Default)</SelectItem>
+                    <SelectItem value="openai">OpenAI API Format (Proxy/Direct)</SelectItem>
+                    <SelectItem value="anthropic">Anthropic API Format (Proxy/Direct)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ai-api-key">Kunci API (API Key)</Label>
+                <Input
+                  id="ai-api-key"
+                  type="password"
+                  value={aiApiKey}
+                  onChange={(e) => setAiApiKey(e.target.value)}
+                  placeholder={
+                    aiProvider === "gemini"
+                      ? "AIzaSy..."
+                      : aiProvider === "openai"
+                      ? "sk-..."
+                      : "sk-ant-..."
+                  }
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="ai-proxy-url">URL Proxy / Endpoint Kustom</Label>
+                <Input
+                  id="ai-proxy-url"
+                  value={aiProxyUrl}
+                  onChange={(e) => setAiProxyUrl(e.target.value)}
+                  placeholder={
+                    aiProvider === "gemini"
+                      ? "https://generativelanguage.googleapis.com (Opsional)"
+                      : aiProvider === "openai"
+                      ? "https://api.openai.com/v1 (Opsional)"
+                      : "https://api.anthropic.com/v1 (Opsional)"
+                  }
+                />
+                <p className="text-[10px] text-muted-foreground leading-normal mt-1">
+                  Biarkan kosong untuk langsung menghubungi server utama. Masukkan endpoint proxy kustom (misal: openrouter, dll) jika Anda menggunakannya.
+                </p>
+              </div>
+            </div>
+
+            <Separator />
+
             <div className="flex items-center gap-3">
               <ShieldCheck className="w-5 h-5 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Model AI Aktif</p>
                 <p className="text-xs text-muted-foreground">
-                  Gemini 3.1 Flash Lite Preview (Super Fast)
+                  {aiProvider === "gemini"
+                    ? "Gemini 1.5 Flash (Super Fast & Smart)"
+                    : aiProvider === "openai"
+                    ? "OpenAI GPT-4o-mini / Custom"
+                    : "Anthropic Claude 3.5 Sonnet / Custom"}
                 </p>
               </div>
               <Badge variant="secondary" className="ml-auto">
-                Default
+                {aiProvider === "gemini" && !aiApiKey ? "Default System" : "Custom Key"}
               </Badge>
             </div>
           </div>
