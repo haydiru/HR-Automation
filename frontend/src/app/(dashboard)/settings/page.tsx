@@ -26,7 +26,57 @@ export default function SettingsPage() {
   const [aiProvider, setAiProvider] = useState<"gemini" | "openai" | "anthropic">("gemini");
   const [aiApiKey, setAiApiKey] = useState("");
   const [aiProxyUrl, setAiProxyUrl] = useState("");
+  const [aiModel, setAiModel] = useState("gemini-1.5-flash");
+  const [customModel, setCustomModel] = useState("");
   const supabase = createClient();
+
+  const isStandardModel = (provider: string, modelName: string) => {
+    if (provider === "gemini") {
+      return ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"].includes(modelName);
+    }
+    if (provider === "openai") {
+      return ["gpt-4o-mini", "gpt-4o"].includes(modelName);
+    }
+    if (provider === "anthropic") {
+      return ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"].includes(modelName);
+    }
+    return false;
+  };
+
+  const handleProviderChange = (provider: "gemini" | "openai" | "anthropic") => {
+    setAiProvider(provider);
+    if (provider === "gemini") {
+      setAiModel("gemini-1.5-flash");
+    } else if (provider === "openai") {
+      setAiModel("gpt-4o-mini");
+    } else if (provider === "anthropic") {
+      setAiModel("claude-3-5-sonnet-20241022");
+    }
+    setCustomModel("");
+  };
+
+  const getStandardModels = (provider: string) => {
+    switch (provider) {
+      case "gemini":
+        return [
+          { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash (Rekomendasi/Default)" },
+          { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
+          { value: "gemini-2.0-flash-exp", label: "Gemini 2.0 Flash Exp" },
+        ];
+      case "openai":
+        return [
+          { value: "gpt-4o-mini", label: "GPT-4o Mini (Rekomendasi/Default)" },
+          { value: "gpt-4o", label: "GPT-4o" },
+        ];
+      case "anthropic":
+        return [
+          { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet (Rekomendasi/Default)" },
+          { value: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku" },
+        ];
+      default:
+        return [];
+    }
+  };
 
   useEffect(() => {
     async function load() {
@@ -39,9 +89,19 @@ export default function SettingsPage() {
           .single();
         setProfile(data);
         if (data) {
-          setAiProvider(data.ai_provider || "gemini");
+          const provider = data.ai_provider || "gemini";
+          setAiProvider(provider);
           setAiApiKey(data.ai_api_key || "");
           setAiProxyUrl(data.ai_proxy_url || "");
+          
+          const dbModel = data.ai_model || "gemini-1.5-flash";
+          if (isStandardModel(provider, dbModel)) {
+            setAiModel(dbModel);
+            setCustomModel("");
+          } else {
+            setAiModel("custom");
+            setCustomModel(dbModel);
+          }
         }
       }
       setLoading(false);
@@ -53,12 +113,14 @@ export default function SettingsPage() {
     e.preventDefault();
     setSaving(true);
     
+    const finalModel = aiModel === "custom" ? customModel : aiModel;
     const formData = new FormData(e.currentTarget as HTMLFormElement);
     const updates = {
       company_name: formData.get("company-name"),
       ai_provider: aiProvider,
       ai_api_key: aiApiKey || null,
       ai_proxy_url: aiProxyUrl || null,
+      ai_model: finalModel || null,
     };
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -163,7 +225,7 @@ export default function SettingsPage() {
                 <Label htmlFor="ai-provider">Penyedia Layanan AI (Model Format)</Label>
                 <Select
                   value={aiProvider}
-                  onValueChange={(val: any) => setAiProvider(val)}
+                  onValueChange={(val: any) => handleProviderChange(val)}
                 >
                   <SelectTrigger id="ai-provider" className="w-full">
                     <SelectValue placeholder="Pilih Penyedia AI" />
@@ -189,6 +251,50 @@ export default function SettingsPage() {
                       : aiProvider === "openai"
                       ? "sk-..."
                       : "sk-ant-..."
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ai-model">Model AI</Label>
+                <Select
+                  value={aiModel}
+                  onValueChange={(val: any) => {
+                    setAiModel(val);
+                    if (val !== "custom") setCustomModel("");
+                  }}
+                >
+                  <SelectTrigger id="ai-model" className="w-full">
+                    <SelectValue placeholder="Pilih Model AI" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getStandardModels(aiProvider).map((model) => (
+                      <SelectItem key={model.value} value={model.value}>
+                        {model.label}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Kustom (Tulis Sendiri)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="custom-model">
+                  {aiModel === "custom" ? "Nama Model Kustom" : "Model Aktif (Read Only)"}
+                </Label>
+                <Input
+                  id="custom-model"
+                  value={aiModel === "custom" ? customModel : aiModel}
+                  onChange={(e) => {
+                    if (aiModel === "custom") {
+                      setCustomModel(e.target.value);
+                    }
+                  }}
+                  disabled={aiModel !== "custom"}
+                  placeholder={
+                    aiModel === "custom"
+                      ? "Masukkan identifier model (misal: deepseek-chat)"
+                      : "Diambil dari dropdown model"
                   }
                 />
               </div>
@@ -219,16 +325,12 @@ export default function SettingsPage() {
               <ShieldCheck className="w-5 h-5 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Model AI Aktif</p>
-                <p className="text-xs text-muted-foreground">
-                  {aiProvider === "gemini"
-                    ? "Gemini 1.5 Flash (Super Fast & Smart)"
-                    : aiProvider === "openai"
-                    ? "OpenAI GPT-4o-mini / Custom"
-                    : "Anthropic Claude 3.5 Sonnet / Custom"}
+                <p className="text-xs text-muted-foreground font-mono">
+                  {aiProvider.toUpperCase()} — {aiModel === "custom" ? (customModel || "(Kustom model belum ditentukan)") : aiModel}
                 </p>
               </div>
               <Badge variant="secondary" className="ml-auto">
-                {aiProvider === "gemini" && !aiApiKey ? "Default System" : "Custom Key"}
+                {aiProvider === "gemini" && !aiApiKey ? "Default System" : "Custom Configuration"}
               </Badge>
             </div>
           </div>

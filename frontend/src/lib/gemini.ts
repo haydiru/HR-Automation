@@ -2,6 +2,7 @@ export interface AIConfig {
   provider: "gemini" | "openai" | "anthropic";
   apiKey: string | null;
   proxyUrl: string | null;
+  model: string | null;
 }
 
 export interface AnalysisResult {
@@ -108,7 +109,8 @@ export async function analyzeCandidate(
   if (provider === "gemini") {
     // Call Gemini REST API
     const baseUrl = proxyUrl || "https://generativelanguage.googleapis.com";
-    const url = `${baseUrl}/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const modelName = aiConfig?.model || "gemini-1.5-flash";
+    const url = `${baseUrl}/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: "POST",
@@ -146,6 +148,7 @@ export async function analyzeCandidate(
     // Call OpenAI API Format (Proxy/Direct)
     const baseUrl = proxyUrl || "https://api.openai.com/v1";
     const url = `${baseUrl}/chat/completions`;
+    const modelName = aiConfig?.model || "gpt-4o-mini";
 
     const response = await fetch(url, {
       method: "POST",
@@ -154,7 +157,7 @@ export async function analyzeCandidate(
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: modelName,
         response_format: { type: "json_object" },
         messages: [
           {
@@ -176,6 +179,7 @@ export async function analyzeCandidate(
     // Call Anthropic API Format (Proxy/Direct)
     const baseUrl = proxyUrl || "https://api.anthropic.com/v1";
     const url = `${baseUrl}/messages`;
+    const modelName = aiConfig?.model || "claude-3-5-sonnet-20241022";
 
     const response = await fetch(url, {
       method: "POST",
@@ -185,7 +189,7 @@ export async function analyzeCandidate(
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-3-5-sonnet-20241022",
+        model: modelName,
         max_tokens: 4000,
         messages: [
           {

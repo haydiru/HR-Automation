@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     // Fetch custom AI settings from the employer's profile
     const { data: profile } = await supabase
       .from("profiles")
-      .select("ai_provider, ai_api_key, ai_proxy_url")
+      .select("ai_provider, ai_api_key, ai_proxy_url, ai_model")
       .eq("id", job.user_id)
       .single();
 
@@ -94,6 +94,7 @@ export async function POST(request: Request) {
       provider: (profile?.ai_provider || "gemini") as "gemini" | "openai" | "anthropic",
       apiKey: profile?.ai_api_key || null,
       proxyUrl: profile?.ai_proxy_url || null,
+      model: profile?.ai_model || null,
     };
 
     const analysis = await analyzeCandidate(
