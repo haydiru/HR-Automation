@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, JetBrains_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LanguageProvider } from "@/context/language-context";
 import "./globals.css";
 
 const geistMono = Geist_Mono({
@@ -15,9 +16,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HR Automation System — Rekrutmen Cerdas",
+  title: "Obsidian Talent OS — Smart HR Automation",
   description:
-    "Sistem rekrutmen otomatis dengan AI untuk menyaring kandidat secara cerdas. Hemat waktu HRD Anda.",
+    "AI-powered recruitment automation system for smart applicant screening and candidate pipeline management.",
 };
 
 export default function RootLayout({
@@ -27,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="id"
+      lang="en"
       className={`${geistMono.variable} ${jetbrainsMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
@@ -38,7 +39,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider delay={200}>{children}</TooltipProvider>
+          <LanguageProvider>
+            <TooltipProvider delay={200}>{children}</TooltipProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

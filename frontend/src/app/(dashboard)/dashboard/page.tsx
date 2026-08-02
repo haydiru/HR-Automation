@@ -23,6 +23,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/context/language-context";
 import {
   AreaChart,
   Area,
@@ -46,6 +47,7 @@ export default function DashboardPage() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const { t } = useLanguage();
   const supabase = createClient();
 
   useEffect(() => {
@@ -123,10 +125,10 @@ export default function DashboardPage() {
               Obsidian Intelligence Engine Active
             </div>
             <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight">
-              Welcome back, <span className="gradient-text">{displayName}</span>! 👋
+              {t("dash_welcome")}, <span className="gradient-text">{displayName}</span>! 👋
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Here is your company's recruitment overview today. {activeJobsCount} active job openings are receiving and processing applicant files automatically.
+              {t("dash_hero_desc")}
             </p>
           </div>
 
@@ -136,7 +138,7 @@ export default function DashboardPage() {
               className={cn(buttonVariants({ size: "sm" }), "h-10 text-xs rounded-xl shadow-lg shadow-primary/20 gap-1.5 w-full sm:w-auto justify-center")}
             >
               <Plus className="w-4 h-4" />
-              Create New Job
+              {t("dash_create_job")}
             </Link>
           </div>
         </div>
@@ -145,27 +147,27 @@ export default function DashboardPage() {
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
-          label="Active Jobs"
+          label={t("dash_stat_active_jobs")}
           value={activeJobsCount}
           icon={Briefcase}
           variant="primary"
           trend={{ value: 12, positive: true }}
         />
         <StatCard
-          label="Total Applicants"
+          label={t("dash_stat_total_applicants")}
           value={totalApplicants}
           icon={Users}
           trend={{ value: 24, positive: true }}
         />
         <StatCard
-          label="Qualified Candidates"
+          label={t("dash_stat_qualified")}
           value={totalQualified}
           icon={CheckCircle2}
           variant="success"
           trend={{ value: 18, positive: true }}
         />
         <StatCard
-          label="Interview Mandates"
+          label={t("dash_stat_mandates")}
           value={interviews.length}
           icon={Calendar}
           variant="warning"
@@ -180,7 +182,7 @@ export default function DashboardPage() {
             <div className="space-y-0.5">
               <h3 className="text-sm font-bold flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary" />
-                Applicant Growth Trend & Qualified Rate
+                {t("dash_growth_title")}
               </h3>
               <p className="text-xs text-muted-foreground">
                 Comparison of total applications vs candidates meeting qualifications
@@ -244,7 +246,7 @@ export default function DashboardPage() {
           <div className="space-y-0.5">
             <h3 className="text-sm font-bold flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-500" />
-              AI Qualification Ratio
+              {t("dash_qual_ratio_title")}
             </h3>
             <p className="text-xs text-muted-foreground">
               Proportion of candidates passing the score threshold
@@ -298,7 +300,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold flex items-center gap-2">
               <UserCheck className="w-4 h-4 text-purple-500" />
-              Your Interview Schedule
+              {t("dash_interviews_title")}
             </h3>
             <Badge variant="secondary" className="text-[10px] font-semibold">
               {interviews.length} Mandates
@@ -342,13 +344,13 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" />
-              Recent Applicants Feed
+              {t("dash_recent_feed_title")}
             </h3>
             <Link
               href="/candidates"
               className="text-xs text-primary hover:underline font-semibold flex items-center gap-1"
             >
-              View All <ArrowRight className="w-3 h-3" />
+              {t("dash_view_all")} <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 

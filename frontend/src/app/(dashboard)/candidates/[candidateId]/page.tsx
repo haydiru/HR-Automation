@@ -36,6 +36,7 @@ import { ScheduleInterviewModal } from "@/components/ui/schedule-interview-modal
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/context/language-context";
 
 interface Stage {
   id: string;
@@ -59,6 +60,7 @@ export default function CandidateDetailPage({
   params: Promise<{ candidateId: string }>;
 }) {
   const { candidateId } = use(params);
+  const { t } = useLanguage();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [stages, setStages] = useState<Stage[]>([]);

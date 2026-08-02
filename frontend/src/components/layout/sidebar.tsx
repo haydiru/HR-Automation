@@ -26,20 +26,24 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
 import { logout } from "@/app/(auth)/actions";
+import { useLanguage } from "@/context/language-context";
 
 export const navItems = [
   {
-    label: "Dashboard",
+    labelKey: "nav_dashboard",
+    labelFallback: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
-    label: "Jobs",
+    labelKey: "nav_jobs",
+    labelFallback: "Jobs",
     href: "/jobs",
     icon: Briefcase,
   },
   {
-    label: "All Candidates",
+    labelKey: "nav_all_candidates",
+    labelFallback: "All Candidates",
     href: "/candidates",
     icon: Users,
   },
@@ -49,6 +53,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [profile, setProfile] = useState<any>(null);
+  const { t } = useLanguage();
   const supabase = createClient();
 
   useEffect(() => {
@@ -118,6 +123,8 @@ export function Sidebar() {
             pathname === item.href ||
             (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
+          const label = t(item.labelKey as any, item.labelFallback);
+
           return (
             <Tooltip key={item.href}>
               <TooltipTrigger
@@ -140,13 +147,13 @@ export function Sidebar() {
                         isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                       )}
                     />
-                    {!collapsed && <span>{item.label}</span>}
+                    {!collapsed && <span>{label}</span>}
                   </Link>
                 }
               />
               {collapsed && (
                 <TooltipContent side="right" className="text-xs font-medium">
-                  {item.label}
+                  {label}
                 </TooltipContent>
               )}
             </Tooltip>
@@ -169,13 +176,13 @@ export function Sidebar() {
                 )}
               >
                 <Settings className="w-4 h-4 shrink-0" />
-                {!collapsed && <span>Settings</span>}
+                {!collapsed && <span>{t("nav_settings")}</span>}
               </Link>
             }
           />
           {collapsed && (
             <TooltipContent side="right" className="text-xs font-medium">
-              Settings
+              {t("nav_settings")}
             </TooltipContent>
           )}
         </Tooltip>
@@ -188,13 +195,13 @@ export function Sidebar() {
                 className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer w-full"
               >
                 <LogOut className="w-4 h-4 shrink-0" />
-                {!collapsed && <span>Log Out</span>}
+                {!collapsed && <span>{t("nav_logout")}</span>}
               </button>
             }
           />
           {collapsed && (
             <TooltipContent side="right" className="text-xs font-medium">
-              Log Out
+              {t("nav_logout")}
             </TooltipContent>
           )}
         </Tooltip>

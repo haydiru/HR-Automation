@@ -50,6 +50,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { Candidate } from "@/types";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/context/language-context";
 
 interface Stage {
   id: string;
@@ -60,12 +61,13 @@ interface Stage {
   is_system?: boolean;
 }
 
-export default function JobDetailPage({
+export default function JobPipelinePage({
   params,
 }: {
   params: Promise<{ jobId: string }>;
 }) {
   const { jobId } = use(params);
+  const { t } = useLanguage();
   const [job, setJob] = useState<any>(null);
   const [allCandidates, setAllCandidates] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);

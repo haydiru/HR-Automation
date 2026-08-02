@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, LogOut, Sparkles, Building2, User, Menu, Zap, LayoutDashboard, Briefcase, Users, Settings } from "lucide-react";
+import { Search, LogOut, Sparkles, Building2, User, Menu, Zap, LayoutDashboard, Briefcase, Users, Settings, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useLanguage } from "@/context/language-context";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { logout } from "@/app/(auth)/actions";
@@ -35,6 +37,7 @@ export function Header() {
   const [profile, setProfile] = useState<any>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const { t, language, setLanguage } = useLanguage();
   const supabase = createClient();
 
   useEffect(() => {
@@ -100,6 +103,12 @@ export function Header() {
                   pathname === item.href ||
                   (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
+                const labelMap: Record<string, string> = {
+                  "/dashboard": t("nav_dashboard"),
+                  "/jobs": t("nav_jobs"),
+                  "/candidates": t("nav_all_candidates"),
+                };
+
                 return (
                   <Link
                     key={item.href}
@@ -113,7 +122,7 @@ export function Header() {
                     )}
                   >
                     <item.icon className="w-4 h-4" />
-                    <span>{item.label}</span>
+                    <span>{labelMap[item.href] || item.labelFallback}</span>
                   </Link>
                 );
               })}
@@ -129,12 +138,37 @@ export function Header() {
                 )}
               >
                 <Settings className="w-4 h-4" />
-                <span>Settings</span>
+                <span>{t("nav_settings")}</span>
               </Link>
             </nav>
 
             <div className="p-4 border-t border-border/60 space-y-3">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5" />
+                  Language
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant={language === "en" ? "default" : "outline"}
+                    onClick={() => setLanguage("en")}
+                    className="h-7 text-[10px] px-2 rounded-lg"
+                  >
+                    EN 🇺🇸
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={language === "id" ? "default" : "outline"}
+                    onClick={() => setLanguage("id")}
+                    className="h-7 text-[10px] px-2 rounded-lg"
+                  >
+                    ID 🇮🇩
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-1">
                 <Avatar className="w-8 h-8 ring-2 ring-primary/20">
                   <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
                     {initials}
@@ -153,7 +187,7 @@ export function Header() {
                 className="w-full text-xs gap-2 rounded-xl"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                Log Out of System
+                {t("logout_system")}
               </Button>
             </div>
           </SheetContent>
@@ -163,7 +197,7 @@ export function Header() {
         <div className="relative max-w-xs md:max-w-md flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search jobs or candidates..."
+            placeholder={t("search_placeholder")}
             className="pl-9 bg-muted/40 border-border/60 focus:border-primary/50 focus:bg-background h-9 text-xs rounded-xl shadow-inner transition-all w-full"
           />
         </div>
@@ -171,6 +205,7 @@ export function Header() {
 
       {/* Right Controls */}
       <div className="flex items-center gap-2 md:gap-3 shrink-0">
+        <LanguageToggle />
         <ThemeToggle />
 
         {/* Notifications Popover */}
@@ -218,13 +253,13 @@ export function Header() {
             <DropdownMenuItem className="p-0">
               <Link href="/settings" className="w-full px-2 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
                 <User className="w-4 h-4 text-muted-foreground" />
-                My Profile & AI Config
+                {t("nav_profile_config")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="p-0">
               <Link href="/settings/stages" className="w-full px-2 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
                 <Sparkles className="w-4 h-4 text-muted-foreground" />
-                Recruitment Stages
+                {t("nav_stages_config")}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -233,7 +268,7 @@ export function Header() {
               className="text-xs gap-2 py-2 text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
-              Log Out of System
+              {t("logout_system")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

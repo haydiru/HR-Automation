@@ -1,596 +1,575 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
+  Briefcase,
   ArrowLeft,
-  Save,
-  Layers,
   Plus,
   Trash2,
   Sparkles,
-  ArrowUp,
-  ArrowDown,
-  Check,
-  Briefcase,
+  Sliders,
+  CheckCircle2,
+  AlertCircle,
+  HelpCircle,
+  Zap,
   MapPin,
-  SlidersHorizontal,
-  Mail,
+  Layers,
+  Check,
   Loader2,
 } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { CriteriaBuilder } from "@/components/ui/criteria-builder";
-import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { MapPicker } from "@/components/ui/map-picker";
+import { useLanguage } from "@/context/language-context";
 
-interface JobStageInput {
+interface Stage {
+  id: string;
   name: string;
   description?: string;
   color: string;
+  order_index: number;
 }
-
-const COLOR_PRESETS = [
-  "#6366f1", // Indigo
-  "#f59e0b", // Amber
-  "#10b981", // Emerald
-  "#a855f7", // Purple
-  "#06b6d4", // Cyan
-  "#f43f5e", // Rose
-];
 
 export default function CreateJobPage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<any>(null);
+  const { t } = useLanguage();
+
+  const [loading, setLoading] = useState(false);
+  const [passingGrade, setPassingGrade] = useState(70);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [passingGrade, setPassingGrade] = useState(70);
-  const [mandatoryCriteria, setMandatoryCriteria] = useState<string[]>([]);
-  const [optionalCriteria, setOptionalCriteria] = useState<string[]>([]);
-  const [enableLocation, setEnableLocation] = useState(false);
-  const [workLocation, setWorkLocation] = useState<{
-    lat: number;
-    lng: number;
-    address: string;
-  } | null>(null);
-  const [maxDistance, setMaxDistance] = useState(10);
-  const [distanceMandatory, setDistanceMandatory] = useState(false);
+  const [mandatoryReqs, setMandatoryReqs] = useState<string[]>([
+    "Min. 2 years of relevant professional experience",
+    "Proficient with core software engineering principles",
+  ]);
+  const [optionalReqs, setOptionalReqs] = useState<string[]>([
+    "Familiarity with Cloud Infrastructure & DevOps",
+  ]);
+  const [newMandatory, setNewMandatory] = useState("");
+  const [newOptional, setNewOptional] = useState("");
 
-  // Custom Stages state
-  const [useCustomStages, setUseCustomStages] = useState(false);
-  const [defaultStages, setDefaultStages] = useState<any[]>([]);
-  const [customStages, setCustomStages] = useState<JobStageInput[]>([]);
+  // Domicile location states
+  const [workAddress, setWorkAddress] = useState("");
+  const [workLocation, setWorkLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
+  const [maxDistance, setMaxDistance] = useState<number>(25);
+  const [distanceMandatory, setDistanceMandatory] = useState<boolean>(false);
+
+  // Custom Stages states
+  const [stageScheme, setStageScheme] = useState<"company_default" | "custom">("company_default");
+  const [defaultStages, setDefaultStages] = useState<Stage[]>([]);
+  const [customStages, setCustomStages] = useState<Stage[]>([]);
+  const [loadingStages, setLoadingStages] = useState(true);
   const [newStageName, setNewStageName] = useState("");
-  const [newStageDesc, setNewStageDesc] = useState("");
-  const [newStageColor, setNewStageColor] = useState("#6366f1");
-
-  const [saving, setSaving] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
-    async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-        setProfile(data);
-
-        // Fetch company default stages
-        const stagesRes = await fetch("/api/stages");
-        if (stagesRes.ok) {
-          const stgData = await stagesRes.json();
-          setDefaultStages(stgData);
-          setCustomStages(
-            stgData.map((s: any) => ({
-              name: s.name,
-              description: s.description || "",
-              color: s.color || "#6366f1",
-            }))
-          );
+    async function loadStages() {
+      try {
+        const res = await fetch("/api/stages");
+        if (res.ok) {
+          const data = await res.json();
+          setDefaultStages(data);
+          setCustomStages(data);
         }
+      } catch (err) {
+        console.error("Failed to load stages", err);
+      } finally {
+        setLoadingStages(false);
       }
     }
-    load();
+    loadStages();
   }, []);
 
-  const companySlug =
-    profile?.company_name?.toLowerCase().replace(/[^a-z0-9]/g, "-") || "company";
-  const jobSlug =
-    title?.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 20) || "job";
-  const [randomSuffix] = useState(() => Math.random().toString(36).substring(2, 6));
-  const generatedAlias = `useirbar+${companySlug}+${jobSlug}+${randomSuffix}@gmail.com`;
+  const addMandatory = () => {
+    if (!newMandatory.trim()) return;
+    setMandatoryReqs([...mandatoryReqs, newMandatory.trim()]);
+    setNewMandatory("");
+  };
 
-  const handleAddCustomStage = () => {
+  const removeMandatory = (idx: number) => {
+    setMandatoryReqs(mandatoryReqs.filter((_, i) => i !== idx));
+  };
+
+  const addOptional = () => {
+    if (!newOptional.trim()) return;
+    setOptionalReqs([...optionalReqs, newOptional.trim()]);
+    setNewOptional("");
+  };
+
+  const removeOptional = (idx: number) => {
+    setOptionalReqs(optionalReqs.filter((_, i) => i !== idx));
+  };
+
+  const addCustomStage = () => {
     if (!newStageName.trim()) return;
-    setCustomStages([
-      ...customStages,
-      {
-        name: newStageName.trim(),
-        description: newStageDesc.trim(),
-        color: newStageColor,
-      },
-    ]);
+    const newStg: Stage = {
+      id: `temp-${Date.now()}`,
+      name: newStageName.trim(),
+      color: "#6366f1",
+      order_index: customStages.length + 1,
+    };
+    setCustomStages([...customStages, newStg]);
     setNewStageName("");
-    setNewStageDesc("");
-    setNewStageColor("#6366f1");
   };
 
-  const handleRemoveCustomStage = (index: number) => {
-    if (index === 0) {
-      alert("First stage (Apply & AI Screening) cannot be removed.");
-      return;
-    }
-    setCustomStages(customStages.filter((_, idx) => idx !== index));
+  const removeCustomStage = (id: string) => {
+    setCustomStages(customStages.filter((s) => s.id !== id));
   };
 
-  const handleMoveCustomStage = (index: number, direction: "up" | "down") => {
-    const target = direction === "up" ? index - 1 : index + 1;
-    if (target < 0 || target >= customStages.length) return;
-
-    const copy = [...customStages];
-    const temp = copy[index];
-    copy[index] = copy[target];
-    copy[target] = temp;
-    setCustomStages(copy);
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (enableLocation && !workLocation) {
-      alert("Please select the office/workplace location on the map first.");
+    if (!title.trim()) {
+      alert("Please enter position title.");
       return;
     }
 
-    setSaving(true);
+    setLoading(true);
 
     try {
+      const payload: any = {
+        title,
+        description,
+        passing_grade: passingGrade,
+        mandatory_requirements: mandatoryReqs,
+        optional_requirements: optionalReqs,
+        work_address: workAddress || workLocation?.address || null,
+        work_latitude: workLocation?.lat || null,
+        work_longitude: workLocation?.lng || null,
+        max_distance: maxDistance || null,
+        distance_mandatory: distanceMandatory,
+        custom_stages: stageScheme === "custom" ? customStages : null,
+      };
+
       const res = await fetch("/api/jobs", {
         method: "POST",
-        body: JSON.stringify({
-          title,
-          description,
-          passing_grade: passingGrade,
-          mandatory_criteria: mandatoryCriteria,
-          optional_criteria: optionalCriteria,
-          alias_email: generatedAlias,
-          work_latitude: enableLocation && workLocation ? workLocation.lat : null,
-          work_longitude: enableLocation && workLocation ? workLocation.lng : null,
-          work_address: enableLocation && workLocation ? workLocation.address : null,
-          max_distance: enableLocation ? maxDistance : null,
-          distance_mandatory: enableLocation ? distanceMandatory : false,
-          use_custom_stages: useCustomStages,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        const newJob = await res.json();
-
-        if (useCustomStages && newJob.id) {
-          await fetch(`/api/jobs/${newJob.id}/stages`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              use_custom_stages: true,
-              stages: customStages,
-            }),
-          });
-        }
-
         router.push("/jobs");
       } else {
         const err = await res.json();
-        alert(`Failed to create job position: ${err.error}`);
+        alert(`Failed to create job: ${err.error}`);
       }
-    } catch (err) {
-      console.error(err);
-      alert("Connection error occurred.");
+    } catch (err: any) {
+      alert("Error occurred: " + err.message);
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6 sm:space-y-8 page-enter">
-      {/* Back Link */}
-      <Link
-        href="/jobs"
-        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Jobs Management
-      </Link>
-
-      {/* Page Title */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-          <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-          Create New Job Position
-        </h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Configure AI screening criteria, recruitment stage workflows, and work location
-        </p>
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6 sm:space-y-8 page-enter">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Link href="/jobs">
+          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold">{t("create_job_title")}</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {t("create_job_subtitle")}
+          </p>
+        </div>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6 sm:space-y-8">
-        {/* Section 1: Basic Information */}
-        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-5">
-          <div className="flex items-center gap-2 border-b border-border/60 pb-3">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <h3 className="text-xs sm:text-sm font-bold">1. Primary Position Information</h3>
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+        {/* Section 1: Primary Information */}
+        <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 space-y-4 shadow-sm">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 border-b border-border/60 pb-3">
+            <Briefcase className="w-4 h-4 text-primary" />
+            {t("create_job_sec1")}
+          </h2>
 
-          <div className="space-y-2">
-            <Label htmlFor="title" className="text-xs font-semibold">Job Title / Position <span className="text-red-500">*</span></Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Senior Full Stack Engineer / Digital Marketing Lead"
-              className="text-xs h-10 rounded-xl"
-              required
-            />
-          </div>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="title" className="text-xs font-semibold">
+                Position Title <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="title"
+                placeholder="e.g. Senior Fullstack Developer / HR Business Partner"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="text-xs h-9 rounded-xl"
+                required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-xs font-semibold">Job Description & Requirements <span className="text-red-500">*</span></Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe core responsibilities, key technical skills, and team expectations..."
-              rows={5}
-              className="text-xs rounded-xl resize-y"
-              required
-            />
-          </div>
-
-          {/* Generated Email Alias Badge */}
-          <div className="p-3.5 sm:p-4 rounded-xl bg-primary/5 border border-primary/15 space-y-1">
-            <p className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-primary shrink-0" />
-              Email Ingestion Alias (Auto Generated)
-            </p>
-            <p className="text-xs font-mono font-bold text-primary break-all">{generatedAlias}</p>
+            <div className="space-y-1.5">
+              <Label htmlFor="description" className="text-xs font-semibold">
+                Job Overview & Key Responsibilities
+              </Label>
+              <Textarea
+                id="description"
+                placeholder="Describe role overview, primary responsibilities, and expected candidate profile..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="text-xs min-h-[120px] rounded-xl"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Section 2: Recruitment Stages Selection */}
-        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-5">
-          <div className="flex items-center justify-between border-b border-border/60 pb-3">
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-primary" />
-              <h3 className="text-xs sm:text-sm font-bold">2. Selection Stage Pipeline Scheme</h3>
+        {/* Section 2: Recruitment Pipeline Scheme */}
+        <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 space-y-4 shadow-sm">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 border-b border-border/60 pb-3">
+            <Layers className="w-4 h-4 text-primary" />
+            {t("create_job_sec2")}
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 ${
+                stageScheme === "company_default"
+                  ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                  : "border-border/60 bg-muted/20"
+              }`}
+              onClick={() => setStageScheme("company_default")}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${stageScheme === "company_default" ? "border-primary bg-primary" : "border-muted-foreground"}`}>
+                    {stageScheme === "company_default" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                  <Label className="text-xs font-bold cursor-pointer">
+                    Company Official Template (Default)
+                  </Label>
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed pl-6">
+                Use standard company selection pipeline. Updates in global Settings will automatically reflect.
+              </p>
+            </div>
+
+            <div
+              className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 ${
+                stageScheme === "custom"
+                  ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                  : "border-border/60 bg-muted/20"
+              }`}
+              onClick={() => setStageScheme("custom")}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${stageScheme === "custom" ? "border-primary bg-primary" : "border-muted-foreground"}`}>
+                    {stageScheme === "custom" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                  <Label className="text-xs font-bold cursor-pointer">
+                    Custom Pipeline for This Position
+                  </Label>
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed pl-6">
+                Override selection workflow specifically for this position (e.g. add Technical Test or Case Study).
+              </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div
-              onClick={() => setUseCustomStages(false)}
-              className={cn(
-                "p-4 rounded-xl border-2 cursor-pointer transition-all space-y-2",
-                !useCustomStages
-                  ? "border-primary bg-primary/5 shadow-md shadow-primary/5"
-                  : "border-border/60 hover:border-border bg-muted/10"
-              )}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground">
-                  Company Default Template
-                </span>
-                {!useCustomStages && <Check className="w-4 h-4 text-primary" />}
-              </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Follow standard company recruitment stages defined in Settings.
-              </p>
-            </div>
-
-            <div
-              onClick={() => setUseCustomStages(true)}
-              className={cn(
-                "p-4 rounded-xl border-2 cursor-pointer transition-all space-y-2",
-                useCustomStages
-                  ? "border-primary bg-primary/5 shadow-md shadow-primary/5"
-                  : "border-border/60 hover:border-border bg-muted/10"
-              )}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-foreground">
-                  Custom Stage Pipeline
-                </span>
-                {useCustomStages && <Check className="w-4 h-4 text-primary" />}
-              </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Build custom stage sequence tailored specifically for this job position.
-              </p>
-            </div>
-          </div>
-
-          {!useCustomStages ? (
-            <div className="p-3.5 sm:p-4 rounded-xl bg-muted/20 border border-border/60 space-y-2">
-              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                Preview Company Default Stages:
-              </p>
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-thin">
-                {defaultStages.map((s, i) => (
-                  <div key={s.id || i} className="flex items-center gap-2 shrink-0">
-                    <Badge
-                      variant="outline"
-                      className="text-xs gap-1.5 py-1 px-3 rounded-full font-semibold shadow-sm"
-                      style={{ color: s.color, borderColor: `${s.color}40`, backgroundColor: `${s.color}10` }}
+          {/* Stepper Preview */}
+          <div className="pt-3">
+            <Label className="text-xs font-semibold block mb-2">Selection Pipeline Preview:</Label>
+            {loadingStages ? (
+              <div className="p-4 text-center text-xs text-muted-foreground">Loading stage structure...</div>
+            ) : (
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                {(stageScheme === "company_default" ? defaultStages : customStages).map((stg, idx) => (
+                  <div key={stg.id} className="flex items-center gap-2 shrink-0">
+                    <div
+                      className="px-3 py-1.5 rounded-xl border text-xs font-bold shadow-sm flex items-center gap-2"
+                      style={{
+                        borderColor: `${stg.color || "#6366f1"}50`,
+                        backgroundColor: `${stg.color || "#6366f1"}15`,
+                        color: stg.color || "#6366f1",
+                      }}
                     >
-                      <span className="font-bold">{i + 1}.</span> {s.name}
-                    </Badge>
-                    {i < defaultStages.length - 1 && (
-                      <span className="text-xs text-muted-foreground">➔</span>
+                      <span className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px]">
+                        {idx + 1}
+                      </span>
+                      <span>{stg.name}</span>
+                      {stageScheme === "custom" && (
+                        <button
+                          type="button"
+                          onClick={() => removeCustomStage(stg.id)}
+                          className="hover:text-destructive text-muted-foreground ml-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                    {idx < (stageScheme === "company_default" ? defaultStages : customStages).length - 1 && (
+                      <div className="w-3 h-0.5 bg-border shrink-0" />
                     )}
                   </div>
                 ))}
               </div>
-            </div>
-          ) : (
-            <div className="space-y-4 pt-3 border-t border-border/60 animate-in fade-in duration-300">
-              <p className="text-xs font-bold text-foreground">
-                Custom Stage Pipeline Editor:
-              </p>
+            )}
 
-              <div className="space-y-2">
-                {customStages.map((stg, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-3 rounded-xl border border-border/80 bg-muted/20 text-xs shadow-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-[11px] text-white shrink-0 shadow-sm"
-                        style={{ backgroundColor: stg.color }}
-                      >
-                        {idx + 1}
-                      </span>
-                      <div>
-                        <p className="font-bold text-foreground">{stg.name}</p>
-                        {stg.description && (
-                          <p className="text-[11px] text-muted-foreground">
-                            {stg.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 rounded-lg"
-                        onClick={() => handleMoveCustomStage(idx, "up")}
-                        disabled={idx === 0}
-                      >
-                        <ArrowUp className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 rounded-lg"
-                        onClick={() => handleMoveCustomStage(idx, "down")}
-                        disabled={idx === customStages.length - 1}
-                      >
-                        <ArrowDown className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 rounded-lg text-destructive hover:bg-destructive/10"
-                        onClick={() => handleRemoveCustomStage(idx)}
-                        disabled={idx === 0}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+            {stageScheme === "custom" && (
+              <div className="flex items-center gap-2 pt-3">
+                <Input
+                  placeholder="Add custom stage name (e.g. Live Coding Session)..."
+                  value={newStageName}
+                  onChange={(e) => setNewStageName(e.target.value)}
+                  className="text-xs h-9 rounded-xl max-w-sm"
+                />
+                <Button type="button" size="sm" onClick={addCustomStage} className="text-xs h-9 rounded-xl gap-1">
+                  <Plus className="w-3.5 h-3.5" />
+                  Add Stage
+                </Button>
               </div>
-
-              {/* Add Custom Stage Form */}
-              <div className="p-3.5 sm:p-4 rounded-xl border border-dashed border-border/80 bg-card space-y-3">
-                <p className="text-xs font-bold">Add New Custom Stage:</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    placeholder="Stage name (e.g. Technical Assessment)"
-                    value={newStageName}
-                    onChange={(e) => setNewStageName(e.target.value)}
-                    className="text-xs h-9 rounded-lg"
-                  />
-                  <Input
-                    placeholder="Short description (optional)"
-                    value={newStageDesc}
-                    onChange={(e) => setNewStageDesc(e.target.value)}
-                    className="text-xs h-9 rounded-lg"
-                  />
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-muted-foreground">Badge Color:</span>
-                    {COLOR_PRESETS.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setNewStageColor(c)}
-                        className={cn(
-                          "w-5 h-5 rounded-full border border-black/10 transition-transform",
-                          newStageColor === c && "scale-125 ring-2 ring-primary ring-offset-1"
-                        )}
-                        style={{ backgroundColor: c }}
-                      />
-                    ))}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddCustomStage}
-                    className="h-8 text-xs gap-1.5 rounded-lg w-full sm:w-auto"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    Add Stage
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* Section 3: Location Radius Screening */}
-        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-5">
-          <div className="flex items-center justify-between border-b border-border/60 pb-3">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" />
-              <h3 className="text-xs sm:text-sm font-bold">3. Domicile Location Radius Filter</h3>
-            </div>
-            <Switch
-              checked={enableLocation}
-              onCheckedChange={setEnableLocation}
-            />
-          </div>
+        {/* Section 3: Domicile Location Filter */}
+        <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 space-y-4 shadow-sm">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 border-b border-border/60 pb-3">
+            <MapPin className="w-4 h-4 text-primary" />
+            {t("create_job_sec3")}
+          </h2>
 
-          {enableLocation && (
-            <div className="space-y-4 pt-1 animate-in fade-in duration-300">
-              <MapPicker
-                value={workLocation}
-                onChange={setWorkLocation}
-                label="Set Workplace / Office Location on Map"
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="work-address" className="text-xs font-semibold">
+                Office / Workplace Base Address
+              </Label>
+              <Input
+                id="work-address"
+                placeholder="e.g. Head Office, Jakarta South Financial District"
+                value={workAddress}
+                onChange={(e) => setWorkAddress(e.target.value)}
+                className="text-xs h-9 rounded-xl"
               />
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pt-2">
-                <div className="space-y-2">
-                  <Label htmlFor="maxDistance" className="text-xs font-semibold">Maximum Radius Distance (KM)</Label>
-                  <div className="flex items-center gap-3">
-                    <Input
-                      id="maxDistance"
-                      type="number"
-                      min={1}
-                      max={1000}
-                      value={maxDistance}
-                      onChange={(e) =>
-                        setMaxDistance(Math.max(1, parseInt(e.target.value) || 0))
-                      }
-                      className="text-xs font-mono h-9 rounded-xl"
-                    />
-                    <span className="text-xs font-bold text-muted-foreground">KM</span>
-                  </div>
+            <MapPicker
+              value={workLocation}
+              onChange={setWorkLocation}
+              label="Pinpoint Workplace Location on Map"
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label className="text-xs font-semibold">Max Radius Distance (KM)</Label>
+                  <span className="text-xs font-bold font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                    {maxDistance} KM
+                  </span>
                 </div>
+                <Slider
+                  value={[maxDistance]}
+                  onValueChange={(val) => setMaxDistance(Array.isArray(val) ? val[0] : val)}
+                  max={100}
+                  min={5}
+                  step={5}
+                  className="py-2"
+                />
+              </div>
 
-                <div className="space-y-2 flex flex-col justify-end pb-1">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="distanceMandatory"
-                      checked={distanceMandatory}
-                      onChange={(e) => setDistanceMandatory(e.target.checked)}
-                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary"
-                    />
-                    <Label htmlFor="distanceMandatory" className="text-xs font-bold cursor-pointer">
-                      Make Mandatory Criterion (Auto fail if outside radius)
-                    </Label>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-normal">
-                    If checked, candidates living outside this radius will automatically be marked <strong>Not Qualified</strong>.
+              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60">
+                <div className="space-y-0.5">
+                  <Label htmlFor="dist-mandatory" className="text-xs font-bold cursor-pointer">
+                    Mandatory Requirement
+                  </Label>
+                  <p className="text-[10px] text-muted-foreground">
+                    If active, applicants residing beyond max radius will automatically fail Mandatory check.
                   </p>
                 </div>
+                <Switch
+                  id="dist-mandatory"
+                  checked={distanceMandatory}
+                  onCheckedChange={setDistanceMandatory}
+                />
               </div>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Section 4: AI Criteria Builder */}
-        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-6">
-          <div className="flex items-center gap-2 border-b border-border/60 pb-3">
-            <SlidersHorizontal className="w-4 h-4 text-primary" />
-            <h3 className="text-xs sm:text-sm font-bold">4. AI Screening Evaluation Criteria</h3>
+        {/* Section 4: AI Screening Criteria */}
+        <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 space-y-6 shadow-sm">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 border-b border-border/60 pb-3">
+            <Sparkles className="w-4 h-4 text-emerald-500" />
+            {t("create_job_sec4")}
+          </h2>
+
+          {/* Mandatory Reqs */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-foreground">
+                Mandatory Requirements (Must Fulfill)
+              </Label>
+              <Badge variant="secondary" className="text-[10px] bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 font-bold">
+                Mandatory
+              </Badge>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Candidates missing mandatory requirements will be marked non-qualifying regardless of overall score.
+            </p>
+
+            <div className="space-y-2">
+              {mandatoryReqs.map((req, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/20 text-xs gap-3"
+                >
+                  <span className="font-medium flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                    {req}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeMandatory(idx)}
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Type mandatory requirement (e.g. Min. Bachelor's Degree)..."
+                value={newMandatory}
+                onChange={(e) => setNewMandatory(e.target.value)}
+                className="text-xs h-9 rounded-xl"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addMandatory();
+                  }
+                }}
+              />
+              <Button type="button" size="sm" onClick={addMandatory} className="text-xs h-9 rounded-xl gap-1 shrink-0">
+                <Plus className="w-3.5 h-3.5" />
+                Add
+              </Button>
+            </div>
           </div>
 
-          <CriteriaBuilder
-            label="⚠️ Mandatory Requirements"
-            description="Candidates MUST satisfy all mandatory criteria. Failing any item automatically results in Not Qualified."
-            items={mandatoryCriteria}
-            onChange={setMandatoryCriteria}
-            variant="mandatory"
-          />
+          {/* Optional Reqs */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-foreground">
+                Optional Requirements (Bonus Points)
+              </Label>
+              <Badge variant="outline" className="text-[10px] text-primary border-primary/20 bg-primary/5 font-bold">
+                Bonus Score
+              </Badge>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Increases AI match percentage score when detected in CV.
+            </p>
 
-          <Separator className="bg-border/60" />
+            <div className="space-y-2">
+              {optionalReqs.map((req, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/20 text-xs gap-3"
+                >
+                  <span className="font-medium flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                    {req}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeOptional(idx)}
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
 
-          <CriteriaBuilder
-            label="✨ Optional Requirements (Bonus Points)"
-            description="Preferred qualifications that add bonus points to candidate match score."
-            items={optionalCriteria}
-            onChange={setOptionalCriteria}
-            variant="optional"
-          />
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Type bonus skill requirement..."
+                value={newOptional}
+                onChange={(e) => setNewOptional(e.target.value)}
+                className="text-xs h-9 rounded-xl"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addOptional();
+                  }
+                }}
+              />
+              <Button type="button" size="sm" onClick={addOptional} className="text-xs h-9 rounded-xl gap-1 shrink-0">
+                <Plus className="w-3.5 h-3.5" />
+                Add
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Section 5: Passing Grade Slider */}
-        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs sm:text-sm font-bold">5. AI Score Passing Grade Threshold</h3>
-            <span className="text-lg sm:text-xl font-extrabold font-mono text-primary bg-primary/10 px-3 py-1 rounded-xl border border-primary/20">
-              {passingGrade} Pts
-            </span>
-          </div>
+        {/* Section 5: Passing Grade Threshold */}
+        <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 space-y-4 shadow-sm">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 border-b border-border/60 pb-3">
+            <Sliders className="w-4 h-4 text-primary" />
+            {t("create_job_sec5")}
+          </h2>
 
-          <div className="space-y-4 pt-2">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-xs font-semibold">Minimum Passing Grade</Label>
+                <p className="text-[11px] text-muted-foreground">
+                  Candidates scoring at or above this threshold will automatically qualify for interview pipeline.
+                </p>
+              </div>
+              <span className="text-lg font-extrabold font-mono text-primary bg-primary/10 px-3 py-1 rounded-xl border border-primary/20 shrink-0">
+                {passingGrade}%
+              </span>
+            </div>
+
             <Slider
               value={[passingGrade]}
-              onValueChange={(val) => {
-                const v = Array.isArray(val) ? val[0] : val;
-                setPassingGrade(v);
-              }}
+              onValueChange={(val) => setPassingGrade(Array.isArray(val) ? val[0] : val)}
               max={100}
-              min={0}
+              min={50}
               step={5}
               className="py-2"
             />
-            <div className="flex justify-between text-[10px] text-muted-foreground px-1 font-medium">
-              <span>0 (Lenient)</span>
-              <span>50 (Standard)</span>
-              <span>70 (Recommended)</span>
-              <span>100 (Strict)</span>
-            </div>
           </div>
         </div>
 
-        {/* Actions Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
-          <Link
-            href="/jobs"
-            className={cn(buttonVariants({ variant: "outline" }), "h-10 text-xs rounded-xl w-full sm:w-auto justify-center")}
-          >
-            Cancel
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <Link href="/jobs">
+            <Button type="button" variant="outline" size="sm" className="text-xs h-10 px-6 rounded-xl">
+              Cancel
+            </Button>
           </Link>
-          <Button type="submit" disabled={saving} className="h-10 text-xs gap-2 rounded-xl shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">
-            {saving ? (
+          <Button
+            type="submit"
+            disabled={loading}
+            size="sm"
+            className="text-xs h-10 px-8 rounded-xl gap-2 shadow-lg shadow-primary/20 font-bold"
+          >
+            {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Saving Job Position...
               </>
             ) : (
               <>
-                <Save className="w-4 h-4" />
-                Save & Publish Job
+                <CheckCircle2 className="w-4 h-4" />
+                {t("create_job_submit")}
               </>
             )}
           </Button>

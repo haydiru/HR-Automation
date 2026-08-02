@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { MapPicker } from "@/components/ui/map-picker";
+import { useLanguage } from "@/context/language-context";
 
 interface Education {
   id: string;
@@ -46,6 +47,7 @@ export default function PublicApplyPage({
   params: Promise<{ jobId: string }>;
 }) {
   const { jobId } = use(params);
+  const { t } = useLanguage();
   const [job, setJob] = useState<any>(null);
   const [loadingJob, setLoadingJob] = useState(true);
 

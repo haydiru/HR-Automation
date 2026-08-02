@@ -1,29 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Search,
+  Filter,
   MoreHorizontal,
-  Copy,
-  ExternalLink,
   Users,
   CheckCircle2,
-  Mail,
+  Calendar,
+  Sparkles,
+  ChevronRight,
+  MapPin,
+  ExternalLink,
+  Copy,
+  Check,
+  Building2,
+  Trash2,
+  XCircle,
+  Clock,
   Briefcase,
   Layers,
-  Sparkles,
-  Ban,
-  Trash2,
-  Check,
   Loader2,
 } from "lucide-react";
-import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { ScoreBadge } from "@/components/ui/score-badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -32,74 +44,58 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/context/language-context";
+import { format } from "date-fns";
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedJob, setSelectedJob] = useState<any>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // Dialog States
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [closeDialogOpen, setCloseDialogOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const { t } = useLanguage();
+
   useEffect(() => {
-    async function fetchJobs() {
-      try {
-        const res = await fetch("/api/jobs");
-        if (res.ok) setJobs(await res.json());
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchJobs();
   }, []);
 
-  const handleDelete = async () => {
-    if (!selectedJob) return;
-    setIsProcessing(true);
+  async function fetchJobs() {
     try {
-      const res = await fetch(`/api/jobs/${selectedJob.id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch("/api/jobs");
       if (res.ok) {
-        setJobs((prev) => prev.filter((j) => j.id !== selectedJob.id));
-        setIsDeleteDialogOpen(false);
+        setJobs(await res.json());
       }
     } catch (err) {
       console.error(err);
     } finally {
-      setIsProcessing(false);
-      setSelectedJob(null);
+      setLoading(false);
     }
+  }
+
+  const handleCopyAlias = (job: any) => {
+    const aliasEmail = `${job.email_alias}@ingest.obsidiantalent.os`;
+    navigator.clipboard.writeText(aliasEmail);
+    setCopiedId(job.id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleClose = async () => {
+  const handleCloseJob = async () => {
     if (!selectedJob) return;
-    setIsProcessing(true);
+    setActionLoading(true);
     try {
       const res = await fetch(`/api/jobs/${selectedJob.id}`, {
         method: "PATCH",
@@ -107,316 +103,267 @@ export default function JobsPage() {
         body: JSON.stringify({ status: "closed" }),
       });
       if (res.ok) {
-        setJobs((prev) =>
-          prev.map((j) =>
-            j.id === selectedJob.id ? { ...j, status: "closed" } : j
-          )
-        );
-        setIsCloseDialogOpen(false);
+        await fetchJobs();
+        setCloseDialogOpen(false);
       }
     } catch (err) {
       console.error(err);
     } finally {
-      setIsProcessing(false);
-      setSelectedJob(null);
+      setActionLoading(false);
     }
   };
 
-  const copyToClipboard = (text: string, jobId: string) => {
-    navigator.clipboard.writeText(text || "");
-    setCopiedId(jobId);
-    setTimeout(() => setCopiedId(null), 2000);
+  const handleDeleteJob = async () => {
+    if (!selectedJob) return;
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/jobs/${selectedJob.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        await fetchJobs();
+        setDeleteDialogOpen(false);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActionLoading(false);
+    }
   };
+
+  const filteredJobs = jobs.filter((job) => {
+    const matchesSearch =
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (job.description && job.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesStatus = statusFilter === "all" || job.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   if (loading) {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-xs font-medium text-muted-foreground">Loading job list...</p>
+        <p className="text-xs font-medium text-muted-foreground">Loading job positions...</p>
       </div>
     );
   }
 
-  const filteredJobs = jobs.filter((job) => {
-    const matchSearch = job.title.toLowerCase().includes(search.toLowerCase());
-    const matchStatus =
-      statusFilter === "all" || job.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
-
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 sm:space-y-8 page-enter">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            Job Openings Management
+            {t("jobs_title")}
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Manage active positions, AI screening criteria, and custom recruitment workflows
+            {t("jobs_subtitle")}
           </p>
         </div>
 
-        <Link
-          href="/jobs/create"
-          className={cn(buttonVariants({ size: "sm" }), "h-9 gap-1.5 text-xs rounded-xl shadow-lg shadow-primary/20 w-full sm:w-auto justify-center")}
-        >
-          <Plus className="w-4 h-4" />
-          Create New Job
+        <Link href="/jobs/create">
+          <Button size="sm" className="gap-2 h-9 text-xs rounded-xl shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">
+            <Plus className="w-4 h-4" />
+            {t("jobs_create_btn")}
+          </Button>
         </Link>
       </div>
 
-      {/* Filters Bar */}
-      <div className="p-3.5 sm:p-4 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 shadow-sm">
-        <div className="relative flex-1 w-full sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      {/* Controls Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl border border-border/80 bg-card shadow-sm">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search job title or position..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9 text-xs rounded-xl bg-muted/30 border-border/60 w-full"
+            placeholder={t("jobs_search_placeholder")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-9 text-xs rounded-xl bg-muted/30"
           />
         </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-          <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val ?? "all")}>
-            <SelectTrigger className="w-[140px] sm:w-[160px] h-9 text-xs rounded-xl">
-              <SelectValue placeholder="Filter Status" />
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <Select value={statusFilter} onValueChange={(val: any) => setStatusFilter(val)}>
+            <SelectTrigger className="w-full sm:w-40 text-xs h-9 rounded-xl">
+              <SelectValue placeholder={t("jobs_filter_all")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">🟢 Active</SelectItem>
-              <SelectItem value="closed">⚪ Closed</SelectItem>
+              <SelectItem value="all">{t("jobs_filter_all")}</SelectItem>
+              <SelectItem value="active">{t("jobs_filter_active")}</SelectItem>
+              <SelectItem value="closed">{t("jobs_filter_closed")}</SelectItem>
             </SelectContent>
           </Select>
-
-          <Badge variant="outline" className="text-xs px-3 py-1.5 font-semibold bg-muted/20 border-border shrink-0">
-            Total: {filteredJobs.length}
-          </Badge>
         </div>
       </div>
 
       {/* Jobs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-        {filteredJobs.map((job: any) => {
-          const totalCandidates = job.candidate_count || 0;
-          const qualCount = job.qualified_count || 0;
-          const qualRatio = totalCandidates > 0 ? Math.round((qualCount / totalCandidates) * 100) : 0;
-
-          return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {filteredJobs.length === 0 ? (
+          <div className="col-span-full p-12 text-center border border-dashed border-border/80 rounded-2xl space-y-3">
+            <Briefcase className="w-8 h-8 text-muted-foreground mx-auto" />
+            <p className="text-xs font-semibold text-muted-foreground">No job positions found.</p>
+            <Link href="/jobs/create">
+              <Button size="sm" variant="outline" className="text-xs rounded-xl gap-1.5 mt-2">
+                <Plus className="w-3.5 h-3.5" />
+                {t("jobs_create_btn")}
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          filteredJobs.map((job) => (
             <div
               key={job.id}
-              className="group relative flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-sm hover:shadow-xl hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+              className="rounded-2xl border border-border/80 bg-card hover:border-primary/40 transition-all p-5 space-y-4 shadow-sm flex flex-col justify-between group"
             >
-              {/* Top ambient glow bar */}
-              <div
-                className={cn(
-                  "absolute top-0 left-0 right-0 h-1 transition-colors",
-                  job.status === "active" ? "bg-gradient-to-r from-emerald-500 via-primary to-indigo-500" : "bg-muted"
-                )}
-              />
-
-              <div>
-                {/* Header */}
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="min-w-0 flex-1">
-                    <Link
-                      href={`/jobs/${job.id}`}
-                      className="text-base font-bold group-hover:text-primary transition-colors line-clamp-1 flex items-center gap-1.5"
-                    >
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={job.status === "active" ? "secondary" : "outline"}
+                        className={job.status === "active" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] font-bold" : "text-[10px]"}
+                      >
+                        {job.status === "active" ? "🟢 Active" : "⚪ Closed"}
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {t("jobs_passing_grade")}: <strong className="text-primary">{job.passing_grade}%</strong>
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
                       {job.title}
-                    </Link>
-                    <p className="text-[11px] text-muted-foreground font-mono mt-0.5">
-                      Created {format(new Date(job.created_at), "MMM d, yyyy")}
-                    </p>
+                    </h3>
                   </div>
 
-                  <Badge
-                    variant={job.status === "active" ? "default" : "secondary"}
-                    className={cn(
-                      "text-[10px] shrink-0 font-bold px-2.5 py-0.5 rounded-full border",
-                      job.status === "active"
-                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                        : "bg-muted text-muted-foreground border-border"
-                    )}
-                  >
-                    {job.status === "active" ? "🟢 Active" : "Closed"}
-                  </Badge>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg shrink-0">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent align="end" className="w-48 p-1 rounded-xl shadow-xl">
+                      <DropdownMenuLabel className="text-xs">Position Actions</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => handleCopyAlias(job)}
+                        className="text-xs gap-2 cursor-pointer"
+                      >
+                        {copiedId === job.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                        {t("jobs_copy_alias")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="p-0">
+                        <Link href={`/apply/${job.id}`} target="_blank" className="w-full px-2 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
+                          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                          {t("jobs_public_form")}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {job.status === "active" && (
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedJob(job);
+                            setCloseDialogOpen(true);
+                          }}
+                          className="text-xs gap-2 text-amber-600 dark:text-amber-400 cursor-pointer"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          Close Position
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedJob(job);
+                          setDeleteDialogOpen(true);
+                        }}
+                        className="text-xs gap-2 text-destructive focus:text-destructive cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Delete Job
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
-                {/* Description */}
-                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-4">
-                  {job.description || "No short description provided."}
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                  {job.description || "No description provided."}
                 </p>
 
-                {/* Qualification Progress Bar */}
-                <div className="space-y-1.5 mb-5 p-3 rounded-xl bg-muted/20 border border-border/50">
-                  <div className="flex items-center justify-between text-xs font-semibold">
-                    <span className="text-muted-foreground flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-primary" />
-                      {totalCandidates} Applicants
-                    </span>
-                    <span className="text-emerald-500 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      {qualCount} Qualified ({qualRatio}%)
-                    </span>
+                {job.work_address && (
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
+                    <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <span className="truncate">{job.work_address}</span>
                   </div>
-                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-emerald-500 to-primary transition-all duration-500"
-                      style={{ width: `${qualRatio}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Passing Grade & Stage Type */}
-                <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
-                  <div className="px-3 py-2 rounded-xl bg-primary/5 border border-primary/10">
-                    <p className="text-[10px] text-muted-foreground uppercase font-semibold">Passing Grade</p>
-                    <p className="text-sm font-extrabold text-primary font-mono mt-0.5">{job.passing_grade} Pts</p>
-                  </div>
-                  <div className="px-3 py-2 rounded-xl bg-purple-500/5 border border-purple-500/10">
-                    <p className="text-[10px] text-muted-foreground uppercase font-semibold">Stage Scheme</p>
-                    <p className="text-xs font-bold text-purple-600 dark:text-purple-400 mt-0.5 flex items-center gap-1 truncate">
-                      <Layers className="w-3 h-3 shrink-0" />
-                      {job.use_custom_stages ? "Custom" : "Default"}
-                    </p>
-                  </div>
-                </div>
+                )}
               </div>
 
-              {/* Bottom Actions Bar */}
-              <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-2">
-                <Tooltip>
-                  <TooltipTrigger
-                    onClick={() => copyToClipboard(job.alias_email, job.id)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/40 hover:bg-muted text-xs text-muted-foreground hover:text-foreground transition-colors flex-1 min-w-0 border border-border/50"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <span className="truncate font-mono text-[10px]">
-                      {job.alias_email}
-                    </span>
-                    {copiedId === job.id ? (
-                      <Check className="w-3 h-3 text-emerald-500 shrink-0" />
-                    ) : (
-                      <Copy className="w-3 h-3 shrink-0 opacity-60 group-hover:opacity-100" />
-                    )}
-                  </TooltipTrigger>
-                  <TooltipContent className="text-xs">
-                    {copiedId === job.id ? "Copied!" : "Copy Ingestion Email Alias"}
-                  </TooltipContent>
-                </Tooltip>
+              <div className="pt-3 border-t border-border/60 space-y-3">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2 rounded-xl bg-muted/20 border border-border/60 text-center">
+                    <span className="text-[10px] text-muted-foreground block font-medium">Total Applicants</span>
+                    <span className="text-sm font-bold font-mono text-foreground">{job.candidate_count || 0}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+                    <span className="text-[10px] text-muted-foreground block font-medium">Qualified</span>
+                    <span className="text-sm font-bold font-mono text-emerald-500">{job.qualified_count || 0}</span>
+                  </div>
+                </div>
 
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Link
-                        href={`/apply/${job.id}`}
-                        target="_blank"
-                        className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors border border-border/50 shrink-0"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </Link>
-                    }
-                  />
-                  <TooltipContent className="text-xs">Public Application Form</TooltipContent>
-                </Tooltip>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <button className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors border border-border/50 shrink-0">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    }
-                  />
-                  <DropdownMenuContent align="end" className="w-48 p-1 shadow-xl rounded-xl">
-                    <DropdownMenuItem
-                      onClick={() => (window.location.href = `/jobs/${job.id}`)}
-                      className="text-xs gap-2 py-2 cursor-pointer font-medium"
-                    >
-                      <Sparkles className="w-4 h-4 text-primary" />
-                      Open Job Pipeline
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setSelectedJob(job);
-                        setIsCloseDialogOpen(true);
-                      }}
-                      className="text-xs gap-2 py-2 text-amber-600 dark:text-amber-400 cursor-pointer"
-                      disabled={job.status === "closed"}
-                    >
-                      <Ban className="w-4 h-4" />
-                      Close Position
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setSelectedJob(job);
-                        setIsDeleteDialogOpen(true);
-                      }}
-                      className="text-xs gap-2 py-2 text-destructive font-semibold cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete Permanently
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Link href={`/jobs/${job.id}`}>
+                  <Button variant="secondary" size="sm" className="w-full text-xs h-9 rounded-xl gap-1.5 font-bold group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                    View Candidate Pipeline
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
             </div>
-          );
-        })}
+          ))
+        )}
       </div>
 
-      {filteredJobs.length === 0 && (
-        <div className="text-center py-16 bg-muted/10 rounded-2xl border border-dashed border-border/60">
-          <Briefcase className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm font-semibold">No job positions found.</p>
-          <p className="text-xs text-muted-foreground mt-1">Try adjusting your search query or create a new job position.</p>
-        </div>
-      )}
-
       {/* Delete Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-base text-destructive flex items-center gap-2">
+            <DialogTitle className="text-base font-bold text-destructive flex items-center gap-2">
               <Trash2 className="w-5 h-5" />
-              Delete Job Permanently?
+              {t("jobs_delete_dialog_title")}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              This action cannot be undone. All applicant records and AI analysis data for <strong>{selectedJob?.title}</strong> will be permanently deleted from the system.
+              Are you sure you want to delete position <strong>{selectedJob?.title}</strong>? All candidate data under this job will be permanently removed.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="pt-4">
-            <DialogClose>
-              <Button variant="outline" size="sm" disabled={isProcessing} className="text-xs rounded-xl">Cancel</Button>
-            </DialogClose>
-            <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isProcessing} className="text-xs rounded-xl">
-              {isProcessing ? "Deleting..." : "Yes, Delete Permanently"}
+          <DialogFooter className="pt-2">
+            <Button variant="outline" size="sm" onClick={() => setDeleteDialogOpen(false)} className="text-xs rounded-xl">
+              Cancel
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleDeleteJob} disabled={actionLoading} className="text-xs rounded-xl gap-1.5">
+              {actionLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              Delete Permanently
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Close Dialog */}
-      <Dialog open={isCloseDialogOpen} onOpenChange={setIsCloseDialogOpen}>
+      {/* Close Job Dialog */}
+      <Dialog open={closeDialogOpen} onOpenChange={setCloseDialogOpen}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-base flex items-center gap-2">
-              <Ban className="w-5 h-5 text-amber-500" />
-              Close Job Position?
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <XCircle className="w-5 h-5 text-amber-500" />
+              {t("jobs_close_dialog_title")}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Position <strong>{selectedJob?.title}</strong> will no longer receive new applications from ingestion email aliases or public forms.
+              Closing this position will prevent new applicants from submitting via public application forms. Existing pipeline candidates can still be processed.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="pt-4">
-            <DialogClose>
-              <Button variant="outline" size="sm" disabled={isProcessing} className="text-xs rounded-xl">Cancel</Button>
-            </DialogClose>
-            <Button size="sm" onClick={handleClose} disabled={isProcessing} className="text-xs rounded-xl">
-              {isProcessing ? "Processing..." : "Yes, Close Position"}
+          <DialogFooter className="pt-2">
+            <Button variant="outline" size="sm" onClick={() => setCloseDialogOpen(false)} className="text-xs rounded-xl">
+              Cancel
+            </Button>
+            <Button variant="secondary" size="sm" onClick={handleCloseJob} disabled={actionLoading} className="text-xs rounded-xl gap-1.5 font-bold">
+              {actionLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              Close Position
             </Button>
           </DialogFooter>
         </DialogContent>
