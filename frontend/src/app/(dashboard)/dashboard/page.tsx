@@ -36,7 +36,6 @@ import {
   Cell,
 } from "recharts";
 import { format } from "date-fns";
-import { id as localeId } from "date-fns/locale";
 
 const CHART_COLORS = ["#10b981", "#6366f1", "#f43f5e"];
 
@@ -88,7 +87,7 @@ export default function DashboardPage() {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-xs font-medium text-muted-foreground">Memuat data dashboard...</p>
+        <p className="text-xs font-medium text-muted-foreground">Loading dashboard overview...</p>
       </div>
     );
   }
@@ -103,15 +102,15 @@ export default function DashboardPage() {
   ];
 
   const trendData = [
-    { month: "Jan", pelamar: 12, qualified: 8 },
-    { month: "Feb", pelamar: 24, qualified: 16 },
-    { month: "Mar", pelamar: 18, qualified: 12 },
-    { month: "Apr", pelamar: 35, qualified: 26 },
-    { month: "Mei", pelamar: 42, qualified: 31 },
-    { month: "Jun", pelamar: totalApplicants || 50, qualified: totalQualified || 38 },
+    { month: "Jan", applicants: 12, qualified: 8 },
+    { month: "Feb", applicants: 24, qualified: 16 },
+    { month: "Mar", applicants: 18, qualified: 12 },
+    { month: "Apr", applicants: 35, qualified: 26 },
+    { month: "May", applicants: 42, qualified: 31 },
+    { month: "Jun", applicants: totalApplicants || 50, qualified: totalQualified || 38 },
   ];
 
-  const displayName = profile?.full_name || profile?.email?.split("@")[0] || "Tim HR";
+  const displayName = profile?.full_name || profile?.email?.split("@")[0] || "HR Team";
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 sm:space-y-8 page-enter">
@@ -124,10 +123,10 @@ export default function DashboardPage() {
               Obsidian Intelligence Engine Active
             </div>
             <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight">
-              Selamat datang kembali, <span className="gradient-text">{displayName}</span>! 👋
+              Welcome back, <span className="gradient-text">{displayName}</span>! 👋
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Ringkasan aktivitas rekrutmen perusahaan Anda hari ini. {activeJobsCount} lowongan aktif sedang menerima dan memproses berkas kandidat secara otomatis.
+              Here is your company's recruitment overview today. {activeJobsCount} active job openings are receiving and processing applicant files automatically.
             </p>
           </div>
 
@@ -137,7 +136,7 @@ export default function DashboardPage() {
               className={cn(buttonVariants({ size: "sm" }), "h-10 text-xs rounded-xl shadow-lg shadow-primary/20 gap-1.5 w-full sm:w-auto justify-center")}
             >
               <Plus className="w-4 h-4" />
-              Buat Lowongan Baru
+              Create New Job
             </Link>
           </div>
         </div>
@@ -146,27 +145,27 @@ export default function DashboardPage() {
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
-          label="Lowongan Aktif"
+          label="Active Jobs"
           value={activeJobsCount}
           icon={Briefcase}
           variant="primary"
           trend={{ value: 12, positive: true }}
         />
         <StatCard
-          label="Total Pelamar"
+          label="Total Applicants"
           value={totalApplicants}
           icon={Users}
           trend={{ value: 24, positive: true }}
         />
         <StatCard
-          label="Kandidat Qualified"
+          label="Qualified Candidates"
           value={totalQualified}
           icon={CheckCircle2}
           variant="success"
           trend={{ value: 18, positive: true }}
         />
         <StatCard
-          label="Mandat Wawancara"
+          label="Interview Mandates"
           value={interviews.length}
           icon={Calendar}
           variant="warning"
@@ -181,14 +180,14 @@ export default function DashboardPage() {
             <div className="space-y-0.5">
               <h3 className="text-sm font-bold flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary" />
-                Tren Pertumbuhan Pelamar & Qualified Rate
+                Applicant Growth Trend & Qualified Rate
               </h3>
               <p className="text-xs text-muted-foreground">
-                Perbandingan total berkas masuk vs kandidat yang memenuhi kriteria
+                Comparison of total applications vs candidates meeting qualifications
               </p>
             </div>
             <Badge variant="outline" className="text-[10px] hidden sm:inline-flex">
-              6 Bulan Terakhir
+              Last 6 Months
             </Badge>
           </div>
 
@@ -196,7 +195,7 @@ export default function DashboardPage() {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trendData}>
                 <defs>
-                  <linearGradient id="colorPelamar" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorApplicants" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                   </linearGradient>
@@ -219,17 +218,17 @@ export default function DashboardPage() {
                 />
                 <Area
                   type="monotone"
-                  dataKey="pelamar"
-                  name="Total Pelamar"
+                  dataKey="applicants"
+                  name="Total Applicants"
                   stroke="var(--primary)"
                   fillOpacity={1}
-                  fill="url(#colorPelamar)"
+                  fill="url(#colorApplicants)"
                   strokeWidth={2}
                 />
                 <Area
                   type="monotone"
                   dataKey="qualified"
-                  name="Qualified AI"
+                  name="AI Qualified"
                   stroke="#10b981"
                   fillOpacity={1}
                   fill="url(#colorQualified)"
@@ -245,10 +244,10 @@ export default function DashboardPage() {
           <div className="space-y-0.5">
             <h3 className="text-sm font-bold flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-emerald-500" />
-              Rasio Kualifikasi AI
+              AI Qualification Ratio
             </h3>
             <p className="text-xs text-muted-foreground">
-              Proporsi kandidat lulus passing grade
+              Proportion of candidates passing the score threshold
             </p>
           </div>
 
@@ -299,17 +298,17 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold flex items-center gap-2">
               <UserCheck className="w-4 h-4 text-purple-500" />
-              Agenda Wawancara Anda
+              Your Interview Schedule
             </h3>
             <Badge variant="secondary" className="text-[10px] font-semibold">
-              {interviews.length} Mandat
+              {interviews.length} Mandates
             </Badge>
           </div>
 
           <div className="space-y-3">
             {interviews.length === 0 ? (
               <div className="text-center py-8 text-xs text-muted-foreground border border-dashed border-border/60 rounded-xl">
-                Belum ada jadwal wawancara yang dimandatkan untuk Anda.
+                No interview schedules assigned to you yet.
               </div>
             ) : (
               interviews.slice(0, 4).map((int: any) => (
@@ -322,7 +321,7 @@ export default function DashboardPage() {
                     <p className="text-[11px] text-muted-foreground truncate">{int.job_title}</p>
                     {int.scheduled_at && (
                       <p className="text-[10px] text-purple-500 font-mono font-semibold">
-                        📅 {format(new Date(int.scheduled_at), "d MMM yyyy, HH:mm", { locale: localeId })} WIB
+                        📅 {format(new Date(int.scheduled_at), "MMM d, yyyy, HH:mm")}
                       </p>
                     )}
                   </div>
@@ -343,13 +342,13 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" />
-              Kandidat Pelamar Terbaru
+              Recent Applicants Feed
             </h3>
             <Link
               href="/candidates"
               className="text-xs text-primary hover:underline font-semibold flex items-center gap-1"
             >
-              Lihat Semua <ArrowRight className="w-3 h-3" />
+              View All <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
@@ -357,18 +356,18 @@ export default function DashboardPage() {
             <table className="w-full text-xs text-left">
               <thead>
                 <tr className="border-b border-border/60 bg-muted/20 text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">
-                  <th className="p-3">Nama Pelamar</th>
-                  <th className="p-3">Lowongan</th>
-                  <th className="p-3 text-center">Skor AI</th>
+                  <th className="p-3">Applicant Name</th>
+                  <th className="p-3">Job Position</th>
+                  <th className="p-3 text-center">AI Score</th>
                   <th className="p-3 text-center">Status</th>
-                  <th className="p-3 text-right">Aksi</th>
+                  <th className="p-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
                 {candidates.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      Belum ada pelamar baru.
+                      No recent applicants.
                     </td>
                   </tr>
                 ) : (

@@ -42,7 +42,6 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { ScheduleInterviewModal } from "@/components/ui/schedule-interview-modal";
 import { AIInsightModal } from "@/components/ui/ai-insight-modal";
 import { format } from "date-fns";
-import { id as localeId } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
@@ -104,17 +103,17 @@ export default function CandidatesPage() {
       if (data.success) {
         await loadData();
       } else {
-        alert(data.message || data.error || "Gagal memajukan kandidat.");
+        alert(data.message || data.error || "Failed to advance candidate.");
       }
     } catch (err: any) {
-      alert("Gagal: " + err.message);
+      alert("Failed: " + err.message);
     } finally {
       setAdvancingId(null);
     }
   };
 
   const handleReject = async (candidateId: string, candidateName: string) => {
-    if (!confirm(`Apakah Anda yakin ingin menolak ${candidateName}?`)) return;
+    if (!confirm(`Are you sure you want to reject ${candidateName}?`)) return;
 
     try {
       const res = await fetch(`/api/candidates/${candidateId}/reject`, {
@@ -127,36 +126,36 @@ export default function CandidatesPage() {
         await loadData();
       } else {
         const errData = await res.json();
-        alert(errData.error || "Gagal menolak kandidat.");
+        alert(errData.error || "Failed to reject candidate.");
       }
     } catch (err: any) {
-      alert("Gagal: " + err.message);
+      alert("Failed: " + err.message);
     }
   };
 
   const handleExportCSV = () => {
     if (filteredCandidates.length === 0) {
-      alert("Tidak ada data kandidat untuk di-export.");
+      alert("No candidate data to export.");
       return;
     }
 
     const headers = [
       "ID",
-      "Nama Lengkap",
+      "Full Name",
       "Email",
-      "Telepon",
-      "Posisi Lowongan",
-      "Skor AI",
-      "Status Mandatory",
-      "Tahapan",
-      "Staf SR Ditugaskan",
-      "Tanggal Apply",
+      "Phone",
+      "Job Position",
+      "AI Score",
+      "Mandatory Status",
+      "Current Stage",
+      "Assigned SR Staff",
+      "Applied Date",
     ];
 
     const rows = filteredCandidates.map((c) => {
       const mandatoryPassed = c.analysis_result?.mandatory_check?.every((m: any) => m.passed)
-        ? "LULUS"
-        : "GAGAL";
+        ? "PASSED"
+        : "FAILED";
 
       return [
         `"${c.id}"`,
@@ -178,7 +177,7 @@ export default function CandidatesPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `semua-kandidat-${format(new Date(), "yyyyMMdd")}.csv`);
+    link.setAttribute("download", `all-candidates-${format(new Date(), "yyyyMMdd")}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -207,7 +206,7 @@ export default function CandidatesPage() {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-xs font-medium text-muted-foreground">Memuat seluruh data kandidat...</p>
+        <p className="text-xs font-medium text-muted-foreground">Loading all candidates data...</p>
       </div>
     );
   }
@@ -219,10 +218,10 @@ export default function CandidatesPage() {
         <div>
           <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            Daftar Seluruh Kandidat
+            All Candidates List
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Kelola dan pantau seluruh pelamar kerja lintas lowongan perusahaan Anda
+            Manage and track all applicants across your company's job positions
           </p>
         </div>
 
@@ -255,10 +254,10 @@ export default function CandidatesPage() {
           <div className="flex items-center gap-3">
             <h2 className="text-sm font-bold flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-primary" />
-              Filter Pelamar
+              Filter Applicants
             </h2>
             <Badge variant="secondary" className="text-xs font-semibold">
-              {filteredCandidates.length} Terfilter
+              {filteredCandidates.length} Filtered
             </Badge>
           </div>
 
@@ -267,7 +266,7 @@ export default function CandidatesPage() {
             <div className="relative w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Cari nama / email..."
+                placeholder="Search name/email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-8 w-full sm:w-[170px] text-xs rounded-xl bg-muted/30"
@@ -277,10 +276,10 @@ export default function CandidatesPage() {
             {/* Filter Lowongan */}
             <Select value={selectedJobId} onValueChange={(val: any) => setSelectedJobId(val || "all")}>
               <SelectTrigger className="h-8 text-xs w-full sm:w-[160px] rounded-xl">
-                <SelectValue placeholder="Pilih Lowongan" />
+                <SelectValue placeholder="Select Job Position" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Lowongan</SelectItem>
+                <SelectItem value="all">All Job Positions</SelectItem>
                 {jobs.map((j) => (
                   <SelectItem key={j.id} value={j.id}>
                     {j.title}
@@ -292,11 +291,11 @@ export default function CandidatesPage() {
             {/* Filter Staff SR */}
             <Select value={selectedStaffFilter} onValueChange={(val: any) => setSelectedStaffFilter(val || "all")}>
               <SelectTrigger className="h-8 text-xs w-full sm:w-[150px] rounded-xl">
-                <SelectValue placeholder="Filter Staf SR" />
+                <SelectValue placeholder="Filter SR Staff" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Staf SR</SelectItem>
-                <SelectItem value="unassigned">Belum Ada Mandat</SelectItem>
+                <SelectItem value="all">All SR Staff</SelectItem>
+                <SelectItem value="unassigned">Unassigned Mandate</SelectItem>
                 {teamMembers.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.full_name || m.email}
@@ -317,7 +316,7 @@ export default function CandidatesPage() {
                 htmlFor="qualified-filter"
                 className="text-xs font-bold text-emerald-500 cursor-pointer whitespace-nowrap"
               >
-                Hanya Qualified
+                Qualified Only
               </Label>
             </div>
           </div>
@@ -328,21 +327,21 @@ export default function CandidatesPage() {
           <table className="w-full text-xs text-left">
             <thead>
               <tr className="border-b border-border/60 bg-muted/20 text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">
-                <th className="p-4">Kandidat</th>
-                <th className="p-4">Posisi Lowongan</th>
-                <th className="p-4 text-center">Skor AI</th>
+                <th className="p-4">Candidate</th>
+                <th className="p-4">Job Position</th>
+                <th className="p-4 text-center">AI Score</th>
                 <th className="p-4 text-center">Mandatory</th>
-                <th className="p-4">Penguji SR Staff</th>
-                <th className="p-4 text-center">Tahapan Saat Ini</th>
-                <th className="p-4">Tanggal Apply</th>
-                <th className="p-4 text-right">Aksi</th>
+                <th className="p-4">Assigned SR Staff</th>
+                <th className="p-4 text-center">Current Stage</th>
+                <th className="p-4">Applied Date</th>
+                <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
               {filteredCandidates.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="p-12 text-center text-muted-foreground">
-                    Tidak ada data kandidat yang cocok dengan filter.
+                    No candidate records matching the selected filters.
                   </td>
                 </tr>
               ) : (
@@ -388,18 +387,18 @@ export default function CandidatesPage() {
                             />
                           </TooltipTrigger>
                           <TooltipContent className="text-xs">
-                            Klik untuk melihat insight AI
+                            Click to view AI insight
                           </TooltipContent>
                         </Tooltip>
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
                         {mandatoryPassed ? (
                           <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px]">
-                            ✓ Lulus
+                            ✓ Passed
                           </Badge>
                         ) : (
                           <Badge className="bg-destructive/15 text-destructive text-[10px]">
-                            ✗ Gagal
+                            ✗ Failed
                           </Badge>
                         )}
                       </td>
@@ -413,16 +412,14 @@ export default function CandidatesPage() {
                             {c.assigned_staff_name}
                           </Badge>
                         ) : (
-                          <span className="text-muted-foreground text-[11px]">Belum Ada</span>
+                          <span className="text-muted-foreground text-[11px]">Unassigned</span>
                         )}
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
                         <StatusBadge status={currentStageName} />
                       </td>
                       <td className="p-4 text-[11px] text-muted-foreground font-mono whitespace-nowrap">
-                        {format(new Date(c.created_at), "d MMM yyyy", {
-                          locale: localeId,
-                        })}
+                        {format(new Date(c.created_at), "MMM d, yyyy")}
                       </td>
                       <td className="p-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-1">
@@ -438,7 +435,7 @@ export default function CandidatesPage() {
                                   <ChevronRight className="w-4 h-4" />
                                 )}
                               </TooltipTrigger>
-                              <TooltipContent className="text-xs">Majukan Tahapan</TooltipContent>
+                              <TooltipContent className="text-xs">Advance Stage</TooltipContent>
                             </Tooltip>
                           )}
 
@@ -450,7 +447,7 @@ export default function CandidatesPage() {
                               >
                                 <Ban className="w-4 h-4" />
                               </TooltipTrigger>
-                              <TooltipContent className="text-xs">Tolak Kandidat</TooltipContent>
+                              <TooltipContent className="text-xs">Reject Candidate</TooltipContent>
                             </Tooltip>
                           )}
 
@@ -466,7 +463,7 @@ export default function CandidatesPage() {
                             >
                               <Calendar className="w-4 h-4" />
                             </TooltipTrigger>
-                            <TooltipContent className="text-xs">Beri Mandat / Jadwal Wawancara</TooltipContent>
+                            <TooltipContent className="text-xs">Assign Mandate / Schedule Interview</TooltipContent>
                           </Tooltip>
 
                           <Tooltip>
@@ -476,7 +473,7 @@ export default function CandidatesPage() {
                             >
                               <Sparkles className="w-4 h-4" />
                             </TooltipTrigger>
-                            <TooltipContent className="text-xs">Insight AI</TooltipContent>
+                            <TooltipContent className="text-xs">AI Insight</TooltipContent>
                           </Tooltip>
 
                           <Link

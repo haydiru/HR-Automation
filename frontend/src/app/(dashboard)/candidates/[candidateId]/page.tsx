@@ -34,7 +34,6 @@ import { ScoreCircle } from "@/components/ui/score-circle";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ScheduleInterviewModal } from "@/components/ui/schedule-interview-modal";
 import { format } from "date-fns";
-import { id as localeId } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
@@ -130,17 +129,17 @@ export default function CandidateDetailPage({
       if (result.success) {
         await fetchAllData();
       } else {
-        alert(result.message || result.error || "Gagal memajukan kandidat.");
+        alert(result.message || result.error || "Failed to advance candidate.");
       }
     } catch (err: any) {
-      alert("Gagal: " + err.message);
+      alert("Failed: " + err.message);
     } finally {
       setAdvancing(false);
     }
   };
 
   const handleReject = async () => {
-    if (!confirm(`Apakah Anda yakin ingin menolak ${data?.full_name}?`)) return;
+    if (!confirm(`Are you sure you want to reject ${data?.full_name}?`)) return;
     setRejecting(true);
     try {
       const res = await fetch(`/api/candidates/${candidateId}/reject`, {
@@ -152,10 +151,10 @@ export default function CandidateDetailPage({
         await fetchAllData();
       } else {
         const errData = await res.json();
-        alert(errData.error || "Gagal menolak kandidat.");
+        alert(errData.error || "Failed to reject candidate.");
       }
     } catch (err: any) {
-      alert("Gagal: " + err.message);
+      alert("Failed: " + err.message);
     } finally {
       setRejecting(false);
     }
@@ -189,7 +188,7 @@ export default function CandidateDetailPage({
     const mandatoryHtml = analysis?.mandatory_check
       ?.map(
         (item: any) =>
-          `<tr><td style="padding:6px 10px;border:1px solid #ddd">${item.criteria}</td><td style="padding:6px 10px;border:1px solid #ddd;text-align:center">${item.passed ? "✅ Lulus" : "❌ Gagal"}</td><td style="padding:6px 10px;border:1px solid #ddd">${item.note || "-"}</td></tr>`
+          `<tr><td style="padding:6px 10px;border:1px solid #ddd">${item.criteria}</td><td style="padding:6px 10px;border:1px solid #ddd;text-align:center">${item.passed ? "✅ Passed" : "❌ Failed"}</td><td style="padding:6px 10px;border:1px solid #ddd">${item.note || "-"}</td></tr>`
       )
       .join("") || "";
 
@@ -201,7 +200,7 @@ export default function CandidateDetailPage({
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Ringkasan Kandidat - ${data.full_name}</title>
+        <title>Candidate Summary - ${data.full_name}</title>
         <style>
           body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; max-width: 800px; margin: 0 auto; }
           h1 { font-size: 20px; margin-bottom: 4px; }
@@ -219,34 +218,34 @@ export default function CandidateDetailPage({
       <body>
         <h1>${data.full_name}</h1>
         <div class="meta">
-          ${data.email} · ${data.phone || "-"} · Lowongan: ${data.job_title || "-"}<br/>
-          Tanggal Apply: ${format(new Date(data.created_at), "d MMMM yyyy, HH:mm", { locale: localeId })}
-          ${data.domicile_address ? `<br/>Domisili: ${data.domicile_address}` : ""}
-          ${data.distance_to_work != null ? ` (${data.distance_to_work.toFixed(1)} km dari kantor)` : ""}
+          ${data.email} · ${data.phone || "-"} · Position: ${data.job_title || "-"}<br/>
+          Applied Date: ${format(new Date(data.created_at), "MMM d, yyyy, HH:mm")}
+          ${data.domicile_address ? `<br/>Domicile: ${data.domicile_address}` : ""}
+          ${data.distance_to_work != null ? ` (${data.distance_to_work.toFixed(1)} km from office)` : ""}
         </div>
 
         <div class="score-box">
           <div class="score">${analysis?.total_score ?? "-"}</div>
-          <div class="label">Skor AI${data.is_qualified ? " — ✅ QUALIFIED" : " — ❌ NOT QUALIFIED"}</div>
+          <div class="label">AI Match Score${data.is_qualified ? " — ✅ QUALIFIED" : " — ❌ NOT QUALIFIED"}</div>
         </div>
 
-        <h2>Syarat Wajib (Mandatory Check)</h2>
+        <h2>Mandatory Requirements Check</h2>
         <table>
-          <thead><tr><th>Kriteria</th><th style="text-align:center">Status</th><th>Catatan</th></tr></thead>
+          <thead><tr><th>Criteria</th><th style="text-align:center">Status</th><th>Note</th></tr></thead>
           <tbody>${mandatoryHtml}</tbody>
         </table>
 
-        <h2>Keahlian Ditemukan</h2>
-        <div>${skillsHtml || "<em>Tidak ada data keahlian</em>"}</div>
+        <h2>Skills Found</h2>
+        <div>${skillsHtml || "<em>No skills detected</em>"}</div>
 
-        <h2>Analisis AI</h2>
+        <h2>AI Analysis & Reasoning</h2>
         <p style="font-size:13px;line-height:1.6">${analysis?.reasoning || "-"}</p>
 
-        ${hrNotes ? `<h2>Catatan Internal HRD</h2><div class="notes-section">${hrNotes}</div>` : ""}
-        ${evaluationComments ? `<h2>Hasil Evaluasi Wawancara</h2><div class="notes-section">${evaluationComments}</div>` : ""}
+        ${hrNotes ? `<h2>Internal HR Notes</h2><div class="notes-section">${hrNotes}</div>` : ""}
+        ${evaluationComments ? `<h2>Interview Evaluation Comments</h2><div class="notes-section">${evaluationComments}</div>` : ""}
 
         <div style="margin-top:32px;padding-top:16px;border-top:1px solid #ddd;font-size:11px;color:#999;text-align:center">
-          Dicetak pada ${format(new Date(), "d MMMM yyyy, HH:mm", { locale: localeId })} — Obsidian Talent OS
+          Printed on ${format(new Date(), "MMM d, yyyy, HH:mm")} — Obsidian Talent OS
         </div>
       </body>
       </html>
@@ -261,7 +260,7 @@ export default function CandidateDetailPage({
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-xs font-medium text-muted-foreground">Memuat data kandidat...</p>
+        <p className="text-xs font-medium text-muted-foreground">Loading candidate profile...</p>
       </div>
     );
   }
@@ -269,7 +268,7 @@ export default function CandidateDetailPage({
   if (!data) {
     return (
       <div className="p-6 text-center">
-        <p className="text-muted-foreground text-sm">Kandidat tidak ditemukan.</p>
+        <p className="text-muted-foreground text-sm">Candidate profile not found.</p>
       </div>
     );
   }
@@ -290,7 +289,7 @@ export default function CandidateDetailPage({
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
       >
         <ArrowLeft className="w-4 h-4" />
-        Kembali ke Pipeline Lowongan {candidate.job_title}
+        Back to Candidate Pipeline for {candidate.job_title}
       </Link>
 
       {/* Hero Profile Header */}
@@ -315,12 +314,12 @@ export default function CandidateDetailPage({
             </span>
             <span className="flex items-center gap-1.5 bg-muted/30 px-2.5 py-1 rounded-lg border border-border/40">
               <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
-              {format(new Date(candidate.created_at), "d MMMM yyyy, HH:mm", { locale: localeId })}
+              {format(new Date(candidate.created_at), "MMM d, yyyy, HH:mm")}
             </span>
             {candidate.domicile_address && (
               <span className="flex items-center gap-1.5 text-xs text-primary bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20 font-medium">
                 <MapPin className="w-3.5 h-3.5 shrink-0" />
-                Domisili: {candidate.domicile_address}
+                Domicile: {candidate.domicile_address}
                 {candidate.distance_to_work !== null && candidate.distance_to_work !== undefined && (
                   <span className="font-bold">
                     &nbsp;({candidate.distance_to_work.toFixed(1)} km)
@@ -342,7 +341,7 @@ export default function CandidateDetailPage({
               className="gap-1.5 text-xs h-9 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 flex-1 md:flex-initial justify-center"
             >
               {advancing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4" />}
-              Majukan Tahapan
+              Advance Stage
             </Button>
           )}
 
@@ -355,7 +354,7 @@ export default function CandidateDetailPage({
               className="gap-1.5 text-xs h-9 rounded-xl shadow-lg shadow-destructive/20 flex-1 md:flex-initial justify-center"
             >
               {rejecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
-              Tolak
+              Reject Candidate
             </Button>
           )}
 
@@ -366,7 +365,7 @@ export default function CandidateDetailPage({
             className="gap-1.5 text-xs h-9 rounded-xl flex-1 md:flex-initial justify-center"
           >
             <CalendarDays className="w-4 h-4 text-purple-500" />
-            {candidate.assigned_to_user_id ? "Ubah Jadwal" : "Beri Mandat"}
+            {candidate.assigned_to_user_id ? "Reschedule / Assign" : "Assign Mandate"}
           </Button>
 
           <Button
@@ -376,7 +375,7 @@ export default function CandidateDetailPage({
             className="gap-1.5 text-xs h-9 rounded-xl flex-1 md:flex-initial justify-center"
           >
             <Printer className="w-4 h-4" />
-            Cetak PDF
+            Print PDF
           </Button>
         </div>
       </div>
@@ -387,7 +386,7 @@ export default function CandidateDetailPage({
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Progres Tahapan Seleksi Kandidat
+              Candidate Selection Stage Progress
             </h3>
           </div>
 
@@ -434,7 +433,7 @@ export default function CandidateDetailPage({
                 <div className="w-4 h-0.5 bg-destructive/40 shrink-0" />
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-xs font-semibold ring-2 ring-destructive shadow-sm">
                   <Ban className="w-4 h-4" />
-                  Ditolak
+                  Rejected
                 </div>
               </>
             )}
@@ -446,7 +445,7 @@ export default function CandidateDetailPage({
       <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm space-y-4">
         <div className="flex items-center gap-2 border-b border-border/60 pb-3">
           <UserCheck className="w-4 h-4 text-purple-500" />
-          <h3 className="text-sm font-bold">Penugasan Mandat & Status Wawancara</h3>
+          <h3 className="text-sm font-bold">Mandate Assignment & Interview Status</h3>
         </div>
 
         {candidate.assigned_to_user_id ? (
@@ -456,7 +455,7 @@ export default function CandidateDetailPage({
                 <UserCheck className="w-4 h-4 text-purple-500" />
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Penguji SR Staff</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Assigned SR Staff</p>
                 <p className="text-xs font-bold mt-0.5">{candidate.assigned_staff_name || "—"}</p>
               </div>
             </div>
@@ -466,11 +465,11 @@ export default function CandidateDetailPage({
                 <CalendarDays className="w-4 h-4 text-blue-500" />
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Jadwal Wawancara</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Interview Schedule</p>
                 <p className="text-xs font-bold mt-0.5">
                   {candidate.scheduled_at
-                    ? format(new Date(candidate.scheduled_at), "d MMM yyyy, HH:mm", { locale: localeId }) + " WIB"
-                    : "Belum Dijadwalkan"}
+                    ? format(new Date(candidate.scheduled_at), "MMM d, yyyy, HH:mm") + " WIB"
+                    : "Not Scheduled"}
                 </p>
               </div>
             </div>
@@ -480,7 +479,7 @@ export default function CandidateDetailPage({
                 <Video className="w-4 h-4 text-emerald-500" />
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Lokasi / Meeting</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Location / Meeting Link</p>
                 <p className="text-xs font-semibold mt-0.5 break-all">
                   {candidate.location || "—"}
                 </p>
@@ -492,9 +491,9 @@ export default function CandidateDetailPage({
                 <Clock className="w-4 h-4 text-amber-500" />
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Status Wawancara</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Interview Status</p>
                 <p className="text-xs font-bold mt-0.5">
-                  {candidate.interview_status || "Menunggu"}
+                  {candidate.interview_status || "Pending"}
                 </p>
               </div>
             </div>
@@ -503,7 +502,7 @@ export default function CandidateDetailPage({
           <div className="text-center py-6 bg-muted/10 rounded-xl border border-dashed border-border/60">
             <UserCheck className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
             <p className="text-xs text-muted-foreground">
-              Kandidat belum dimandatkan ke SR Staff.
+              Candidate has not been assigned to any SR staff member yet.
             </p>
             <Button
               variant="outline"
@@ -512,7 +511,7 @@ export default function CandidateDetailPage({
               onClick={() => setShowScheduleModal(true)}
             >
               <CalendarDays className="w-4 h-4" />
-              Beri Mandat & Jadwalkan Wawancara
+              Assign Mandate & Schedule Interview
             </Button>
           </div>
         )}
@@ -535,7 +534,7 @@ export default function CandidateDetailPage({
                 className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-7 text-xs rounded-lg gap-1.5")}
               >
                 <Download className="w-3.5 h-3.5" />
-                Unduh PDF
+                Download PDF
               </a>
             )}
           </div>
@@ -552,7 +551,7 @@ export default function CandidateDetailPage({
                   <div className="w-16 h-16 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto">
                     <FileText className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  <p className="text-xs text-muted-foreground">Dokumen CV tidak tersedia.</p>
+                  <p className="text-xs text-muted-foreground">CV document is unavailable.</p>
                 </div>
               </div>
             )}
@@ -595,7 +594,7 @@ export default function CandidateDetailPage({
           {/* Mandatory Check Breakdown */}
           <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 space-y-3 shadow-sm">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Evaluasi Syarat Wajib
+              Mandatory Requirements Evaluation
             </h3>
             <div className="space-y-2">
               {analysis.mandatory_check?.map((item: any, i: number) => (
@@ -650,7 +649,7 @@ export default function CandidateDetailPage({
           {/* Skills Found */}
           <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 space-y-3 shadow-sm">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Keahlian Ditemukan oleh AI
+              Skills Detected by AI
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {(analysis.skills_found || analysis.found_skills || []).map((skill: string) => (
@@ -669,7 +668,7 @@ export default function CandidateDetailPage({
           <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 space-y-3 shadow-sm">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
-              Analisis Pertimbangan AI
+              AI Analysis & Reasoning
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">
               {analysis.reasoning}
@@ -683,13 +682,13 @@ export default function CandidateDetailPage({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-bold">Catatan Internal HRD & Evaluasi Wawancara</h3>
+            <h3 className="text-sm font-bold">HR Internal Notes & Interview Evaluation</h3>
           </div>
           <div className="flex items-center gap-2 justify-end">
             {notesSaved && (
               <span className="text-xs text-emerald-500 flex items-center gap-1 animate-in fade-in duration-300 font-semibold">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Tersimpan!
+                Saved!
               </span>
             )}
             <Button
@@ -700,7 +699,7 @@ export default function CandidateDetailPage({
               className="gap-1.5 text-xs h-8 rounded-xl shadow-md shadow-primary/20"
             >
               {savingNotes ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              Simpan Catatan
+              Save Notes
             </Button>
           </div>
         </div>
@@ -708,24 +707,24 @@ export default function CandidateDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Catatan Internal HRD
+              Internal HR Notes
             </label>
             <Textarea
               value={hrNotes}
               onChange={(e) => setHrNotes(e.target.value)}
-              placeholder="Tulis catatan internal mengenai kandidat ini... (hanya terlihat oleh tim HRD)"
+              placeholder="Write internal notes about this candidate... (visible only to HR team)"
               className="min-h-[120px] text-xs rounded-xl resize-y"
             />
           </div>
 
           <div className="space-y-2">
             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Hasil Evaluasi Wawancara SR Staff
+              SR Staff Interview Evaluation Results
             </label>
             <Textarea
               value={evaluationComments}
               onChange={(e) => setEvaluationComments(e.target.value)}
-              placeholder="Tulis hasil evaluasi wawancara oleh penguji... (komentar, penilaian, rekomendasi)"
+              placeholder="Write interview evaluation comments... (assessments, feedback, recommendations)"
               className="min-h-[120px] text-xs rounded-xl resize-y"
             />
           </div>

@@ -34,12 +34,12 @@ export const navItems = [
     icon: LayoutDashboard,
   },
   {
-    label: "Lowongan",
+    label: "Jobs",
     href: "/jobs",
     icon: Briefcase,
   },
   {
-    label: "Semua Kandidat",
+    label: "All Candidates",
     href: "/candidates",
     icon: Users,
   },
@@ -169,13 +169,13 @@ export function Sidebar() {
                 )}
               >
                 <Settings className="w-4 h-4 shrink-0" />
-                {!collapsed && <span>Pengaturan</span>}
+                {!collapsed && <span>Settings</span>}
               </Link>
             }
           />
           {collapsed && (
             <TooltipContent side="right" className="text-xs font-medium">
-              Pengaturan
+              Settings
             </TooltipContent>
           )}
         </Tooltip>
@@ -188,13 +188,13 @@ export function Sidebar() {
                 className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer w-full"
               >
                 <LogOut className="w-4 h-4 shrink-0" />
-                {!collapsed && <span>Keluar</span>}
+                {!collapsed && <span>Log Out</span>}
               </button>
             }
           />
           {collapsed && (
             <TooltipContent side="right" className="text-xs font-medium">
-              Keluar
+              Log Out
             </TooltipContent>
           )}
         </Tooltip>

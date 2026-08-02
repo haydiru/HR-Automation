@@ -119,7 +119,7 @@ export default function StagesSettingsPage() {
           setModalOpen(false);
         } else {
           const errData = await res.json();
-          alert(`Gagal memperbarui tahapan: ${errData.error}`);
+          alert(`Failed to update stage: ${errData.error}`);
         }
       } else {
         const nextOrderIndex = stages.length + 1;
@@ -137,11 +137,11 @@ export default function StagesSettingsPage() {
           setModalOpen(false);
         } else {
           const errData = await res.json();
-          alert(`Gagal menambah tahapan: ${errData.error}`);
+          alert(`Failed to add stage: ${errData.error}`);
         }
       }
     } catch (err: any) {
-      alert(`Terjadi kesalahan: ${err.message}`);
+      alert(`Error occurred: ${err.message}`);
     } finally {
       setSubmitting(false);
     }
@@ -149,11 +149,11 @@ export default function StagesSettingsPage() {
 
   const handleDelete = async (stage: Stage) => {
     if (stage.is_system) {
-      alert("Tahapan bawaan sistem tidak bisa dihapus.");
+      alert("System default stage cannot be deleted.");
       return;
     }
 
-    if (!confirm(`Apakah Anda yakin ingin menghapus tahapan "${stage.name}"?`)) {
+    if (!confirm(`Are you sure you want to delete stage "${stage.name}"?`)) {
       return;
     }
 
@@ -166,10 +166,10 @@ export default function StagesSettingsPage() {
         await fetchStages();
       } else {
         const errData = await res.json();
-        alert(`Gagal menghapus tahapan: ${errData.error}`);
+        alert(`Failed to delete stage: ${errData.error}`);
       }
     } catch (err: any) {
-      alert(`Terjadi kesalahan: ${err.message}`);
+      alert(`Error occurred: ${err.message}`);
     }
   };
 
@@ -217,51 +217,51 @@ export default function StagesSettingsPage() {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-xs font-medium text-muted-foreground">Memuat tahapan rekrutmen...</p>
+        <p className="text-xs font-medium text-muted-foreground">Loading recruitment stages...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8 page-enter">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6 sm:space-y-8 page-enter">
       {/* Header & Sub-Nav */}
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Building2 className="w-6 h-6 text-primary" />
-          Pengaturan Tahapan Rekrutmen Perusahaan
+        <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+          <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+          Company Recruitment Stages Settings
         </h1>
-        <p className="text-xs text-muted-foreground">
-          Kelola template alur seleksi kandidat resmi yang berlaku untuk seluruh lowongan
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Manage official candidate selection workflow templates applicable across all job positions
         </p>
 
         {/* Sub-Navigation Pills */}
-        <div className="flex items-center gap-2 mt-6 border-b border-border/80 pb-2 overflow-x-auto scrollbar-thin">
-          <Link href="/settings">
+        <div className="flex items-center gap-2 mt-4 sm:mt-6 border-b border-border/80 pb-2 overflow-x-auto scrollbar-thin">
+          <Link href="/settings" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Sliders className="w-4 h-4" />
-              Profil & AI Config
+              Profile & AI Config
             </Button>
           </Link>
-          <Link href="/settings/stages">
+          <Link href="/settings/stages" className="shrink-0">
             <Button
               variant="secondary"
               size="sm"
               className="gap-2 text-xs font-bold rounded-xl bg-primary/10 text-primary border border-primary/20"
             >
               <Layers className="w-4 h-4" />
-              Tahapan Rekrutmen
+              Recruitment Stages
             </Button>
           </Link>
-          <Link href="/settings/team">
+          <Link href="/settings/team" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Users className="w-4 h-4" />
-              Manajemen Tim
+              Team Management
             </Button>
           </Link>
-          <Link href="/settings/integrations">
+          <Link href="/settings/integrations" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <CalendarDays className="w-4 h-4" />
-              Integrasi Email & Kalender
+              Email & Calendar Integrations
             </Button>
           </Link>
         </div>
@@ -271,24 +271,24 @@ export default function StagesSettingsPage() {
       <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5 flex items-start gap-3 shadow-sm">
         <Sparkles className="w-5 h-5 text-primary shrink-0 mt-0.5" />
         <div className="space-y-1 text-xs">
-          <p className="font-bold text-foreground">Struktur Template Rekrutmen Perusahaan</p>
+          <p className="font-bold text-foreground">Company Selection Template Structure</p>
           <p className="text-muted-foreground leading-relaxed">
-            Tahapan di bawah ini adalah **template alur resmi** perusahaan Anda. Saat membuat lowongan baru, Anda juga dapat mengkustomisasi alur kustom jika diperlukan.
+            The stages below form your company's **official template pipeline**. When creating a job, you can also customize a specific stage pipeline if required.
           </p>
         </div>
       </div>
 
       {/* Stepper Preview */}
-      <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-sm">
+      <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 space-y-3 shadow-sm">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary" />
-            Visualisasi Live Stepper Perusahaan
+            Live Company Stepper Visualization
           </h3>
           {reordering && (
             <span className="text-xs text-primary flex items-center gap-1 animate-pulse font-semibold">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              Menyimpan urutan...
+              Saving sequence...
             </span>
           )}
         </div>
@@ -324,16 +324,16 @@ export default function StagesSettingsPage() {
 
       {/* Main List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-sm font-bold">Daftar Tahapan Seleksi Perusahaan</h2>
+            <h2 className="text-sm font-bold">Selection Stages List</h2>
             <p className="text-xs text-muted-foreground">
-              Geser urutan atau perbarui rincian setiap tahapan seleksi
+              Reorder or update details of each selection stage
             </p>
           </div>
-          <Button onClick={handleOpenAddModal} size="sm" className="gap-2 text-xs h-9 rounded-xl shadow-lg shadow-primary/20">
+          <Button onClick={handleOpenAddModal} size="sm" className="gap-2 text-xs h-9 rounded-xl shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">
             <Plus className="w-4 h-4" />
-            Tambah Tahapan Baru
+            Add New Stage
           </Button>
         </div>
 
@@ -341,18 +341,18 @@ export default function StagesSettingsPage() {
           {stages.map((stg, idx) => (
             <div
               key={stg.id}
-              className="flex items-center justify-between p-4 rounded-2xl border border-border/80 bg-card hover:border-primary/40 transition-all shadow-sm group"
+              className="flex items-center justify-between p-4 rounded-2xl border border-border/80 bg-card hover:border-primary/40 transition-all shadow-sm group gap-3"
             >
-              <div className="flex items-center gap-4 min-w-0">
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-sm text-white shrink-0 shadow-md"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-extrabold text-xs sm:text-sm text-white shrink-0 shadow-md"
                   style={{ backgroundColor: stg.color }}
                 >
                   {idx + 1}
                 </div>
 
                 <div className="min-w-0 space-y-0.5">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h4 className="text-xs font-bold text-foreground truncate">
                       {stg.name}
                     </h4>
@@ -362,11 +362,11 @@ export default function StagesSettingsPage() {
                         className="text-[10px] gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 font-semibold"
                       >
                         <Lock className="w-3 h-3" />
-                        Bawaan Sistem
+                        System Default
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="text-[10px] font-semibold">
-                        Kustom
+                        Custom
                       </Badge>
                     )}
                   </div>
@@ -425,25 +425,25 @@ export default function StagesSettingsPage() {
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
-              {editingStage ? "Edit Tahapan Rekrutmen" : "Tambah Tahapan Rekrutmen"}
+              {editingStage ? "Edit Recruitment Stage" : "Add Recruitment Stage"}
             </DialogTitle>
             <DialogDescription className="text-xs">
               {editingStage
-                ? "Perbarui informasi tahapan seleksi ini."
-                : "Tambahkan tahapan baru dalam alur seleksi perusahaan Anda."}
+                ? "Update information for this selection stage."
+                : "Add a new stage into your company's selection workflow."}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4 pt-2">
             <div className="space-y-1.5">
               <Label htmlFor="stage-name" className="text-xs font-semibold">
-                Nama Tahapan <span className="text-destructive">*</span>
+                Stage Name <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="stage-name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="mis. Wawancara User, Tes Psikotes, Task Teknis"
+                placeholder="e.g. User Interview, Psychometric Test, Technical Assignment"
                 className="text-xs h-9 rounded-xl"
                 required
               />
@@ -451,19 +451,19 @@ export default function StagesSettingsPage() {
 
             <div className="space-y-1.5">
               <Label htmlFor="stage-desc" className="text-xs font-semibold">
-                Deskripsi Singkat (Opsional)
+                Short Description (Optional)
               </Label>
               <Textarea
                 id="stage-desc"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Penjelasan singkat mengenai apa yang dilakukan pada tahap ini..."
+                placeholder="Brief explanation of evaluation activities during this stage..."
                 className="text-xs min-h-[80px] rounded-xl"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Warna Label / Badge</Label>
+              <Label className="text-xs font-semibold">Label / Badge Color</Label>
               <div className="flex items-center gap-2 pt-1 flex-wrap">
                 {COLOR_PRESETS.map((p) => (
                   <button
@@ -495,11 +495,11 @@ export default function StagesSettingsPage() {
                 onClick={() => setModalOpen(false)}
                 className="text-xs rounded-xl"
               >
-                Batal
+                Cancel
               </Button>
               <Button type="submit" size="sm" disabled={submitting} className="text-xs gap-1.5 rounded-xl">
                 {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                {editingStage ? "Simpan Perubahan" : "Tambah Tahapan"}
+                {editingStage ? "Save Changes" : "Add Stage"}
               </Button>
             </DialogFooter>
           </form>

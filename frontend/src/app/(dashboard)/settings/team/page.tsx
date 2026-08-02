@@ -150,14 +150,14 @@ export default function TeamSettingsPage() {
       };
 
       setTeamMembers((prev) => [...prev, newMember]);
-      alert(`Undangan berhasil dikirim ke ${inviteEmail} sebagai ${inviteRole === "super_admin" ? "Super Admin" : "Recruiter / SR Staff"}!`);
+      alert(`Invitation sent to ${inviteEmail} as ${inviteRole === "super_admin" ? "Super Admin" : "Recruiter / SR Staff"}!`);
       
       setInviteEmail("");
       setInviteName("");
       setInviteRole("recruiter");
       setIsInviteOpen(false);
     } catch (err: any) {
-      alert("Gagal mengirim undangan: " + err.message);
+      alert("Failed to send invitation: " + err.message);
     } finally {
       setSendingInvite(false);
     }
@@ -181,11 +181,11 @@ export default function TeamSettingsPage() {
           .eq("id", selectedMember.id);
       }
 
-      alert(`Role ${selectedMember.full_name} berhasil diubah menjadi ${newRole === "super_admin" ? "Super Admin" : "Recruiter / SR Staff"}`);
+      alert(`Role for ${selectedMember.full_name} updated to ${newRole === "super_admin" ? "Super Admin" : "Recruiter / SR Staff"}`);
       setIsEditRoleOpen(false);
       setSelectedMember(null);
     } catch (err: any) {
-      alert("Gagal mengubah role: " + err.message);
+      alert("Failed to update role: " + err.message);
     } finally {
       setUpdatingRole(false);
     }
@@ -193,17 +193,17 @@ export default function TeamSettingsPage() {
 
   const handleRevokeMember = (member: TeamMember) => {
     if (member.id === currentUser?.id) {
-      alert("Anda tidak bisa mencabut akses akun Anda sendiri.");
+      alert("You cannot revoke access for your own account.");
       return;
     }
 
     if (
       confirm(
-        `Apakah Anda yakin ingin mencabut akses tim dari ${member.full_name} (${member.email})?`
+        `Are you sure you want to revoke team access for ${member.full_name} (${member.email})?`
       )
     ) {
       setTeamMembers((prev) => prev.filter((m) => m.id !== member.id));
-      alert(`Akses tim untuk ${member.full_name} telah dicabut.`);
+      alert(`Team access for ${member.full_name} has been revoked.`);
     }
   };
 
@@ -217,51 +217,51 @@ export default function TeamSettingsPage() {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-xs font-medium text-muted-foreground">Memuat data tim perusahaan...</p>
+        <p className="text-xs font-medium text-muted-foreground">Loading company team data...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8 page-enter">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6 sm:space-y-8 page-enter">
       {/* Header & Sub-Nav */}
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Building2 className="w-6 h-6 text-primary" />
-          Pengaturan Tim & Staf Wawancara
+        <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+          <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+          Team & Interview Staff Settings
         </h1>
-        <p className="text-xs text-muted-foreground">
-          Kelola daftar penguji, undang anggota tim baru, dan atur matriks hak akses
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Manage interview staff, invite team members, and configure access roles
         </p>
 
         {/* Sub-Navigation Pills */}
-        <div className="flex items-center gap-2 mt-6 border-b border-border/80 pb-2 overflow-x-auto scrollbar-thin">
-          <Link href="/settings">
+        <div className="flex items-center gap-2 mt-4 sm:mt-6 border-b border-border/80 pb-2 overflow-x-auto scrollbar-thin">
+          <Link href="/settings" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Sliders className="w-4 h-4" />
-              Profil & AI Config
+              Profile & AI Config
             </Button>
           </Link>
-          <Link href="/settings/stages">
+          <Link href="/settings/stages" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Layers className="w-4 h-4" />
-              Tahapan Rekrutmen
+              Recruitment Stages
             </Button>
           </Link>
-          <Link href="/settings/team">
+          <Link href="/settings/team" className="shrink-0">
             <Button
               variant="secondary"
               size="sm"
               className="gap-2 text-xs font-bold rounded-xl bg-primary/10 text-primary border border-primary/20"
             >
               <Users className="w-4 h-4" />
-              Manajemen Tim
+              Team Management
             </Button>
           </Link>
-          <Link href="/settings/integrations">
+          <Link href="/settings/integrations" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <CalendarDays className="w-4 h-4" />
-              Integrasi Email & Kalender
+              Email & Calendar Integrations
             </Button>
           </Link>
         </div>
@@ -271,31 +271,31 @@ export default function TeamSettingsPage() {
       <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5 flex items-start gap-3 shadow-sm">
         <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
         <div className="space-y-1 text-xs">
-          <p className="font-bold text-foreground">Area Pengelolaan Tim (Khusus Super Admin)</p>
+          <p className="font-bold text-foreground">Team Management Area (Super Admin Exclusive)</p>
           <p className="text-muted-foreground leading-relaxed">
-            Sebagai **Super Admin**, Anda dapat mengundang anggota tim rekrutmen (SR Staff/Interviewer), membagikan mandat penugasan kandidat, dan mengonfigurasi hak akses perusahaan.
+            As a **Super Admin**, you can invite recruitment team members (SR Staff / Interviewers), assign interview mandates, and configure company workspace permissions.
           </p>
         </div>
       </div>
 
       {/* Team Members List Card */}
       <div className="rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 border-b border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-primary" />
             <div>
-              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Anggota Tim Perusahaan</h2>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Company Team Members</h2>
               <p className="text-xs font-semibold text-foreground mt-0.5">
-                Total {teamMembers.length} anggota tim terdaftar
+                Total {teamMembers.length} registered team member(s)
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
             <div className="relative w-full sm:w-64">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Cari anggota tim..."
+                placeholder="Search team member..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 h-8 text-xs rounded-xl bg-muted/30"
@@ -305,9 +305,9 @@ export default function TeamSettingsPage() {
             <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
               <DialogTrigger
                 render={
-                  <Button size="sm" className="gap-2 h-8 text-xs rounded-xl shadow-md shadow-primary/20 shrink-0">
+                  <Button size="sm" className="gap-2 h-8 text-xs rounded-xl shadow-md shadow-primary/20 shrink-0 w-full sm:w-auto justify-center">
                     <UserPlus className="w-3.5 h-3.5" />
-                    Undang Anggota Tim
+                    Invite Team Member
                   </Button>
                 }
               />
@@ -315,23 +315,23 @@ export default function TeamSettingsPage() {
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2 text-base">
                     <UserPlus className="w-5 h-5 text-primary" />
-                    Undang Anggota Tim Baru
+                    Invite New Team Member
                   </DialogTitle>
                   <DialogDescription className="text-xs">
-                    Kirim undangan via email untuk menambahkan staf rekrutmen atau penguji wawancara ke workspace Anda.
+                    Send an email invitation to add recruitment staff or interviewers to your workspace.
                   </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSendInvite} className="space-y-4 py-2">
                   <div className="space-y-2">
                     <Label htmlFor="invite-email" className="text-xs font-semibold">
-                      Alamat Email Anggota Tim <span className="text-red-500">*</span>
+                      Team Member Email Address <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="invite-email"
                       type="email"
                       required
-                      placeholder="nama@perusahaan.com"
+                      placeholder="name@company.com"
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
                       className="text-xs h-9 rounded-xl"
@@ -340,11 +340,11 @@ export default function TeamSettingsPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="invite-name" className="text-xs font-semibold">
-                      Nama Lengkap (Opsional)
+                      Full Name (Optional)
                     </Label>
                     <Input
                       id="invite-name"
-                      placeholder="Contoh: Budi Santoso"
+                      placeholder="e.g. Jane Doe"
                       value={inviteName}
                       onChange={(e) => setInviteName(e.target.value)}
                       className="text-xs h-9 rounded-xl"
@@ -353,29 +353,29 @@ export default function TeamSettingsPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="invite-role" className="text-xs font-semibold">
-                      Peran & Hak Akses (Role)
+                      Role & Permissions
                     </Label>
                     <Select
                       value={inviteRole}
                       onValueChange={(val: any) => setInviteRole(val)}
                     >
                       <SelectTrigger id="invite-role" className="w-full text-xs h-9 rounded-xl">
-                        <SelectValue placeholder="Pilih Peran" />
+                        <SelectValue placeholder="Select Role" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="recruiter">
                           <div className="flex flex-col py-1">
-                            <span className="font-semibold text-xs">Recruiter / SR Staff (Penguji Wawancara)</span>
+                            <span className="font-semibold text-xs">Recruiter / SR Staff (Interviewer)</span>
                             <span className="text-[10px] text-muted-foreground">
-                              Dapat menerima mandat wawancara, memperbarui kandidat, & sync Google Calendar.
+                              Can receive interview mandates, update candidate stages & sync Google Calendar.
                             </span>
                           </div>
                         </SelectItem>
                         <SelectItem value="super_admin">
                           <div className="flex flex-col py-1">
-                            <span className="font-semibold text-xs">Super Admin (Akses Penuh)</span>
+                            <span className="font-semibold text-xs">Super Admin (Full Access)</span>
                             <span className="text-[10px] text-muted-foreground">
-                              Akses penuh ke lowongan, AI settings, pengelola email & manajemen tim.
+                              Full access to jobs, AI settings, email alias ingestion & team management.
                             </span>
                           </div>
                         </SelectItem>
@@ -391,18 +391,18 @@ export default function TeamSettingsPage() {
                       onClick={() => setIsInviteOpen(false)}
                       className="text-xs rounded-xl"
                     >
-                      Batal
+                      Cancel
                     </Button>
                     <Button type="submit" size="sm" disabled={sendingInvite} className="text-xs rounded-xl">
                       {sendingInvite ? (
                         <span className="flex items-center gap-2">
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          Mengirim...
+                          Sending...
                         </span>
                       ) : (
                         <span className="flex items-center gap-2">
                           <Mail className="w-3.5 h-3.5" />
-                          Kirim Undangan
+                          Send Invitation
                         </span>
                       )}
                     </Button>
@@ -418,24 +418,24 @@ export default function TeamSettingsPage() {
           <table className="w-full text-left text-xs">
             <thead className="bg-muted/20 border-b border-border/60 text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">
               <tr>
-                <th className="p-4">Anggota Tim</th>
-                <th className="p-4">Peran (Role)</th>
+                <th className="p-4">Team Member</th>
+                <th className="p-4">Role</th>
                 <th className="p-4">Status</th>
-                <th className="p-4">Tanggal Bergabung</th>
-                <th className="p-4 text-right">Aksi</th>
+                <th className="p-4">Joined Date</th>
+                <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
               {filteredMembers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                    Tidak ada anggota tim yang cocok dengan pencarian.
+                    No team members match your search query.
                   </td>
                 </tr>
               ) : (
                 filteredMembers.map((member) => (
                   <tr key={member.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="p-4">
+                    <td className="p-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <Avatar className="w-8 h-8 border border-border">
                           <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
@@ -447,7 +447,7 @@ export default function TeamSettingsPage() {
                             {member.full_name}
                             {member.id === currentUser?.id && (
                               <span className="text-[10px] text-muted-foreground font-normal bg-muted px-1.5 py-0.5 rounded">
-                                (Anda)
+                                (You)
                               </span>
                             )}
                           </p>
@@ -455,7 +455,7 @@ export default function TeamSettingsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 whitespace-nowrap">
                       {member.role === "super_admin" ? (
                         <Badge
                           variant="secondary"
@@ -474,27 +474,27 @@ export default function TeamSettingsPage() {
                         </Badge>
                       )}
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 whitespace-nowrap">
                       {member.status === "active" ? (
                         <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
                           <CheckCircle2 className="w-3.5 h-3.5" />
-                          Aktif
+                          Active
                         </span>
                       ) : (
                         <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold">
                           <Clock className="w-3.5 h-3.5" />
-                          Undangan Terkirim
+                          Invited
                         </span>
                       )}
                     </td>
-                    <td className="p-4 text-muted-foreground font-mono text-[11px]">
-                      {new Date(member.created_at).toLocaleDateString("id-ID", {
+                    <td className="p-4 text-muted-foreground font-mono text-[11px] whitespace-nowrap">
+                      {new Date(member.created_at).toLocaleDateString("en-US", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
                       })}
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="p-4 text-right whitespace-nowrap">
                       <DropdownMenu>
                         <DropdownMenuTrigger
                           render={
@@ -504,7 +504,7 @@ export default function TeamSettingsPage() {
                           }
                         />
                         <DropdownMenuContent align="end" className="w-48 p-1 rounded-xl shadow-xl">
-                          <DropdownMenuLabel className="text-xs">Kelola Akses</DropdownMenuLabel>
+                          <DropdownMenuLabel className="text-xs">Manage Access</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => {
@@ -515,7 +515,7 @@ export default function TeamSettingsPage() {
                             className="text-xs gap-2 cursor-pointer"
                           >
                             <ShieldCheck className="w-4 h-4 text-primary" />
-                            Ubah Peran (Role)
+                            Change Role
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleRevokeMember(member)}
@@ -523,7 +523,7 @@ export default function TeamSettingsPage() {
                             className="text-xs gap-2 text-destructive focus:text-destructive cursor-pointer"
                           >
                             <UserX className="w-4 h-4" />
-                            Cabut Akses Tim
+                            Revoke Team Access
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -542,29 +542,29 @@ export default function TeamSettingsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
               <ShieldCheck className="w-5 h-5 text-primary" />
-              Ubah Peran Anggota Tim
+              Change Team Member Role
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Ubah perizinan akses untuk {selectedMember?.full_name} ({selectedMember?.email}).
+              Update access permissions for {selectedMember?.full_name} ({selectedMember?.email}).
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label className="text-xs font-semibold">Pilih Peran Baru</Label>
+              <Label className="text-xs font-semibold">Select New Role</Label>
               <Select
                 value={newRole}
                 onValueChange={(val: any) => setNewRole(val)}
               >
                 <SelectTrigger className="w-full text-xs h-9 rounded-xl">
-                  <SelectValue placeholder="Pilih Peran" />
+                  <SelectValue placeholder="Select Role" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="recruiter">
-                    <span className="font-semibold text-xs">Recruiter / SR Staff (Penguji Wawancara)</span>
+                    <span className="font-semibold text-xs">Recruiter / SR Staff (Interviewer)</span>
                   </SelectItem>
                   <SelectItem value="super_admin">
-                    <span className="font-semibold text-xs">Super Admin (Akses Penuh Perusahaan)</span>
+                    <span className="font-semibold text-xs">Super Admin (Full Access)</span>
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -579,16 +579,16 @@ export default function TeamSettingsPage() {
               onClick={() => setIsEditRoleOpen(false)}
               className="text-xs rounded-xl"
             >
-              Batal
+              Cancel
             </Button>
             <Button size="sm" onClick={handleUpdateRole} disabled={updatingRole} className="text-xs rounded-xl">
               {updatingRole ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Menyimpan...
+                  Saving...
                 </span>
               ) : (
-                "Simpan Perubahan"
+                "Save Changes"
               )}
             </Button>
           </DialogFooter>

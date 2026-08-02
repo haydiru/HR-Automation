@@ -55,7 +55,6 @@ export function NotificationPopover() {
   useEffect(() => {
     fetchNotifications();
 
-    // Poll for new notifications every 30 seconds
     const interval = setInterval(() => {
       fetchNotifications();
     }, 30000);
@@ -120,12 +119,12 @@ export function NotificationPopover() {
   const formatTimeAgo = (dateStr: string) => {
     const diffMs = Date.now() - new Date(dateStr).getTime();
     const diffMins = Math.floor(diffMs / (1000 * 60));
-    if (diffMins < 1) return "Baru saja";
-    if (diffMins < 60) return `${diffMins} min lalu`;
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours} jam lalu`;
+    if (diffHours < 24) return `${diffHours}h ago`;
     const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays} hari lalu`;
+    return `${diffDays}d ago`;
   };
 
   return (
@@ -148,10 +147,10 @@ export function NotificationPopover() {
         <div className="p-3.5 border-b border-border flex items-center justify-between bg-muted/20">
           <div className="flex items-center gap-2">
             <Bell className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-bold">Pusat Notifikasi In-App</h3>
+            <h3 className="text-xs font-bold">Notification Center</h3>
             {unreadCount > 0 && (
               <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary px-1.5 py-0">
-                {unreadCount} Baru
+                {unreadCount} New
               </Badge>
             )}
           </div>
@@ -164,7 +163,7 @@ export function NotificationPopover() {
               className="h-7 text-[10px] text-muted-foreground hover:text-foreground gap-1 px-2"
             >
               <CheckCheck className="w-3 h-3" />
-              Tandai Dibaca
+              Mark all read
             </Button>
           )}
         </div>
@@ -173,11 +172,11 @@ export function NotificationPopover() {
         <div className="max-h-80 overflow-y-auto divide-y divide-border">
           {loading ? (
             <div className="p-8 text-center text-xs text-muted-foreground">
-              Memuat notifikasi...
+              Loading notifications...
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-xs text-muted-foreground">
-              Belum ada notifikasi saat ini.
+              No notifications yet.
             </div>
           ) : (
             notifications.map((notif) => (
@@ -223,7 +222,7 @@ export function NotificationPopover() {
             onClick={() => setIsOpen(false)}
             className="text-[11px] text-primary font-medium hover:underline inline-flex items-center gap-1"
           >
-            Lihat semua di Daftar Kandidat <ChevronRight className="w-3 h-3" />
+            View all in Candidates List <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
       </PopoverContent>

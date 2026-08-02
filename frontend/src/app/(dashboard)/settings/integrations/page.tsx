@@ -97,14 +97,14 @@ function IntegrationsContent() {
         if (type === "gmail") {
           setGmailConnected(true);
           if (email) setGmailEmail(email);
-          alert(`✅ Direct Gmail Perusahaan (${email || "Google"}) berhasil dihubungkan! Inbox email akan dipindai secara otomatis.`);
+          alert(`✅ Direct Company Gmail (${email || "Google"}) successfully connected! Ingestion inbox will be scanned automatically.`);
         } else if (type === "calendar") {
           setCalendarConnected(true);
           if (email) setCalendarEmail(email);
-          alert(`✅ Google Calendar (${email || "Google"}) berhasil dihubungkan! Jadwal wawancara akan otomatis tersinkronisasi.`);
+          alert(`✅ Google Calendar (${email || "Google"}) successfully connected! Interview schedules will be synced automatically.`);
         }
       } else if (error) {
-        alert(`⚠️ Gagal menghubungkan Google OAuth: ${error}`);
+        alert(`⚠️ Failed to connect Google OAuth: ${error}`);
       }
 
       setLoading(false);
@@ -115,7 +115,7 @@ function IntegrationsContent() {
 
   const handleDisconnect = async (type: "gmail" | "calendar") => {
     if (!currentUser) return;
-    if (!confirm(`Apakah Anda yakin ingin memutuskan koneksi ${type === "gmail" ? "Gmail Perusahaan" : "Google Calendar"}?`)) {
+    if (!confirm(`Are you sure you want to disconnect ${type === "gmail" ? "Company Direct Gmail" : "Google Calendar"}?`)) {
       return;
     }
 
@@ -142,9 +142,9 @@ function IntegrationsContent() {
         setCalendarEmail("");
       }
 
-      alert(`Koneksi ${type === "gmail" ? "Gmail Perusahaan" : "Google Calendar"} berhasil diputuskan.`);
+      alert(`Connection for ${type === "gmail" ? "Company Direct Gmail" : "Google Calendar"} successfully revoked.`);
     } catch (err: any) {
-      alert("Gagal memutuskan koneksi: " + err.message);
+      alert("Failed to disconnect: " + err.message);
     } finally {
       setDisconnecting(null);
     }
@@ -206,51 +206,51 @@ function monitorGmailHR() {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-xs font-medium text-muted-foreground">Memuat pengaturan integrasi...</p>
+        <p className="text-xs font-medium text-muted-foreground">Loading integration settings...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8 page-enter">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6 sm:space-y-8 page-enter">
       {/* Header & Sub-Nav */}
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Building2 className="w-6 h-6 text-primary" />
-          Pengaturan Integrasi Google Services
+        <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+          <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+          Google Services Integrations
         </h1>
-        <p className="text-xs text-muted-foreground">
-          Hubungkan 1-Click Gmail Perusahaan dan Google Calendar untuk sinkronisasi otomatis
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Connect 1-Click Company Direct Gmail and Google Calendar for seamless background synchronization
         </p>
 
         {/* Sub-Navigation Pills */}
-        <div className="flex items-center gap-2 mt-6 border-b border-border/80 pb-2 overflow-x-auto scrollbar-thin">
-          <Link href="/settings">
+        <div className="flex items-center gap-2 mt-4 sm:mt-6 border-b border-border/80 pb-2 overflow-x-auto scrollbar-thin">
+          <Link href="/settings" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Sliders className="w-4 h-4" />
-              Profil & AI Config
+              Profile & AI Config
             </Button>
           </Link>
-          <Link href="/settings/stages">
+          <Link href="/settings/stages" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Layers className="w-4 h-4" />
-              Tahapan Rekrutmen
+              Recruitment Stages
             </Button>
           </Link>
-          <Link href="/settings/team">
+          <Link href="/settings/team" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Users className="w-4 h-4" />
-              Manajemen Tim
+              Team Management
             </Button>
           </Link>
-          <Link href="/settings/integrations">
+          <Link href="/settings/integrations" className="shrink-0">
             <Button
               variant="secondary"
               size="sm"
               className="gap-2 text-xs font-bold rounded-xl bg-primary/10 text-primary border border-primary/20"
             >
               <CalendarDays className="w-4 h-4" />
-              Integrasi Email & Kalender
+              Email & Calendar Integrations
             </Button>
           </Link>
         </div>
@@ -260,9 +260,9 @@ function monitorGmailHR() {
       <div className="p-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 flex items-start gap-3 shadow-sm">
         <Sparkles className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
         <div className="space-y-1 text-xs">
-          <p className="font-bold text-foreground">Integrasi Otomatis 1-Click (Google OAuth 2.0)</p>
+          <p className="font-bold text-foreground">1-Click Automated Integration (Google OAuth 2.0)</p>
           <p className="text-muted-foreground leading-relaxed">
-            Anda dapat menghubungkan **Gmail Perusahaan** dan **Google Calendar** secara langsung. AI akan membaca email masuk secara otomatis dan sinkronisasi jadwal wawancara langsung ke kalender Anda.
+            Directly connect your **Company Direct Gmail** and **Google Calendar**. AI will scan incoming emails automatically and sync interview appointments straight to your calendar.
           </p>
         </div>
       </div>
@@ -272,10 +272,10 @@ function monitorGmailHR() {
         <div>
           <h2 className="text-sm font-bold flex items-center gap-2">
             <Mail className="w-4 h-4 text-primary" />
-            1. Integrasi Email Masuk (Ingestion Inbox)
+            1. Incoming Email Ingestion
           </h2>
           <p className="text-xs text-muted-foreground">
-            Opsi penerimaan berkas CV dari Gmail perusahaan ke sistem HR
+            Methods for ingesting applicant CV attachments into the HR system
           </p>
         </div>
 
@@ -291,27 +291,27 @@ function monitorGmailHR() {
           </TabsList>
 
           <TabsContent value="direct" className="mt-4">
-            <div className="rounded-2xl border border-border/80 bg-card p-6 space-y-6 shadow-sm">
+            <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 space-y-6 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-muted/20 border border-border/60">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <p className="text-xs font-bold">Status Direct Gmail Perusahaan:</p>
+                    <p className="text-xs font-bold">Company Direct Gmail Status:</p>
                     {gmailConnected ? (
                       <Badge variant="secondary" className="gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] font-bold">
                         <CheckCircle2 className="w-3 h-3" />
-                        Terhubung
+                        Connected
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-[10px] font-bold">
                         <AlertCircle className="w-3 h-3" />
-                        Belum Terhubung
+                        Not Connected
                       </Badge>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {gmailConnected
-                      ? `Terhubung ke akun: ${gmailEmail || "Gmail Perusahaan"}`
-                      : "Hubungkan Gmail resmi perusahaan untuk otomatisasi AI tanpa script."}
+                      ? `Connected to account: ${gmailEmail || "Company Gmail"}`
+                      : "Connect official company Gmail for scriptless AI automation."}
                   </p>
                 </div>
 
@@ -322,20 +322,20 @@ function monitorGmailHR() {
                       size="sm"
                       onClick={() => handleDisconnect("gmail")}
                       disabled={disconnecting === "gmail"}
-                      className="gap-2 text-xs rounded-xl"
+                      className="gap-2 text-xs rounded-xl w-full sm:w-auto justify-center"
                     >
                       {disconnecting === "gmail" ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
                         <Trash2 className="w-3.5 h-3.5" />
                       )}
-                      Putuskan Gmail
+                      Disconnect Gmail
                     </Button>
                   ) : (
                     <a href="/api/auth/google/connect?type=gmail">
-                      <Button size="sm" className="gap-2 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20">
+                      <Button size="sm" className="gap-2 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 w-full sm:w-auto justify-center">
                         <Zap className="w-3.5 h-3.5 fill-white" />
-                        Hubungkan Gmail Perusahaan
+                        Connect Company Gmail
                       </Button>
                     </a>
                   )}
@@ -343,28 +343,28 @@ function monitorGmailHR() {
               </div>
 
               <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
-                <p className="font-semibold text-foreground">Cara Kerja Direct Gmail:</p>
+                <p className="font-semibold text-foreground">How Direct Gmail Ingestion Works:</p>
                 <ul className="list-disc pl-5 space-y-1">
-                  <li>Sistem secara berkala memindai email masuk yang memiliki lampiran CV PDF.</li>
-                  <li>Pelamar baru otomatis di-screening oleh AI berdasarkan kriteria lowongan aktif.</li>
-                  <li>Kredensial tersimpan aman dengan perizinan OAuth 2.0.</li>
+                  <li>System periodically scans inbox for incoming emails containing PDF CV attachments.</li>
+                  <li>New applicants are automatically screened by AI based on active job criteria.</li>
+                  <li>Credentials are securely stored using Google OAuth 2.0 authorization.</li>
                 </ul>
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="script" className="mt-4">
-            <div className="rounded-2xl border border-border/80 bg-card p-6 space-y-4 shadow-sm">
+            <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold">Otomasi Skrip Google Apps Script v4</p>
+                  <p className="text-xs font-bold">Google Apps Script v4 Automation</p>
                   <p className="text-[11px] text-muted-foreground">
-                    Opsi alternatif menggunakan skrip forwarding bawaan Google Apps Script.
+                    Alternative method using built-in Google Apps Script forwarding.
                   </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={copyScript} className="gap-1.5 text-xs rounded-xl">
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copied ? "Tersalin!" : "Salin Skrip"}
+                  {copied ? "Copied!" : "Copy Script"}
                 </Button>
               </div>
 
@@ -381,34 +381,34 @@ function monitorGmailHR() {
         <div>
           <h2 className="text-sm font-bold flex items-center gap-2">
             <CalendarDays className="w-4 h-4 text-primary" />
-            2. Integrasi Google Calendar (Sinkronisasi Wawancara Per-User)
+            2. Google Calendar Integration (Per-User Interview Sync)
           </h2>
           <p className="text-xs text-muted-foreground">
-            Setiap staf rekrutmen / penguji wawancara dapat menghubungkan kalender Google pribadinya
+            Each recruiter or interviewer can connect their personal Google Calendar account
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border/80 bg-card p-6 space-y-6 shadow-sm">
+        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 space-y-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-muted/20 border border-border/60">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <p className="text-xs font-bold">Status Google Calendar Anda:</p>
+                <p className="text-xs font-bold">Your Google Calendar Status:</p>
                 {calendarConnected ? (
                   <Badge variant="secondary" className="gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] font-bold">
                     <CheckCircle2 className="w-3 h-3" />
-                    Terhubung
+                    Connected
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-[10px] font-bold">
                     <AlertCircle className="w-3 h-3" />
-                    Belum Terhubung
+                    Not Connected
                   </Badge>
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
                 {calendarConnected
-                  ? `Akun Kalender: ${calendarEmail || currentUser?.email}`
-                  : "Hubungkan Google Calendar untuk sinkronisasi jadwal wawancara otomatis saat dimandatkan kandidat."}
+                  ? `Calendar Account: ${calendarEmail || currentUser?.email}`
+                  : "Connect Google Calendar to automatically sync interview schedules when candidates are assigned."}
               </p>
             </div>
 
@@ -419,20 +419,20 @@ function monitorGmailHR() {
                   size="sm"
                   onClick={() => handleDisconnect("calendar")}
                   disabled={disconnecting === "calendar"}
-                  className="gap-2 text-xs rounded-xl"
+                  className="gap-2 text-xs rounded-xl w-full sm:w-auto justify-center"
                 >
                   {disconnecting === "calendar" ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
                     <Trash2 className="w-3.5 h-3.5" />
                   )}
-                  Putuskan Kalender
+                  Disconnect Calendar
                 </Button>
               ) : (
                 <a href="/api/auth/google/connect?type=calendar">
-                  <Button size="sm" className="gap-2 text-xs rounded-xl shadow-lg shadow-primary/20">
+                  <Button size="sm" className="gap-2 text-xs rounded-xl shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">
                     <CalendarDays className="w-4 h-4" />
-                    Hubungkan Google Calendar Saya
+                    Connect My Google Calendar
                   </Button>
                 </a>
               )}
@@ -442,9 +442,9 @@ function monitorGmailHR() {
           <div className="pt-2 border-t border-border/60 space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-xs font-bold">Auto-Sync Jadwal Wawancara & Reschedule</Label>
+                <Label className="text-xs font-bold">Auto-Sync Interview & Reschedule Events</Label>
                 <p className="text-[11px] text-muted-foreground">
-                  Otomatis buat event di Google Calendar saat kandidat dimandatkan atau jadwal diubah.
+                  Automatically create events in Google Calendar when candidate mandates or schedules are updated.
                 </p>
               </div>
               <Switch
@@ -465,7 +465,7 @@ export default function IntegrationsSettingsPage() {
       fallback={
         <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-xs font-medium text-muted-foreground">Memuat integrasi...</p>
+          <p className="text-xs font-medium text-muted-foreground">Loading integrations...</p>
         </div>
       }
     >

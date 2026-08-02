@@ -130,7 +130,7 @@ export default function CreateJobPage() {
 
   const handleRemoveCustomStage = (index: number) => {
     if (index === 0) {
-      alert("Tahap pertama (Apply & AI Screening) tidak bisa dihapus.");
+      alert("First stage (Apply & AI Screening) cannot be removed.");
       return;
     }
     setCustomStages(customStages.filter((_, idx) => idx !== index));
@@ -151,7 +151,7 @@ export default function CreateJobPage() {
     e.preventDefault();
 
     if (enableLocation && !workLocation) {
-      alert("Harap pilih lokasi kantor/usaha pada peta terlebih dahulu.");
+      alert("Please select the office/workplace location on the map first.");
       return;
     }
 
@@ -193,11 +193,11 @@ export default function CreateJobPage() {
         router.push("/jobs");
       } else {
         const err = await res.json();
-        alert(`Gagal membuat lowongan: ${err.error}`);
+        alert(`Failed to create job position: ${err.error}`);
       }
     } catch (err) {
       console.error(err);
-      alert("Terjadi kesalahan koneksi.");
+      alert("Connection error occurred.");
     } finally {
       setSaving(false);
     }
@@ -211,17 +211,17 @@ export default function CreateJobPage() {
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
       >
         <ArrowLeft className="w-4 h-4" />
-        Kembali ke Manajemen Lowongan
+        Back to Jobs Management
       </Link>
 
       {/* Page Title */}
       <div>
         <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
           <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-          Buat Lowongan Pekerjaan Baru
+          Create New Job Position
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Konfigurasi syarat AI screening, alur tahapan rekrutmen, dan lokasi kerja
+          Configure AI screening criteria, recruitment stage workflows, and work location
         </p>
       </div>
 
@@ -230,28 +230,28 @@ export default function CreateJobPage() {
         <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-5">
           <div className="flex items-center gap-2 border-b border-border/60 pb-3">
             <Sparkles className="w-4 h-4 text-primary" />
-            <h3 className="text-xs sm:text-sm font-bold">1. Informasi Utama Posisi Lowongan</h3>
+            <h3 className="text-xs sm:text-sm font-bold">1. Primary Position Information</h3>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-xs font-semibold">Judul Posisi Lowongan <span className="text-red-500">*</span></Label>
+            <Label htmlFor="title" className="text-xs font-semibold">Job Title / Position <span className="text-red-500">*</span></Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Contoh: Senior Full Stack Engineer / Digital Marketing Lead"
+              placeholder="e.g. Senior Full Stack Engineer / Digital Marketing Lead"
               className="text-xs h-10 rounded-xl"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-xs font-semibold">Deskripsi Pekerjaan & Kualifikasi <span className="text-red-500">*</span></Label>
+            <Label htmlFor="description" className="text-xs font-semibold">Job Description & Requirements <span className="text-red-500">*</span></Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Jelaskan peran, tanggung jawab utama, skill teknis, dan budaya tim..."
+              placeholder="Describe core responsibilities, key technical skills, and team expectations..."
               rows={5}
               className="text-xs rounded-xl resize-y"
               required
@@ -262,7 +262,7 @@ export default function CreateJobPage() {
           <div className="p-3.5 sm:p-4 rounded-xl bg-primary/5 border border-primary/15 space-y-1">
             <p className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-primary shrink-0" />
-              Email Ingestion Alias (Dihasilkan Otomatis)
+              Email Ingestion Alias (Auto Generated)
             </p>
             <p className="text-xs font-mono font-bold text-primary break-all">{generatedAlias}</p>
           </div>
@@ -273,7 +273,7 @@ export default function CreateJobPage() {
           <div className="flex items-center justify-between border-b border-border/60 pb-3">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-primary" />
-              <h3 className="text-xs sm:text-sm font-bold">2. Alur & Skema Tahapan Seleksi</h3>
+              <h3 className="text-xs sm:text-sm font-bold">2. Selection Stage Pipeline Scheme</h3>
             </div>
           </div>
 
@@ -289,12 +289,12 @@ export default function CreateJobPage() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground">
-                  Template Default Perusahaan
+                  Company Default Template
                 </span>
                 {!useCustomStages && <Check className="w-4 h-4 text-primary" />}
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Mengikuti tahapan rekrutmen standar perusahaan yang telah disetup di Pengaturan.
+                Follow standard company recruitment stages defined in Settings.
               </p>
             </div>
 
@@ -309,12 +309,12 @@ export default function CreateJobPage() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground">
-                  Kustomisasi Tahapan Khusus
+                  Custom Stage Pipeline
                 </span>
                 {useCustomStages && <Check className="w-4 h-4 text-primary" />}
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Susun alur tahapan seleksi baru khusus hanya untuk posisi lowongan ini.
+                Build custom stage sequence tailored specifically for this job position.
               </p>
             </div>
           </div>
@@ -322,7 +322,7 @@ export default function CreateJobPage() {
           {!useCustomStages ? (
             <div className="p-3.5 sm:p-4 rounded-xl bg-muted/20 border border-border/60 space-y-2">
               <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                Preview Tahapan Default Perusahaan:
+                Preview Company Default Stages:
               </p>
               <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-thin">
                 {defaultStages.map((s, i) => (
@@ -344,7 +344,7 @@ export default function CreateJobPage() {
           ) : (
             <div className="space-y-4 pt-3 border-t border-border/60 animate-in fade-in duration-300">
               <p className="text-xs font-bold text-foreground">
-                Editor Tahapan Khusus Lowongan Ini:
+                Custom Stage Pipeline Editor:
               </p>
 
               <div className="space-y-2">
@@ -408,16 +408,16 @@ export default function CreateJobPage() {
 
               {/* Add Custom Stage Form */}
               <div className="p-3.5 sm:p-4 rounded-xl border border-dashed border-border/80 bg-card space-y-3">
-                <p className="text-xs font-bold">Tambah Tahapan Kustom Baru:</p>
+                <p className="text-xs font-bold">Add New Custom Stage:</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Input
-                    placeholder="Nama tahapan (mis. Technical Test)"
+                    placeholder="Stage name (e.g. Technical Assessment)"
                     value={newStageName}
                     onChange={(e) => setNewStageName(e.target.value)}
                     className="text-xs h-9 rounded-lg"
                   />
                   <Input
-                    placeholder="Deskripsi singkat (opsional)"
+                    placeholder="Short description (optional)"
                     value={newStageDesc}
                     onChange={(e) => setNewStageDesc(e.target.value)}
                     className="text-xs h-9 rounded-lg"
@@ -425,7 +425,7 @@ export default function CreateJobPage() {
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-muted-foreground">Warna Badge:</span>
+                    <span className="text-xs text-muted-foreground">Badge Color:</span>
                     {COLOR_PRESETS.map((c) => (
                       <button
                         key={c}
@@ -447,7 +447,7 @@ export default function CreateJobPage() {
                     className="h-8 text-xs gap-1.5 rounded-lg w-full sm:w-auto"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    Tambah Tahapan
+                    Add Stage
                   </Button>
                 </div>
               </div>
@@ -460,7 +460,7 @@ export default function CreateJobPage() {
           <div className="flex items-center justify-between border-b border-border/60 pb-3">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-primary" />
-              <h3 className="text-xs sm:text-sm font-bold">3. Filter Radius Lokasi Domisili</h3>
+              <h3 className="text-xs sm:text-sm font-bold">3. Domicile Location Radius Filter</h3>
             </div>
             <Switch
               checked={enableLocation}
@@ -473,12 +473,12 @@ export default function CreateJobPage() {
               <MapPicker
                 value={workLocation}
                 onChange={setWorkLocation}
-                label="Tentukan Titik Koordinat Kantor / Tempat Kerja"
+                label="Set Workplace / Office Location on Map"
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pt-2">
                 <div className="space-y-2">
-                  <Label htmlFor="maxDistance" className="text-xs font-semibold">Batas Radius Maksimal (KM)</Label>
+                  <Label htmlFor="maxDistance" className="text-xs font-semibold">Maximum Radius Distance (KM)</Label>
                   <div className="flex items-center gap-3">
                     <Input
                       id="maxDistance"
@@ -505,11 +505,11 @@ export default function CreateJobPage() {
                       className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary accent-primary"
                     />
                     <Label htmlFor="distanceMandatory" className="text-xs font-bold cursor-pointer">
-                      Jadikan Syarat Wajib (Otomatis Gagal jika di luar radius)
+                      Make Mandatory Criterion (Auto fail if outside radius)
                     </Label>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-normal">
-                    Jika dicentang, kandidat berdomisili melebihi radius otomatis berstatus <strong>Not Qualified</strong>.
+                    If checked, candidates living outside this radius will automatically be marked <strong>Not Qualified</strong>.
                   </p>
                 </div>
               </div>
@@ -521,12 +521,12 @@ export default function CreateJobPage() {
         <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-6">
           <div className="flex items-center gap-2 border-b border-border/60 pb-3">
             <SlidersHorizontal className="w-4 h-4 text-primary" />
-            <h3 className="text-xs sm:text-sm font-bold">4. Kriteria Evaluasi AI Screening</h3>
+            <h3 className="text-xs sm:text-sm font-bold">4. AI Screening Evaluation Criteria</h3>
           </div>
 
           <CriteriaBuilder
-            label="⚠️ Syarat Wajib (Mandatory Criteria)"
-            description="Kandidat WAJIB memenuhi seluruh syarat ini. Jika gagal di 1 kriteria, otomatis Not Qualified."
+            label="⚠️ Mandatory Requirements"
+            description="Candidates MUST satisfy all mandatory criteria. Failing any item automatically results in Not Qualified."
             items={mandatoryCriteria}
             onChange={setMandatoryCriteria}
             variant="mandatory"
@@ -535,8 +535,8 @@ export default function CreateJobPage() {
           <Separator className="bg-border/60" />
 
           <CriteriaBuilder
-            label="✨ Syarat Opsional (Optional / Preferred Criteria)"
-            description="Kriteria tambahan yang akan memberikan skor bonus kecocokan kandidat."
+            label="✨ Optional Requirements (Bonus Points)"
+            description="Preferred qualifications that add bonus points to candidate match score."
             items={optionalCriteria}
             onChange={setOptionalCriteria}
             variant="optional"
@@ -546,9 +546,9 @@ export default function CreateJobPage() {
         {/* Section 5: Passing Grade Slider */}
         <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs sm:text-sm font-bold">5. Threshold Passing Grade Skor AI</h3>
+            <h3 className="text-xs sm:text-sm font-bold">5. AI Score Passing Grade Threshold</h3>
             <span className="text-lg sm:text-xl font-extrabold font-mono text-primary bg-primary/10 px-3 py-1 rounded-xl border border-primary/20">
-              {passingGrade} Poin
+              {passingGrade} Pts
             </span>
           </div>
 
@@ -565,10 +565,10 @@ export default function CreateJobPage() {
               className="py-2"
             />
             <div className="flex justify-between text-[10px] text-muted-foreground px-1 font-medium">
-              <span>0 (Ringan)</span>
-              <span>50 (Standar)</span>
-              <span>70 (Rekomendasi)</span>
-              <span>100 (Sangat Ketat)</span>
+              <span>0 (Lenient)</span>
+              <span>50 (Standard)</span>
+              <span>70 (Recommended)</span>
+              <span>100 (Strict)</span>
             </div>
           </div>
         </div>
@@ -579,18 +579,18 @@ export default function CreateJobPage() {
             href="/jobs"
             className={cn(buttonVariants({ variant: "outline" }), "h-10 text-xs rounded-xl w-full sm:w-auto justify-center")}
           >
-            Batal
+            Cancel
           </Link>
           <Button type="submit" disabled={saving} className="h-10 text-xs gap-2 rounded-xl shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">
             {saving ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Menyimpan Lowongan...
+                Saving Job Position...
               </>
             ) : (
               <>
                 <Save className="w-4 h-4" />
-                Simpan & Terbitkan Lowongan
+                Save & Publish Job
               </>
             )}
           </Button>

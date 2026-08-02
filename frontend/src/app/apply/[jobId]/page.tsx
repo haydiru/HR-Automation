@@ -80,7 +80,7 @@ export default function PublicApplyPage({
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3 p-4 text-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-xs font-medium text-muted-foreground">Memuat detail lowongan...</p>
+        <p className="text-xs font-medium text-muted-foreground">Loading job position details...</p>
       </div>
     );
   }
@@ -92,9 +92,9 @@ export default function PublicApplyPage({
           <div className="w-16 h-16 mx-auto rounded-2xl bg-muted/30 flex items-center justify-center">
             <FileText className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h2 className="text-lg font-bold">Lowongan Tidak Ditemukan</h2>
+          <h2 className="text-lg font-bold">Job Position Not Found</h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Link ini mungkin sudah tidak aktif atau lowongan telah ditutup oleh pihak perusahaan.
+            This link may no longer be active or the job position has been closed by the company.
           </p>
         </div>
       </div>
@@ -138,12 +138,12 @@ export default function PublicApplyPage({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      alert("Harap unggah berkas CV PDF Anda.");
+      alert("Please upload your Curriculum Vitae (PDF).");
       return;
     }
     
     if (job?.distance_mandatory && (!domicileLocation || !domicileLocation.address)) {
-      alert("Penting: Lowongan ini mewajibkan verifikasi jarak domisili. Harap pilih lokasi tempat tinggal Anda pada peta.");
+      alert("Important: This position requires domicile distance verification. Please pinpoint your residence location on the map.");
       return;
     }
     
@@ -172,11 +172,11 @@ export default function PublicApplyPage({
         setSubmitted(true);
       } else {
         const error = await res.json();
-        alert(`Gagal mengirim lamaran: ${error.error}`);
+        alert(`Failed to submit application: ${error.error}`);
       }
     } catch (err) {
       console.error(err);
-      alert("Terjadi kesalahan koneksi.");
+      alert("Connection error occurred.");
     } finally {
       setLoading(false);
     }
@@ -189,14 +189,14 @@ export default function PublicApplyPage({
           <div className="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
             <CheckCircle2 className="w-8 h-8 text-emerald-500" />
           </div>
-          <h2 className="text-xl font-bold">Lamaran Berhasil Terkirim!</h2>
+          <h2 className="text-xl font-bold">Application Submitted Successfully!</h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Terima kasih telah melamar posisi{" "}
+            Thank you for applying for the position of{" "}
             <span className="font-bold text-foreground">{job.title}</span>.
-            Berkas lamaran Anda telah otomatis masuk ke sistem AI Screening dan tim HR kami akan segera meninjaunya.
+            Your application documents have entered our AI Screening pipeline and our HR team will review them shortly.
           </p>
           <Button onClick={() => window.location.reload()} variant="outline" size="sm" className="mt-2 text-xs rounded-xl w-full">
-            Kirim Lamaran Baru
+            Submit Another Application
           </Button>
         </div>
       </div>
@@ -215,7 +215,7 @@ export default function PublicApplyPage({
             <h1 className="text-lg font-extrabold tracking-tight">Obsidian Talent OS</h1>
           </div>
           <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
-            Portal Lamaran Rekrutmen Resmi
+            Official Application Portal
           </p>
         </div>
 
@@ -231,16 +231,16 @@ export default function PublicApplyPage({
           <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
             <div className="p-3 sm:p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 space-y-1">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                Status Lowongan
+                Position Status
               </p>
               <p className="text-xs font-bold text-emerald-500 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Aktif & Terbuka
+                Active & Open
               </p>
             </div>
             <div className="p-3 sm:p-3.5 rounded-xl bg-primary/5 border border-primary/15 space-y-1">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                Penilaian Otomatis
+                Automated Assessment
               </p>
               <p className="text-xs font-bold text-primary flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5" />
@@ -252,18 +252,18 @@ export default function PublicApplyPage({
           {job.work_address && (
             <div className="p-3.5 sm:p-4 rounded-xl bg-muted/20 border border-border/60 space-y-1">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                Penempatan / Lokasi Kantor
+                Workplace Location
               </p>
               <p className="text-xs font-bold text-foreground">
                 {job.work_address}
               </p>
               {job.max_distance && (
                 <p className="text-[11px] text-muted-foreground pt-1">
-                  Batas Radius Jarak Domisili: <span className="font-mono text-primary font-bold">{job.max_distance} KM</span> 
+                  Domicile Distance Limit: <span className="font-mono text-primary font-bold">{job.max_distance} KM</span> 
                   {job.distance_mandatory ? (
-                    <span className="text-destructive font-bold"> (Syarat Wajib)</span>
+                    <span className="text-destructive font-bold"> (Mandatory Requirement)</span>
                   ) : (
-                    <span className="text-emerald-500 font-bold"> (Syarat Bonus)</span>
+                    <span className="text-emerald-500 font-bold"> (Bonus Requirement)</span>
                   )}
                 </p>
               )}
@@ -277,15 +277,15 @@ export default function PublicApplyPage({
           <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 space-y-5 shadow-sm">
             <div className="flex items-center gap-2 border-b border-border/60 pb-3">
               <User className="w-4 h-4 text-primary" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">1. Data Pelamar</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">1. Applicant Personal Information</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
               <div className="space-y-1.5">
-                <Label htmlFor="fullname" className="text-xs font-semibold">Nama Lengkap <span className="text-red-500">*</span></Label>
+                <Label htmlFor="fullname" className="text-xs font-semibold">Full Name <span className="text-red-500">*</span></Label>
                 <Input 
                   id="fullname" 
-                  placeholder="Contoh: Budi Santoso" 
+                  placeholder="e.g. John Doe" 
                   className="text-xs h-9 rounded-xl" 
                   required 
                   value={fullname}
@@ -293,11 +293,11 @@ export default function PublicApplyPage({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-xs font-semibold">Alamat Email <span className="text-red-500">*</span></Label>
+                <Label htmlFor="email" className="text-xs font-semibold">Email Address <span className="text-red-500">*</span></Label>
                 <Input 
                   id="email" 
                   type="email" 
-                  placeholder="budi@email.com" 
+                  placeholder="johndoe@email.com" 
                   className="text-xs h-9 rounded-xl" 
                   required 
                   value={email}
@@ -305,11 +305,11 @@ export default function PublicApplyPage({
                 />
               </div>
               <div className="space-y-1.5 md:col-span-2">
-                <Label htmlFor="phone" className="text-xs font-semibold">Nomor Telepon / WhatsApp <span className="text-red-500">*</span></Label>
+                <Label htmlFor="phone" className="text-xs font-semibold">Phone / WhatsApp Number <span className="text-red-500">*</span></Label>
                 <Input 
                   id="phone" 
                   type="tel" 
-                  placeholder="+62 812-xxxx-xxxx" 
+                  placeholder="+1 555-xxxx-xxxx" 
                   className="text-xs h-9 rounded-xl" 
                   required 
                   value={phone}
@@ -323,17 +323,17 @@ export default function PublicApplyPage({
           <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 space-y-4 shadow-sm">
             <div className="flex items-center gap-2 border-b border-border/60 pb-3">
               <MapPin className="w-4 h-4 text-primary" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">2. Lokasi Domisili Tempat Tinggal</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">2. Residence / Domicile Location</h3>
             </div>
             
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Tentukan koordinat domisili tempat tinggal Anda saat ini pada peta di bawah ini.
+              Pinpoint your current residence location coordinates on the map below.
             </p>
 
             <MapPicker
               value={domicileLocation}
               onChange={setDomicileLocation}
-              label="Tentukan Lokasi Domisili Anda"
+              label="Pinpoint Your Domicile Location"
             />
           </div>
 
@@ -342,10 +342,10 @@ export default function PublicApplyPage({
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2">
                 <GraduationCap className="w-4 h-4 text-primary" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">3. Riwayat Pendidikan</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">3. Educational Background</h3>
               </div>
               <Button type="button" variant="outline" size="sm" onClick={addEducation} className="h-7 text-xs rounded-lg gap-1">
-                <Plus className="w-3.5 h-3.5" /> Tambah
+                <Plus className="w-3.5 h-3.5" /> Add
               </Button>
             </div>
 
@@ -361,27 +361,27 @@ export default function PublicApplyPage({
                   </button>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1 md:col-span-2">
-                      <Label className="text-[10px] font-semibold uppercase">Sekolah / Universitas</Label>
+                      <Label className="text-[10px] font-semibold uppercase">School / University</Label>
                       <Input
-                        placeholder="Contoh: Universitas Indonesia"
+                        placeholder="e.g. Stanford University"
                         value={edu.school}
                         onChange={(e) => updateEducation(edu.id, "school", e.target.value)}
                         className="text-xs h-8 rounded-lg"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] font-semibold uppercase">Gelar / Jurusan</Label>
+                      <Label className="text-[10px] font-semibold uppercase">Degree / Major</Label>
                       <Input
-                        placeholder="Contoh: S1 Teknik Informatika"
+                        placeholder="e.g. B.S. Computer Science"
                         value={edu.degree}
                         onChange={(e) => updateEducation(edu.id, "degree", e.target.value)}
                         className="text-xs h-8 rounded-lg"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] font-semibold uppercase">Tahun Lulus</Label>
+                      <Label className="text-[10px] font-semibold uppercase">Graduation Year</Label>
                       <Input
-                        placeholder="Contoh: 2022"
+                        placeholder="e.g. 2022"
                         value={edu.year}
                         onChange={(e) => updateEducation(edu.id, "year", e.target.value)}
                         className="text-xs h-8 rounded-lg"
@@ -392,7 +392,7 @@ export default function PublicApplyPage({
               ))}
               {educations.length === 0 && (
                 <p className="text-center py-4 text-xs text-muted-foreground italic border border-dashed rounded-xl border-border/60">
-                  Klik tombol Tambah jika ingin menyertakan riwayat pendidikan.
+                  Click Add to include your education history.
                 </p>
               )}
             </div>
@@ -403,10 +403,10 @@ export default function PublicApplyPage({
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4 text-primary" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">4. Pengalaman Kerja</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">4. Work Experience</h3>
               </div>
               <Button type="button" variant="outline" size="sm" onClick={addExperience} className="h-7 text-xs rounded-lg gap-1">
-                <Plus className="w-3.5 h-3.5" /> Tambah
+                <Plus className="w-3.5 h-3.5" /> Add
               </Button>
             </div>
 
@@ -422,27 +422,27 @@ export default function PublicApplyPage({
                   </button>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1 md:col-span-2">
-                      <Label className="text-[10px] font-semibold uppercase">Nama Perusahaan</Label>
+                      <Label className="text-[10px] font-semibold uppercase">Company Name</Label>
                       <Input
-                        placeholder="Contoh: PT Teknologi Indonesia"
+                        placeholder="e.g. Tech Corp Inc."
                         value={exp.company}
                         onChange={(e) => updateExperience(exp.id, "company", e.target.value)}
                         className="text-xs h-8 rounded-lg"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] font-semibold uppercase">Posisi / Jabatan</Label>
+                      <Label className="text-[10px] font-semibold uppercase">Role / Position</Label>
                       <Input
-                        placeholder="Contoh: Frontend Developer"
+                        placeholder="e.g. Frontend Engineer"
                         value={exp.position}
                         onChange={(e) => updateExperience(exp.id, "position", e.target.value)}
                         className="text-xs h-8 rounded-lg"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] font-semibold uppercase">Durasi (Tahun/Bulan)</Label>
+                      <Label className="text-[10px] font-semibold uppercase">Duration (Years/Months)</Label>
                       <Input
-                        placeholder="Contoh: 2 Tahun 6 Bulan"
+                        placeholder="e.g. 2 Years 6 Months"
                         value={exp.duration}
                         onChange={(e) => updateExperience(exp.id, "duration", e.target.value)}
                         className="text-xs h-8 rounded-lg"
@@ -453,7 +453,7 @@ export default function PublicApplyPage({
               ))}
               {experiences.length === 0 && (
                 <p className="text-center py-4 text-xs text-muted-foreground italic border border-dashed rounded-xl border-border/60">
-                  Klik tombol Tambah jika ingin menyertakan pengalaman kerja.
+                  Click Add to include work experience.
                 </p>
               )}
             </div>
@@ -503,8 +503,8 @@ export default function PublicApplyPage({
               ) : (
                 <div className="space-y-2">
                   <Upload className="w-8 h-8 text-muted-foreground mx-auto" />
-                  <p className="text-xs font-bold">Klik untuk upload berkas CV PDF</p>
-                  <p className="text-[10px] text-muted-foreground">Format PDF (Maksimal 5MB)</p>
+                  <p className="text-xs font-bold">Click to upload CV PDF document</p>
+                  <p className="text-[10px] text-muted-foreground">PDF Format (Max 5MB)</p>
                 </div>
               )}
             </div>
@@ -518,11 +518,11 @@ export default function PublicApplyPage({
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Memproses & Mengirim Lamaran...
+                Processing & Submitting Application...
               </>
             ) : (
               <>
-                Kirim Berkas Lamaran Sekarang
+                Submit Application Now
                 <CheckCircle2 className="w-4 h-4" />
               </>
             )}
@@ -530,7 +530,7 @@ export default function PublicApplyPage({
         </form>
 
         <p className="text-center text-[10px] text-muted-foreground">
-          Dikelola secara otomatis oleh Obsidian Talent OS · DeepMind AI Screening System
+          Managed automatically by Obsidian Talent OS · DeepMind AI Screening System
         </p>
       </div>
     </div>

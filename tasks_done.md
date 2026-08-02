@@ -147,28 +147,53 @@ Dokumen ini mencatat secara resmi seluruh task yang **telah selesai dikerjakan, 
 
 ### Task 5.1: Mobile Navigation & Responsive Base Layout (`sidebar.tsx`, `header.tsx`, `layout.tsx`)
 - **Status:** ✅ Completed
-- **Rincian:** Sidebar tersembunyi pada layar seluler (`hidden md:flex`) dan ditambahkan Mobile Sheet Navigation Menu (tombol Hamburger Menu pada Header).
 
 ### Task 5.2: Responsive Dashboard (`/dashboard`)
 - **Status:** ✅ Completed
-- **Rincian:** Responsif grid stat card (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`), adaptif Recharts container (`AreaChart` & `PieChart`), serta scroll horizontal tabel feed kandidat.
 
 ### Task 5.3: Responsive Jobs & Job Creation (`/jobs` & `/jobs/create`)
 - **Status:** ✅ Completed
-- **Rincian:** Resizing lowongan card grid, filter bar flex-col pada layar HP, dan touch-friendly map picker.
 
 ### Task 5.4: Responsive Pipeline Lowongan (`/jobs/[jobId]`)
 - **Status:** ✅ Completed
-- **Rincian:** Grid metrics hero job, scrollbar horizontal touch stepper tahapan seleksi, dan floating action bar flex-wrap.
 
 ### Task 5.5: Responsive Candidates List & Detail (`/candidates` & `/candidates/[candidateId]`)
 - **Status:** ✅ Completed
-- **Rincian:** Filter bar terpusat flex-wrap, tombol aksi hero profile berlipat pada seluler, & adaptif iframe CV PDF (450px pada HP vs 700px pada Desktop).
 
 ### Task 5.6: Responsive Settings Suite (`/settings/*`)
 - **Status:** ✅ Completed
-- **Rincian:** Sub-navigation pills touch-scrollable & flex grid layout per halaman settings.
 
 ### Task 5.7: Responsive Public Apply Page (`/apply/[jobId]`)
 - **Status:** ✅ Completed
-- **Rincian:** Touch-friendly map picker, upload zone dropzone, & form container padding responsif pada layar HP.
+
+---
+
+## 📌 Phase 6: English Default Localization (Localization to English)
+
+### Task 6.1: Base Navigation & Global Layouts (`sidebar.tsx`, `header.tsx`, `notification-popover.tsx`)
+- **Status:** ✅ Completed
+- **Details:** Translated Sidebar navigation links ("Dashboard", "Jobs", "All Candidates", "Settings", "Log Out"), Header search placeholders, dropdowns, and Notification Center to English by default.
+
+### Task 6.2: Dashboard Page (`/dashboard/page.tsx`)
+- **Status:** ✅ Completed
+- **Details:** Translated Welcome banner, Stat Cards ("Active Jobs", "Total Applicants", "Qualified Candidates", "Interview Mandates"), trend charts, AI qualification pie chart, interview schedule widget, and recent applicants feed table to English by default.
+
+### Task 6.3: Jobs & Create Job Pages (`/jobs/page.tsx` & `/jobs/create/page.tsx`)
+- **Status:** ✅ Completed
+- **Details:** Translated Jobs management page, status filters, position card metrics, and Create Job form sections (Primary Position Information, Selection Stage Scheme, Location Radius Filter, AI Screening Criteria, and Passing Grade Threshold) to English by default.
+
+### Task 6.4: Candidate Pipeline Page (`/jobs/[jobId]/page.tsx`)
+- **Status:** ✅ Completed
+- **Details:** Translated Job hero overview cards, criteria requirement tags ("Mandatory Requirements", "Optional Requirements"), dynamic selection stage stepper, controls bar, and floating bulk action bar to English by default.
+
+### Task 6.5: All Candidates List & Candidate Detail Pages (`/candidates/page.tsx` & `/candidates/[candidateId]/page.tsx`)
+- **Status:** ✅ Completed
+- **Details:** Translated All Candidates list filter controls and Candidate Detail page (Hero profile header, action controls "Advance Stage", "Reject", "Assign Mandate", "Print PDF Summary", CV previewer, AI match score circle, mandatory evaluation breakdown, detected skills, AI reasoning, and HR internal notes) to English by default.
+
+### Task 6.6: Settings Suite Pages (`/settings/page.tsx`, `/settings/stages/page.tsx`, `/settings/team/page.tsx`, `/settings/integrations/page.tsx`)
+- **Status:** ✅ Completed
+- **Details:** Translated sub-navigation pills, Company Profile & AI Provider settings, Recruitment Stages settings, Team Management settings, and Email & Calendar Integrations settings to English by default.
+
+### Task 6.7: Public Job Application Form (`/apply/[jobId]/page.tsx`)
+- **Status:** ✅ Completed
+- **Details:** Translated public application portal header, job info hero card, applicant information form, domicile map picker, education background list, work experience list, PDF CV upload zone, and submission confirmation to English by default.

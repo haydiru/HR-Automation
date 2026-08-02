@@ -47,7 +47,6 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { AIInsightModal } from "@/components/ui/ai-insight-modal";
 import { ScheduleInterviewModal } from "@/components/ui/schedule-interview-modal";
 import { format } from "date-fns";
-import { id as localeId } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { Candidate } from "@/types";
 import { createClient } from "@/lib/supabase/client";
@@ -119,7 +118,7 @@ export default function JobDetailPage({
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin text-primary" />
-        <p className="text-xs font-medium text-muted-foreground">Memuat pipeline lowongan...</p>
+        <p className="text-xs font-medium text-muted-foreground">Loading job pipeline...</p>
       </div>
     );
   }
@@ -127,7 +126,7 @@ export default function JobDetailPage({
   if (!job) {
     return (
       <div className="p-6 text-center">
-        <p className="text-muted-foreground text-sm">Lowongan tidak ditemukan.</p>
+        <p className="text-muted-foreground text-sm">Job position not found.</p>
       </div>
     );
   }
@@ -203,17 +202,17 @@ export default function JobDetailPage({
         const candidatesRes = await fetch(`/api/jobs/${jobId}/candidates`);
         if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
       } else {
-        alert(data.message || data.error || "Gagal memajukan kandidat.");
+        alert(data.message || data.error || "Failed to advance candidate.");
       }
     } catch (err: any) {
-      alert("Gagal: " + err.message);
+      alert("Failed: " + err.message);
     } finally {
       setAdvancingId(null);
     }
   };
 
   const handleReject = async (candidateId: string, candidateName: string) => {
-    if (!confirm(`Apakah Anda yakin ingin menolak ${candidateName}?`)) return;
+    if (!confirm(`Are you sure you want to reject ${candidateName}?`)) return;
 
     try {
       const res = await fetch(`/api/candidates/${candidateId}/reject`, {
@@ -227,10 +226,10 @@ export default function JobDetailPage({
         if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
       } else {
         const errData = await res.json();
-        alert(errData.error || "Gagal menolak kandidat.");
+        alert(errData.error || "Failed to reject candidate.");
       }
     } catch (err: any) {
-      alert("Gagal: " + err.message);
+      alert("Failed: " + err.message);
     }
   };
 
@@ -250,7 +249,7 @@ export default function JobDetailPage({
       if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
       setSelectedIds([]);
     } catch (err: any) {
-      alert("Gagal: " + err.message);
+      alert("Failed: " + err.message);
     } finally {
       setUpdatingBulk(false);
     }
@@ -258,7 +257,7 @@ export default function JobDetailPage({
 
   const handleBulkReject = async () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`Apakah Anda yakin ingin menolak ${selectedIds.length} kandidat?`)) return;
+    if (!confirm(`Are you sure you want to reject ${selectedIds.length} candidate(s)?`)) return;
 
     setUpdatingBulk(true);
     try {
@@ -273,7 +272,7 @@ export default function JobDetailPage({
       if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
       setSelectedIds([]);
     } catch (err: any) {
-      alert("Gagal: " + err.message);
+      alert("Failed: " + err.message);
     } finally {
       setUpdatingBulk(false);
     }
@@ -281,27 +280,27 @@ export default function JobDetailPage({
 
   const handleExportCSV = () => {
     if (filteredCandidates.length === 0) {
-      alert("Tidak ada data kandidat untuk di-export.");
+      alert("No candidate data to export.");
       return;
     }
 
     const headers = [
       "ID",
-      "Nama Lengkap",
+      "Full Name",
       "Email",
-      "Telepon",
-      "Skor AI",
-      "Status Mandatory",
-      "Tahapan Saat Ini",
-      "Staf SR Ditugaskan",
-      "Jarak ke Kantor (KM)",
-      "Tanggal Apply",
+      "Phone",
+      "AI Score",
+      "Mandatory Status",
+      "Current Stage",
+      "Assigned SR Staff",
+      "Distance to Office (KM)",
+      "Applied Date",
     ];
 
     const rows = filteredCandidates.map((c) => {
       const mandatoryPassed = c.analysis_result?.mandatory_check?.every((m: any) => m.passed)
-        ? "LULUS"
-        : "GAGAL";
+        ? "PASSED"
+        : "FAILED";
 
       return [
         `"${c.id}"`,
@@ -342,7 +341,7 @@ export default function JobDetailPage({
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
       >
         <ArrowLeft className="w-4 h-4" />
-        Kembali ke Manajemen Lowongan
+        Back to Jobs Management
       </Link>
 
       {/* Job Header Hero Card */}
@@ -360,7 +359,7 @@ export default function JobDetailPage({
                     : "bg-muted text-muted-foreground border-border"
                 )}
               >
-                {job.status === "active" ? "🟢 Lowongan Aktif" : "Ditutup"}
+                {job.status === "active" ? "🟢 Active Job" : "Closed"}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap max-w-3xl">
@@ -379,7 +378,7 @@ export default function JobDetailPage({
             className="gap-1.5 text-xs rounded-xl border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 shrink-0 w-full sm:w-auto justify-center"
           >
             <Mail className="w-3.5 h-3.5" />
-            {copiedAlias ? "Tersalin!" : "Salin Email Ingestion"}
+            {copiedAlias ? "Copied!" : "Copy Ingestion Email"}
             {copiedAlias ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5 opacity-60" />}
           </Button>
         </div>
@@ -391,7 +390,7 @@ export default function JobDetailPage({
               <Users className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase font-semibold">Total Pelamar</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-semibold">Total Applicants</p>
               <p className="text-sm font-extrabold font-mono">{allCandidates.length}</p>
             </div>
           </div>
@@ -401,7 +400,7 @@ export default function JobDetailPage({
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase font-semibold">Lolos Mandatory AI</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-semibold">Passed Mandatory AI</p>
               <p className="text-sm font-extrabold text-emerald-500 font-mono">{qualifiedCount}</p>
             </div>
           </div>
@@ -412,7 +411,7 @@ export default function JobDetailPage({
             </div>
             <div>
               <p className="text-[10px] text-muted-foreground uppercase font-semibold">Passing Grade</p>
-              <p className="text-sm font-extrabold text-purple-500 font-mono">{job.passing_grade} Poin</p>
+              <p className="text-sm font-extrabold text-purple-500 font-mono">{job.passing_grade} Pts</p>
             </div>
           </div>
 
@@ -421,8 +420,8 @@ export default function JobDetailPage({
               <Layers className="w-4 h-4 text-blue-500" />
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase font-semibold">Jumlah Tahapan</p>
-              <p className="text-sm font-extrabold text-blue-500 font-mono">{stages.length} Tahap</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-semibold">Stage Count</p>
+              <p className="text-sm font-extrabold text-blue-500 font-mono">{stages.length} Stages</p>
             </div>
           </div>
         </div>
@@ -430,7 +429,7 @@ export default function JobDetailPage({
         {/* Criteria Tags */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/60">
           <div className="space-y-1.5">
-            <h4 className="text-[11px] font-bold text-destructive uppercase tracking-wider">Syarat Wajib (Mandatory)</h4>
+            <h4 className="text-[11px] font-bold text-destructive uppercase tracking-wider">Mandatory Requirements</h4>
             <div className="flex flex-wrap gap-1.5">
               {job.mandatory_criteria?.map((c: string, i: number) => (
                 <Badge key={i} variant="outline" className="text-[10px] border-destructive/30 text-destructive bg-destructive/5">
@@ -442,7 +441,7 @@ export default function JobDetailPage({
           </div>
 
           <div className="space-y-1.5">
-            <h4 className="text-[11px] font-bold text-primary uppercase tracking-wider">Syarat Opsional (Bonus)</h4>
+            <h4 className="text-[11px] font-bold text-primary uppercase tracking-wider">Optional Requirements (Bonus)</h4>
             <div className="flex flex-wrap gap-1.5">
               {job.optional_criteria?.map((c: string, i: number) => (
                 <Badge key={i} variant="outline" className="text-[10px] border-primary/30 text-primary bg-primary/5">
@@ -461,7 +460,7 @@ export default function JobDetailPage({
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Alur Stepper & Distribusi Pelamar per Tahapan
+              Selection Stage Pipeline & Candidate Distribution
             </h3>
           </div>
 
@@ -516,7 +515,7 @@ export default function JobDetailPage({
                 )}
               >
                 <Ban className="w-4 h-4" />
-                Ditolak
+                Rejected
                 <Badge variant="secondary" className="text-[10px] h-5 ml-1 bg-black/5 dark:bg-white/10 font-mono">
                   {rejectedCount}
                 </Badge>
@@ -531,9 +530,9 @@ export default function JobDetailPage({
         {/* Controls Bar */}
         <div className="p-4 sm:p-5 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60">
           <div className="flex items-center gap-3">
-            <h2 className="text-sm font-bold">Pipeline Pelamar</h2>
+            <h2 className="text-sm font-bold">Applicant Pipeline</h2>
             <Badge variant="secondary" className="text-xs font-semibold">
-              {filteredCandidates.length} Terfilter
+              {filteredCandidates.length} Filtered
             </Badge>
             {selectedStageFilter !== "all" && (
               <Button
@@ -553,7 +552,7 @@ export default function JobDetailPage({
             <div className="relative w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Cari nama / email..."
+                placeholder="Search name/email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-8 w-full sm:w-[170px] text-xs rounded-xl"
@@ -563,11 +562,11 @@ export default function JobDetailPage({
             {/* Filter Staff SR */}
             <Select value={selectedStaffFilter} onValueChange={(val: any) => setSelectedStaffFilter(val || "all")}>
               <SelectTrigger className="h-8 text-xs w-full sm:w-[150px] rounded-xl">
-                <SelectValue placeholder="Filter Staf SR" />
+                <SelectValue placeholder="Filter SR Staff" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Staf SR</SelectItem>
-                <SelectItem value="unassigned">Belum Diberikan Mandat</SelectItem>
+                <SelectItem value="all">All SR Staff</SelectItem>
+                <SelectItem value="unassigned">Unassigned Mandate</SelectItem>
                 {teamMembers.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.full_name || m.email}
@@ -588,7 +587,7 @@ export default function JobDetailPage({
                 htmlFor="ready-filter"
                 className="text-xs font-bold text-emerald-500 cursor-pointer whitespace-nowrap"
               >
-                Siap Interview
+                Ready for Interview
               </Label>
             </div>
 
@@ -611,7 +610,7 @@ export default function JobDetailPage({
             <div className="flex items-center gap-2">
               <CheckSquare className="w-4 h-4 text-primary" />
               <span className="text-xs font-bold text-primary">
-                {selectedIds.length} Kandidat Dipilih
+                {selectedIds.length} Candidate(s) Selected
               </span>
             </div>
 
@@ -624,7 +623,7 @@ export default function JobDetailPage({
                 className="h-7 text-xs gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 {updatingBulk ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                Majukan Tahapan
+                Advance Stage
               </Button>
 
               <Button
@@ -642,7 +641,7 @@ export default function JobDetailPage({
                 className="h-7 text-xs gap-1.5 rounded-lg"
               >
                 <UserCheck className="w-3.5 h-3.5" />
-                Beri Mandat
+                Assign Mandate
               </Button>
 
               <Button
@@ -653,7 +652,7 @@ export default function JobDetailPage({
                 className="h-7 text-xs gap-1.5 rounded-lg"
               >
                 <Ban className="w-3.5 h-3.5" />
-                Tolak
+                Reject
               </Button>
 
               <Button
@@ -662,7 +661,7 @@ export default function JobDetailPage({
                 onClick={() => setSelectedIds([])}
                 className="h-7 text-xs text-muted-foreground"
               >
-                Batal
+                Cancel
               </Button>
             </div>
           </div>
@@ -682,13 +681,13 @@ export default function JobDetailPage({
                     onCheckedChange={(checked) => handleSelectAll(!!checked)}
                   />
                 </th>
-                <th className="p-4">Kandidat</th>
-                <th className="p-4 text-center">Skor AI</th>
+                <th className="p-4">Candidate</th>
+                <th className="p-4 text-center">AI Score</th>
                 <th className="p-4 text-center">Mandatory</th>
-                <th className="p-4">Penguji SR Staff</th>
-                <th className="p-4 text-center">Tahapan Saat Ini</th>
-                <th className="p-4">Tanggal Apply</th>
-                <th className="p-4 text-right">Aksi</th>
+                <th className="p-4">Assigned SR Staff</th>
+                <th className="p-4 text-center">Current Stage</th>
+                <th className="p-4">Applied Date</th>
+                <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
@@ -736,18 +735,18 @@ export default function JobDetailPage({
                           />
                         </TooltipTrigger>
                         <TooltipContent className="text-xs">
-                          Klik untuk melihat insight AI
+                          Click to view AI insight
                         </TooltipContent>
                       </Tooltip>
                     </td>
                     <td className="p-4 text-center whitespace-nowrap">
                       {mandatoryPassed ? (
                         <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px]">
-                          ✓ Lulus
+                          ✓ Passed
                         </Badge>
                       ) : (
                         <Badge className="bg-destructive/15 text-destructive text-[10px]">
-                          ✗ Gagal
+                          ✗ Failed
                         </Badge>
                       )}
                     </td>
@@ -761,16 +760,14 @@ export default function JobDetailPage({
                           {c.assigned_staff_name}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground text-[11px]">Belum Ada</span>
+                        <span className="text-muted-foreground text-[11px]">Unassigned</span>
                       )}
                     </td>
                     <td className="p-4 text-center whitespace-nowrap">
                       <StatusBadge status={currentStageName} color={stageColor} />
                     </td>
                     <td className="p-4 text-[11px] text-muted-foreground font-mono whitespace-nowrap">
-                      {format(new Date(c.created_at), "d MMM yyyy", {
-                        locale: localeId,
-                      })}
+                      {format(new Date(c.created_at), "MMM d, yyyy")}
                     </td>
                     <td className="p-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1">
@@ -786,7 +783,7 @@ export default function JobDetailPage({
                                 <ChevronRight className="w-4 h-4" />
                               )}
                             </TooltipTrigger>
-                            <TooltipContent className="text-xs">Majukan Tahapan</TooltipContent>
+                            <TooltipContent className="text-xs">Advance Stage</TooltipContent>
                           </Tooltip>
                         )}
 
@@ -798,7 +795,7 @@ export default function JobDetailPage({
                             >
                               <Ban className="w-4 h-4" />
                             </TooltipTrigger>
-                            <TooltipContent className="text-xs">Tolak Kandidat</TooltipContent>
+                            <TooltipContent className="text-xs">Reject Candidate</TooltipContent>
                           </Tooltip>
                         )}
 
@@ -814,7 +811,7 @@ export default function JobDetailPage({
                           >
                             <Calendar className="w-4 h-4" />
                           </TooltipTrigger>
-                          <TooltipContent className="text-xs">Beri Mandat / Jadwal Wawancara</TooltipContent>
+                          <TooltipContent className="text-xs">Assign Mandate / Schedule Interview</TooltipContent>
                         </Tooltip>
 
                         <Tooltip>
@@ -824,7 +821,7 @@ export default function JobDetailPage({
                           >
                             <Sparkles className="w-4 h-4" />
                           </TooltipTrigger>
-                          <TooltipContent className="text-xs">Insight AI</TooltipContent>
+                          <TooltipContent className="text-xs">AI Insight</TooltipContent>
                         </Tooltip>
 
                         <Link
@@ -849,10 +846,10 @@ export default function JobDetailPage({
           <div className="text-center py-12">
             <p className="text-sm text-muted-foreground">
               {selectedStageFilter !== "all"
-                ? `Tidak ada pelamar di tahapan "${selectedStageFilter === "rejected" ? "Ditolak" : selectedStageFilter}".`
+                ? `No applicants found in stage "${selectedStageFilter === "rejected" ? "Rejected" : selectedStageFilter}".`
                 : readyOnly
-                ? "Tidak ada pelamar yang siap interview."
-                : "Belum ada pelamar untuk lowongan ini."}
+                ? "No applicants ready for interview."
+                : "No applicants yet for this job position."}
             </p>
           </div>
         )}

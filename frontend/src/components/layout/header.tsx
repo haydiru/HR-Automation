@@ -57,7 +57,7 @@ export function Header() {
   };
 
   const displayName = profile?.full_name || profile?.email?.split("@")[0] || "User";
-  const companyName = profile?.company_name || "Perusahaan Saya";
+  const companyName = profile?.company_name || "My Company";
   const initials = displayName
     .split(" ")
     .map((n: string) => n[0])
@@ -129,7 +129,7 @@ export function Header() {
                 )}
               >
                 <Settings className="w-4 h-4" />
-                <span>Pengaturan</span>
+                <span>Settings</span>
               </Link>
             </nav>
 
@@ -153,7 +153,7 @@ export function Header() {
                 className="w-full text-xs gap-2 rounded-xl"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                Keluar dari Sistem
+                Log Out of System
               </Button>
             </div>
           </SheetContent>
@@ -163,7 +163,7 @@ export function Header() {
         <div className="relative max-w-xs md:max-w-md flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Cari lowongan / kandidat..."
+            placeholder="Search jobs or candidates..."
             className="pl-9 bg-muted/40 border-border/60 focus:border-primary/50 focus:bg-background h-9 text-xs rounded-xl shadow-inner transition-all w-full"
           />
         </div>
@@ -218,13 +218,13 @@ export function Header() {
             <DropdownMenuItem className="p-0">
               <Link href="/settings" className="w-full px-2 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
                 <User className="w-4 h-4 text-muted-foreground" />
-                Profil Saya & Provider AI
+                My Profile & AI Config
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="p-0">
               <Link href="/settings/stages" className="w-full px-2 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
                 <Sparkles className="w-4 h-4 text-muted-foreground" />
-                Tahapan Rekrutmen
+                Recruitment Stages
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -233,7 +233,7 @@ export function Header() {
               className="text-xs gap-2 py-2 text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
-              Keluar dari Sistem
+              Log Out of System
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
