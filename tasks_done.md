@@ -27,8 +27,13 @@ Dokumen ini mencatat secara resmi seluruh task yang **telah selesai dikerjakan, 
 - **Kategori:** Frontend Page
 
 ### Task 1.6: Halaman Daftar Semua Kandidat & Filter Terpusat (`/candidates`)
-- **Status:** ✅ Completed
+- **Status:** ✅ Completed (Fixed & Deployed)
 - **Kategori:** Frontend Page
+- **Rincian Fitur:**
+  - Dibuat `src/app/(dashboard)/candidates/page.tsx` (menyelesaikan error 404 pada Vercel untuk URL `/candidates`).
+  - Menampilkan daftar pelamar lintas lowongan perusahaan dengan filter pencarian nama/email, dropdown lowongan, filter staf SR, dan toggle qualified.
+  - Integrasi aksi cepat: advance tahapan, reject kandidat, modal penugasan mandat, dan export CSV.
+  - Dihubungkan `NotificationPopover` secara langsung ke `/api/notifications` API route dengan polling otomatis setiap 30 detik.
 
 ### Task 1.7: Halaman Detail Kandidat & Viewer CV/AI Breakdown (`/candidates/[candidateId]`)
 - **Status:** ✅ Completed

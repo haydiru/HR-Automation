@@ -12,6 +12,7 @@ import {
   CheckCheck,
   ChevronRight,
   Clock,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +21,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { createClient } from "@/lib/supabase/client";
 
 export interface AppNotification {
   id: string;
-  type: "mandate" | "interview" | "reschedule" | "system";
+  type: "mandate" | "interview" | "reschedule" | "stage_advance" | "system";
   title: string;
   message: string;
   link?: string;
@@ -36,63 +36,31 @@ export function NotificationPopover() {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
   const router = useRouter();
 
-  useEffect(() => {
-    async function loadNotifications() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        // Fetch from notifications table in Supabase
-        const { data } = await supabase
-          .from("notifications")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(10);
-
-        if (data && data.length > 0) {
-          setNotifications(data);
-        } else {
-          // Default initial notifications for demonstration
-          setNotifications([
-            {
-              id: "notif-1",
-              type: "mandate",
-              title: "Mandat Kandidat Baru",
-              message: "Super Admin menugaskan kandidat 'Bayu Pratama' untuk tahap wawancara Anda.",
-              link: "/candidates",
-              created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-              is_read: false,
-            },
-            {
-              id: "notif-2",
-              type: "reschedule",
-              title: "Jadwal Wawancara Diubah (Reschedule)",
-              message: "Jadwal wawancara 'Siti Aminah' diubah dari 10 Aug ke 12 Aug 2026 jam 14:00.",
-              link: "/candidates",
-              created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-              is_read: false,
-            },
-            {
-              id: "notif-3",
-              type: "system",
-              title: "AI Auto-Screening Selesai",
-              message: "3 kandidat baru untuk posisi 'Frontend Developer' telah diproses oleh AI.",
-              link: "/jobs",
-              created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-              is_read: true,
-            },
-          ]);
-        }
+  async function fetchNotifications() {
+    try {
+      const res = await fetch("/api/notifications");
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications || []);
       }
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    } finally {
       setLoading(false);
     }
+  }
 
-    loadNotifications();
+  useEffect(() => {
+    fetchNotifications();
+
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
@@ -100,33 +68,31 @@ export function NotificationPopover() {
   const handleMarkAllRead = async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      await supabase
-        .from("notifications")
-        .update({ is_read: true })
-        .eq("user_id", user.id)
-        .eq("is_read", false);
+    try {
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ readAll: true }),
+      });
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const handleNotificationClick = async (notif: AppNotification) => {
-    // Mark clicked as read
     if (!notif.is_read) {
       setNotifications((prev) =>
         prev.map((n) => (n.id === notif.id ? { ...n, is_read: true } : n))
       );
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from("notifications")
-          .update({ is_read: true })
-          .eq("id", notif.id);
+      try {
+        await fetch("/api/notifications", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: notif.id }),
+        });
+      } catch (err) {
+        console.error(err);
       }
     }
 
@@ -144,8 +110,10 @@ export function NotificationPopover() {
         return <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />;
       case "reschedule":
         return <RefreshCw className="w-4 h-4 text-amber-600 dark:text-amber-400" />;
+      case "stage_advance":
+        return <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
       default:
-        return <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
+        return <Sparkles className="w-4 h-4 text-primary" />;
     }
   };
 
@@ -203,9 +171,13 @@ export function NotificationPopover() {
 
         {/* Notification List */}
         <div className="max-h-80 overflow-y-auto divide-y divide-border">
-          {notifications.length === 0 ? (
+          {loading ? (
             <div className="p-8 text-center text-xs text-muted-foreground">
-              Tidak ada notifikasi saat ini.
+              Memuat notifikasi...
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="p-8 text-center text-xs text-muted-foreground">
+              Belum ada notifikasi saat ini.
             </div>
           ) : (
             notifications.map((notif) => (
@@ -247,11 +219,11 @@ export function NotificationPopover() {
         {/* Popover Footer */}
         <div className="p-2 border-t border-border bg-muted/20 text-center">
           <Link
-            href="/dashboard"
+            href="/candidates"
             onClick={() => setIsOpen(false)}
             className="text-[11px] text-primary font-medium hover:underline inline-flex items-center gap-1"
           >
-            Lihat semua di Dashboard <ChevronRight className="w-3 h-3" />
+            Lihat semua di Daftar Kandidat <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
       </PopoverContent>
