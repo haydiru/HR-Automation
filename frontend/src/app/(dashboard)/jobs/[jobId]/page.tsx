@@ -41,14 +41,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { buttonVariants } from "@/components/ui/button";
 import { ScoreBadge } from "@/components/ui/score-badge";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -140,7 +132,6 @@ export default function JobDetailPage({
     );
   }
 
-  // Count candidates per stage
   const stageCounts: Record<string, number> = {};
   let rejectedCount = 0;
   allCandidates.forEach((c) => {
@@ -152,7 +143,6 @@ export default function JobDetailPage({
     }
   });
 
-  // Filter Candidates
   const filteredCandidates = allCandidates.filter((c) => {
     const matchSearch =
       c.full_name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -183,7 +173,6 @@ export default function JobDetailPage({
 
   const qualifiedCount = allCandidates.filter((c) => c.is_qualified).length;
 
-  // Multi-Select Handlers
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedIds(filteredCandidates.map((c) => c.id));
@@ -200,7 +189,6 @@ export default function JobDetailPage({
     }
   };
 
-  // Advance candidate
   const handleAdvance = async (candidateId: string) => {
     setAdvancingId(candidateId);
     try {
@@ -224,7 +212,6 @@ export default function JobDetailPage({
     }
   };
 
-  // Reject candidate
   const handleReject = async (candidateId: string, candidateName: string) => {
     if (!confirm(`Apakah Anda yakin ingin menolak ${candidateName}?`)) return;
 
@@ -247,7 +234,6 @@ export default function JobDetailPage({
     }
   };
 
-  // Bulk Advance
   const handleBulkAdvance = async () => {
     if (selectedIds.length === 0) return;
     setUpdatingBulk(true);
@@ -270,7 +256,6 @@ export default function JobDetailPage({
     }
   };
 
-  // Bulk Reject
   const handleBulkReject = async () => {
     if (selectedIds.length === 0) return;
     if (!confirm(`Apakah Anda yakin ingin menolak ${selectedIds.length} kandidat?`)) return;
@@ -294,7 +279,6 @@ export default function JobDetailPage({
     }
   };
 
-  // Export CSV
   const handleExportCSV = () => {
     if (filteredCandidates.length === 0) {
       alert("Tidak ada data kandidat untuk di-export.");
@@ -351,7 +335,7 @@ export default function JobDetailPage({
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 page-enter">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-5 sm:space-y-6 page-enter">
       {/* Back Link */}
       <Link
         href="/jobs"
@@ -362,11 +346,11 @@ export default function JobDetailPage({
       </Link>
 
       {/* Job Header Hero Card */}
-      <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm space-y-5">
+      <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-5">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl md:text-2xl font-bold tracking-tight">{job.title}</h1>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-lg sm:text-2xl font-bold tracking-tight">{job.title}</h1>
               <Badge
                 variant={job.status === "active" ? "default" : "secondary"}
                 className={cn(
@@ -392,7 +376,7 @@ export default function JobDetailPage({
               setCopiedAlias(true);
               setTimeout(() => setCopiedAlias(false), 2000);
             }}
-            className="gap-1.5 text-xs rounded-xl border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 shrink-0"
+            className="gap-1.5 text-xs rounded-xl border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 shrink-0 w-full sm:w-auto justify-center"
           >
             <Mail className="w-3.5 h-3.5" />
             {copiedAlias ? "Tersalin!" : "Salin Email Ingestion"}
@@ -400,7 +384,7 @@ export default function JobDetailPage({
           </Button>
         </div>
 
-        {/* Metric Badges */}
+        {/* Metric Badges Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-border/50">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -473,7 +457,7 @@ export default function JobDetailPage({
 
       {/* Dynamic Stages Stepper Bar */}
       {stages.length > 0 && (
-        <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-sm">
+        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 space-y-3 shadow-sm">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -545,7 +529,7 @@ export default function JobDetailPage({
       {/* Candidate Pipeline Table Card */}
       <div className="rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden">
         {/* Controls Bar */}
-        <div className="p-5 pb-4 flex items-center justify-between flex-wrap gap-4 border-b border-border/60">
+        <div className="p-4 sm:p-5 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60">
           <div className="flex items-center gap-3">
             <h2 className="text-sm font-bold">Pipeline Pelamar</h2>
             <Badge variant="secondary" className="text-xs font-semibold">
@@ -559,26 +543,26 @@ export default function JobDetailPage({
                 className="h-6 text-xs gap-1 text-primary"
               >
                 <XCircle className="w-3 h-3" />
-                Reset Filter
+                Reset
               </Button>
             )}
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
             {/* Search */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Cari nama / email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-8 w-[180px] text-xs rounded-xl"
+                className="pl-9 h-8 w-full sm:w-[170px] text-xs rounded-xl"
               />
             </div>
 
             {/* Filter Staff SR */}
             <Select value={selectedStaffFilter} onValueChange={(val: any) => setSelectedStaffFilter(val || "all")}>
-              <SelectTrigger className="h-8 text-xs w-[160px] rounded-xl">
+              <SelectTrigger className="h-8 text-xs w-full sm:w-[150px] rounded-xl">
                 <SelectValue placeholder="Filter Staf SR" />
               </SelectTrigger>
               <SelectContent>
@@ -616,14 +600,14 @@ export default function JobDetailPage({
               className="h-8 gap-1.5 text-xs rounded-xl"
             >
               <Download className="w-3.5 h-3.5" />
-              Export CSV
+              Export
             </Button>
           </div>
         </div>
 
         {/* Floating Bulk Action Bar */}
         {selectedIds.length > 0 && (
-          <div className="p-3.5 bg-primary/10 border-b border-primary/20 flex items-center justify-between gap-4 animate-in fade-in duration-200">
+          <div className="p-3.5 bg-primary/10 border-b border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
             <div className="flex items-center gap-2">
               <CheckSquare className="w-4 h-4 text-primary" />
               <span className="text-xs font-bold text-primary">
@@ -631,7 +615,7 @@ export default function JobDetailPage({
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Button
                 size="sm"
                 variant="default"
@@ -658,7 +642,7 @@ export default function JobDetailPage({
                 className="h-7 text-xs gap-1.5 rounded-lg"
               >
                 <UserCheck className="w-3.5 h-3.5" />
-                Beri Mandat SR Staff
+                Beri Mandat
               </Button>
 
               <Button
@@ -684,8 +668,8 @@ export default function JobDetailPage({
           </div>
         )}
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        {/* Table Overflow Wrapper */}
+        <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full text-xs text-left">
             <thead>
               <tr className="border-b border-border/60 bg-muted/20 text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">
@@ -734,13 +718,13 @@ export default function JobDetailPage({
                         }
                       />
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 whitespace-nowrap">
                       <div>
                         <p className="font-bold text-foreground">{c.full_name}</p>
                         <p className="text-[11px] text-muted-foreground">{c.email}</p>
                       </div>
                     </td>
-                    <td className="p-4 text-center">
+                    <td className="p-4 text-center whitespace-nowrap">
                       <Tooltip>
                         <TooltipTrigger
                           onClick={() => setInsightCandidate(c)}
@@ -756,7 +740,7 @@ export default function JobDetailPage({
                         </TooltipContent>
                       </Tooltip>
                     </td>
-                    <td className="p-4 text-center">
+                    <td className="p-4 text-center whitespace-nowrap">
                       {mandatoryPassed ? (
                         <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px]">
                           ✓ Lulus
@@ -767,7 +751,7 @@ export default function JobDetailPage({
                         </Badge>
                       )}
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 whitespace-nowrap">
                       {c.assigned_staff_name ? (
                         <Badge
                           variant="outline"
@@ -780,15 +764,15 @@ export default function JobDetailPage({
                         <span className="text-muted-foreground text-[11px]">Belum Ada</span>
                       )}
                     </td>
-                    <td className="p-4 text-center">
+                    <td className="p-4 text-center whitespace-nowrap">
                       <StatusBadge status={currentStageName} color={stageColor} />
                     </td>
-                    <td className="p-4 text-[11px] text-muted-foreground font-mono">
+                    <td className="p-4 text-[11px] text-muted-foreground font-mono whitespace-nowrap">
                       {format(new Date(c.created_at), "d MMM yyyy", {
                         locale: localeId,
                       })}
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="p-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1">
                         {!isRejected && (
                           <Tooltip>

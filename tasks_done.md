@@ -8,84 +8,60 @@ Dokumen ini mencatat secara resmi seluruh task yang **telah selesai dikerjakan, 
 
 ### Task 1.1: Setup Proyek Next.js 15 & UI Component System (Shadcn/UI + Tailwind)
 - **Status:** ✅ Completed
-- **Kategori:** Core Architecture & UI Foundation
 
 ### Task 1.2: Komponen UI Reusable System (Badges, Buttons, Cards, Modals)
 - **Status:** ✅ Completed
-- **Kategori:** UI Design System
 
 ### Task 1.3: Halaman Dashboard Utama (`/dashboard`)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page
 
 ### Task 1.4: Halaman Manajemen Lowongan & Buat Lowongan Baru (`/jobs` & `/jobs/create`)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page
 
 ### Task 1.5: Halaman Pipeline Kandidat & Filter Interaktif (`/jobs/[jobId]`)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page
 
 ### Task 1.6: Halaman Daftar Semua Kandidat & Filter Terpusat (`/candidates`)
 - **Status:** ✅ Completed (Fixed & Deployed)
-- **Kategori:** Frontend Page
-- **Rincian Fitur:**
-  - Dibuat `src/app/(dashboard)/candidates/page.tsx` (menyelesaikan error 404 pada Vercel untuk URL `/candidates`).
-  - Menampilkan daftar pelamar lintas lowongan perusahaan dengan filter pencarian nama/email, dropdown lowongan, filter staf SR, dan toggle qualified.
-  - Integrasi aksi cepat: advance tahapan, reject kandidat, modal penugasan mandat, dan export CSV.
-  - Dihubungkan `NotificationPopover` secara langsung ke `/api/notifications` API route dengan polling otomatis setiap 30 detik.
 
 ### Task 1.7: Halaman Detail Kandidat & Viewer CV/AI Breakdown (`/candidates/[candidateId]`)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page
 
 ### Task 1.8: Halaman Pengaturan Provider AI, API Key, Proxy & Model (`/settings`)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page
 
 ### Task 1.9: Form Lamaran Kandidat Publik (`/apply/[jobId]`)
 - **Status:** ✅ Completed
-- **Kategori:** Public Page
 
 ### Task 1.10: Form Pengaturan Integrasi Email Gmail 1-Click & Apps Script (`/settings/integrations`)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page
 
 ### Task 1.11: Halaman Pengaturan Manajemen Tim Perusahaan (`/settings/team`)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page
 
 ### Task 1.12: Modal Penjadwalan Wawancara & Penugasan Mandat (`ScheduleInterviewModal`)
 - **Status:** ✅ Completed
-- **Kategori:** UI Component Modal
 
 ### Task 1.13: Revisi Pipeline — Opsi Penugasan Mandat Massal & Filter Staf SR (`/jobs/[jobId]` Revisi)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page Enhancement
 
 ### Task 1.14: Revisi Detail Kandidat — Fitur Catatan HRD & Cetak Ringkasan PDF (`/candidates/[candidateId]` Revisi)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page Enhancement
 
 ### Task 1.15: Visualisasi Peta Jarak Terintegrasi OpenStreetMap / Leaflet (`DistanceMap`)
 - **Status:** ✅ Completed
-- **Kategori:** UI Component / Geo-Visualization
 
 ### Task 1.16: Halaman Pengaturan Tahapan Rekrutmen (`/settings/stages`)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page (Super Admin)
 
 ### Task 1.17: Revisi Buat Lowongan — Opsi Override Tahapan (`/jobs/create` Revisi)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page Enhancement
 
 ### Task 1.18: Revisi Pipeline Kandidat — Kolom Tahapan Dinamis (`/jobs/[jobId]` Revisi)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page Enhancement
 
 ### Task 1.19: Revisi Detail Kandidat — Stepper & Status Dinamis (`/candidates/[candidateId]` Revisi)
 - **Status:** ✅ Completed
-- **Kategori:** Frontend Page Enhancement
 
 ---
 
@@ -99,23 +75,18 @@ Dokumen ini mencatat secara resmi seluruh task yang **telah selesai dikerjakan, 
 
 ### Task 2.3: API Manajemen Tim Perusahaan (`/api/team`)
 - **Status:** ✅ Completed
-- **Rincian Fitur:** Endpoint GET daftar anggota tim, POST undang anggota baru, PATCH update role (super_admin vs recruiter), & DELETE cabut akses tim.
 
 ### Task 2.4: API Pusat Notifikasi In-App (`/api/notifications`)
 - **Status:** ✅ Completed
-- **Rincian Fitur:** Endpoint GET daftar notifikasi user logged-in & PATCH mark as read (individual / mark all).
 
 ### Task 2.5: API Penugasan Mandat & Penjadwalan Wawancara (`/api/interviews`)
 - **Status:** ✅ Completed
-- **Rincian Fitur:** Endpoint POST penugasan mandat & jadwal wawancara, PATCH reschedule / status update, serta auto-trigger in-app notification.
 
 ### Task 2.6: API Notifikasi Email Kandidat (`/api/candidates/[candidateId]/notify`)
 - **Status:** ✅ Completed
-- **Rincian Fitur:** Endpoint POST pengiriman notifikasi email ke kandidat (panggilan wawancara / update status).
 
 ### Task 2.7: API Bulk Candidate Actions (`/api/candidates/bulk-update`)
 - **Status:** ✅ Completed
-- **Rincian Fitur:** Batch operations untuk kandidat (bulk advance, bulk reject, dan bulk assign SR staff).
 
 ### Task 2.8: Migrasi Database Tahapan Rekrutmen
 - **Status:** ✅ Completed
@@ -135,15 +106,12 @@ Dokumen ini mencatat secara resmi seluruh task yang **telah selesai dikerjakan, 
 
 ### Task 3.1: Direct Gmail Auto-Ingestion Cron & Poller Service (`/api/cron/gmail-ingest`)
 - **Status:** ✅ Completed
-- **Rincian Fitur:** Poller service otomatis (`src/lib/gmail-poller.ts`) dan endpoint cron `/api/cron/gmail-ingest` untuk memantau pesan Gmail berlampiran PDF.
 
 ### Task 3.2: Layanan Integrasi Google Calendar API (`src/lib/google-calendar.ts`)
 - **Status:** ✅ Completed
-- **Rincian Fitur:** Module `src/lib/google-calendar.ts` untuk pembuatan (`createGoogleCalendarEvent`), pembaharuan, dan penghapusan event jadwal wawancara di Google Calendar.
 
 ### Task 3.3: Support Multi-File Attachment Ingestion
 - **Status:** ✅ Completed
-- **Rincian Fitur:** Pemrosesan multi-file attachment (CV PDF, portfolio, sertifikat) pada webhook ingestion.
 
 ---
 
@@ -151,32 +119,56 @@ Dokumen ini mencatat secara resmi seluruh task yang **telah selesai dikerjakan, 
 
 ### Task 4.1: Design Tokens, Global CSS & Layout Base (`globals.css`, `Sidebar`, `Header`)
 - **Status:** ✅ Completed
-- **Kategori:** UI/UX Design Token Foundation
 
 ### Task 4.2: Redesign Dashboard Utama (`/dashboard`)
 - **Status:** ✅ Completed
-- **Kategori:** UI/UX Redesign
 
 ### Task 4.3: Redesign Halaman Jobs & Form Buat Job (`/jobs` & `/jobs/create`)
 - **Status:** ✅ Completed
-- **Kategori:** UI/UX Redesign
 
 ### Task 4.4: Redesign Pipeline Lowongan (`/jobs/[jobId]`)
 - **Status:** ✅ Completed
-- **Kategori:** UI/UX Redesign
 
 ### Task 4.5: Redesign Daftar Semua Kandidat (`/candidates`)
 - **Status:** ✅ Completed
-- **Kategori:** UI/UX Redesign
 
 ### Task 4.6: Redesign Detail Kandidat (`/candidates/[candidateId]`)
 - **Status:** ✅ Completed
-- **Kategori:** UI/UX Redesign
 
 ### Task 4.7: Redesign Halaman Settings (`/settings`, `/settings/stages`, `/settings/team`, `/settings/integrations`)
 - **Status:** ✅ Completed
-- **Kategori:** UI/UX Redesign
 
 ### Task 4.8: Redesign Form Lamaran Publik (`/apply/[jobId]`)
 - **Status:** ✅ Completed
-- **Kategori:** UI/UX Redesign
+
+---
+
+## 📌 Phase 5: Mobile Responsiveness Overhaul (Responsive HP)
+
+### Task 5.1: Mobile Navigation & Responsive Base Layout (`sidebar.tsx`, `header.tsx`, `layout.tsx`)
+- **Status:** ✅ Completed
+- **Rincian:** Sidebar tersembunyi pada layar seluler (`hidden md:flex`) dan ditambahkan Mobile Sheet Navigation Menu (tombol Hamburger Menu pada Header).
+
+### Task 5.2: Responsive Dashboard (`/dashboard`)
+- **Status:** ✅ Completed
+- **Rincian:** Responsif grid stat card (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`), adaptif Recharts container (`AreaChart` & `PieChart`), serta scroll horizontal tabel feed kandidat.
+
+### Task 5.3: Responsive Jobs & Job Creation (`/jobs` & `/jobs/create`)
+- **Status:** ✅ Completed
+- **Rincian:** Resizing lowongan card grid, filter bar flex-col pada layar HP, dan touch-friendly map picker.
+
+### Task 5.4: Responsive Pipeline Lowongan (`/jobs/[jobId]`)
+- **Status:** ✅ Completed
+- **Rincian:** Grid metrics hero job, scrollbar horizontal touch stepper tahapan seleksi, dan floating action bar flex-wrap.
+
+### Task 5.5: Responsive Candidates List & Detail (`/candidates` & `/candidates/[candidateId]`)
+- **Status:** ✅ Completed
+- **Rincian:** Filter bar terpusat flex-wrap, tombol aksi hero profile berlipat pada seluler, & adaptif iframe CV PDF (450px pada HP vs 700px pada Desktop).
+
+### Task 5.6: Responsive Settings Suite (`/settings/*`)
+- **Status:** ✅ Completed
+- **Rincian:** Sub-navigation pills touch-scrollable & flex grid layout per halaman settings.
+
+### Task 5.7: Responsive Public Apply Page (`/apply/[jobId]`)
+- **Status:** ✅ Completed
+- **Rincian:** Touch-friendly map picker, upload zone dropzone, & form container padding responsif pada layar HP.

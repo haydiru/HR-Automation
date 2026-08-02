@@ -27,7 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
 import { logout } from "@/app/(auth)/actions";
 
-const navItems = [
+export const navItems = [
   {
     label: "Dashboard",
     href: "/dashboard",
@@ -67,7 +67,6 @@ export function Sidebar() {
   }, []);
 
   const displayName = profile?.full_name || "User";
-  const companyName = profile?.company_name || "Perusahaan";
   const role = profile?.role || "super_admin";
   const initials = displayName
     .split(" ")
@@ -83,7 +82,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "relative flex flex-col border-r border-sidebar-border/80 bg-sidebar/90 backdrop-blur-xl transition-all duration-300 ease-in-out z-20",
+        "relative hidden md:flex flex-col border-r border-sidebar-border/80 bg-sidebar/90 backdrop-blur-xl transition-all duration-300 ease-in-out z-20 shrink-0",
         collapsed ? "w-[76px]" : "w-[260px]"
       )}
     >
@@ -100,7 +99,7 @@ export function Sidebar() {
               <h1 className="text-sm font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent whitespace-nowrap">
                 Obsidian Talent
               </h1>
-              <Badge variant="outline" className="text-[9px] px-1 py-0 border-primary/30 text-primary bg-primary/5">
+              <Badge variant="outline" className="text-[9px] px-1 py-0 border-primary/30 text-primary bg-primary/5 font-semibold">
                 PRO
               </Badge>
             </div>

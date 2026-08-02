@@ -19,6 +19,7 @@ import {
   Ban,
   Trash2,
   Check,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -131,7 +132,7 @@ export default function JobsPage() {
   if (loading) {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <p className="text-xs font-medium text-muted-foreground">Memuat seluruh daftar lowongan...</p>
       </div>
     );
@@ -145,22 +146,22 @@ export default function JobsPage() {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8 page-enter">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 sm:space-y-8 page-enter">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Briefcase className="w-6 h-6 text-primary" />
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             Manajemen Lowongan Kerja
           </h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Kelola posisi aktif, kriteria AI screening, dan kustomisasi alur rekrutmen
           </p>
         </div>
 
         <Link
           href="/jobs/create"
-          className={cn(buttonVariants({ size: "sm" }), "h-9 gap-1.5 text-xs rounded-xl shadow-lg shadow-primary/20")}
+          className={cn(buttonVariants({ size: "sm" }), "h-9 gap-1.5 text-xs rounded-xl shadow-lg shadow-primary/20 w-full sm:w-auto justify-center")}
         >
           <Plus className="w-4 h-4" />
           Buat Lowongan Baru
@@ -168,20 +169,20 @@ export default function JobsPage() {
       </div>
 
       {/* Filters Bar */}
-      <div className="p-4 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-        <div className="relative flex-1 w-full max-w-md">
+      <div className="p-3.5 sm:p-4 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 shadow-sm">
+        <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Cari posisi atau nama lowongan..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9 text-xs rounded-xl bg-muted/30 border-border/60"
+            className="pl-9 h-9 text-xs rounded-xl bg-muted/30 border-border/60 w-full"
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
           <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val ?? "all")}>
-            <SelectTrigger className="w-[160px] h-9 text-xs rounded-xl">
+            <SelectTrigger className="w-[140px] sm:w-[160px] h-9 text-xs rounded-xl">
               <SelectValue placeholder="Filter Status" />
             </SelectTrigger>
             <SelectContent>
@@ -191,14 +192,14 @@ export default function JobsPage() {
             </SelectContent>
           </Select>
 
-          <Badge variant="outline" className="text-xs px-3 py-1.5 font-semibold bg-muted/20 border-border">
-            Total: {filteredJobs.length} Lowongan
+          <Badge variant="outline" className="text-xs px-3 py-1.5 font-semibold bg-muted/20 border-border shrink-0">
+            Total: {filteredJobs.length}
           </Badge>
         </div>
       </div>
 
       {/* Jobs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {filteredJobs.map((job: any) => {
           const totalCandidates = job.candidate_count || 0;
           const qualCount = job.qualified_count || 0;
@@ -207,7 +208,7 @@ export default function JobsPage() {
           return (
             <div
               key={job.id}
-              className="group relative flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-6 shadow-sm hover:shadow-xl hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+              className="group relative flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-sm hover:shadow-xl hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
             >
               {/* Top ambient glow bar */}
               <div
@@ -278,8 +279,8 @@ export default function JobsPage() {
                   </div>
                   <div className="px-3 py-2 rounded-xl bg-purple-500/5 border border-purple-500/10">
                     <p className="text-[10px] text-muted-foreground uppercase font-semibold">Skema Tahapan</p>
-                    <p className="text-xs font-bold text-purple-600 dark:text-purple-400 mt-0.5 flex items-center gap-1">
-                      <Layers className="w-3 h-3" />
+                    <p className="text-xs font-bold text-purple-600 dark:text-purple-400 mt-0.5 flex items-center gap-1 truncate">
+                      <Layers className="w-3 h-3 shrink-0" />
                       {job.use_custom_stages ? "Kustom" : "Default"}
                     </p>
                   </div>
@@ -314,7 +315,7 @@ export default function JobsPage() {
                       <Link
                         href={`/apply/${job.id}`}
                         target="_blank"
-                        className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors border border-border/50"
+                        className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors border border-border/50 shrink-0"
                       >
                         <ExternalLink className="w-4 h-4" />
                       </Link>
@@ -324,9 +325,13 @@ export default function JobsPage() {
                 </Tooltip>
 
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors border border-border/50">
-                    <MoreHorizontal className="w-4 h-4" />
-                  </DropdownMenuTrigger>
+                  <DropdownMenuTrigger
+                    render={
+                      <button className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors border border-border/50 shrink-0">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                    }
+                  />
                   <DropdownMenuContent align="end" className="w-48 p-1 shadow-xl rounded-xl">
                     <DropdownMenuItem
                       onClick={() => (window.location.href = `/jobs/${job.id}`)}
@@ -386,9 +391,9 @@ export default function JobsPage() {
           </DialogHeader>
           <DialogFooter className="pt-4">
             <DialogClose>
-              <Button variant="outline" size="sm" disabled={isProcessing}>Batal</Button>
+              <Button variant="outline" size="sm" disabled={isProcessing} className="text-xs rounded-xl">Batal</Button>
             </DialogClose>
-            <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isProcessing}>
+            <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isProcessing} className="text-xs rounded-xl">
               {isProcessing ? "Menghapus..." : "Ya, Hapus Permanen"}
             </Button>
           </DialogFooter>
@@ -409,9 +414,9 @@ export default function JobsPage() {
           </DialogHeader>
           <DialogFooter className="pt-4">
             <DialogClose>
-              <Button variant="outline" size="sm" disabled={isProcessing}>Batal</Button>
+              <Button variant="outline" size="sm" disabled={isProcessing} className="text-xs rounded-xl">Batal</Button>
             </DialogClose>
-            <Button size="sm" onClick={handleClose} disabled={isProcessing}>
+            <Button size="sm" onClick={handleClose} disabled={isProcessing} className="text-xs rounded-xl">
               {isProcessing ? "Memproses..." : "Ya, Tutup Lowongan"}
             </Button>
           </DialogFooter>

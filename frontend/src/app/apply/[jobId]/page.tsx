@@ -78,7 +78,7 @@ export default function PublicApplyPage({
 
   if (loadingJob) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3 p-4 text-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <p className="text-xs font-medium text-muted-foreground">Memuat detail lowongan...</p>
       </div>
@@ -184,8 +184,8 @@ export default function PublicApplyPage({
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6 page-enter">
-        <div className="relative z-10 text-center space-y-5 p-8 max-w-md rounded-2xl border border-border/80 bg-card shadow-xl">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6 page-enter">
+        <div className="relative z-10 text-center space-y-5 p-6 sm:p-8 max-w-md rounded-2xl border border-border/80 bg-card shadow-xl">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
             <CheckCircle2 className="w-8 h-8 text-emerald-500" />
           </div>
@@ -195,7 +195,7 @@ export default function PublicApplyPage({
             <span className="font-bold text-foreground">{job.title}</span>.
             Berkas lamaran Anda telah otomatis masuk ke sistem AI Screening dan tim HR kami akan segera meninjaunya.
           </p>
-          <Button onClick={() => window.location.reload()} variant="outline" size="sm" className="mt-2 text-xs rounded-xl">
+          <Button onClick={() => window.location.reload()} variant="outline" size="sm" className="mt-2 text-xs rounded-xl w-full">
             Kirim Lamaran Baru
           </Button>
         </div>
@@ -204,8 +204,8 @@ export default function PublicApplyPage({
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 page-enter">
-      <div className="relative z-10 max-w-3xl mx-auto px-6 py-12 space-y-8">
+    <div className="min-h-screen bg-background pb-16 sm:pb-20 page-enter">
+      <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6 sm:space-y-8">
         {/* Header Branding */}
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-2">
@@ -220,16 +220,16 @@ export default function PublicApplyPage({
         </div>
 
         {/* Job Info Hero Card */}
-        <div className="rounded-2xl border border-border/80 bg-card p-6 md:p-8 space-y-5 shadow-sm">
+        <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 space-y-5 shadow-sm">
           <div className="space-y-2">
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight">{job.title}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">{job.title}</h2>
             <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">
               {job.description}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 space-y-1">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 space-y-1">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
                 Status Lowongan
               </p>
@@ -238,7 +238,7 @@ export default function PublicApplyPage({
                 Aktif & Terbuka
               </p>
             </div>
-            <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/15 space-y-1">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-primary/5 border border-primary/15 space-y-1">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
                 Penilaian Otomatis
               </p>
@@ -250,7 +250,7 @@ export default function PublicApplyPage({
           </div>
 
           {job.work_address && (
-            <div className="p-4 rounded-xl bg-muted/20 border border-border/60 space-y-1">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-muted/20 border border-border/60 space-y-1">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
                 Penempatan / Lokasi Kantor
               </p>
@@ -274,13 +274,13 @@ export default function PublicApplyPage({
         {/* Application Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Biodata */}
-          <div className="rounded-2xl border border-border/80 bg-card p-6 md:p-8 space-y-5 shadow-sm">
+          <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 space-y-5 shadow-sm">
             <div className="flex items-center gap-2 border-b border-border/60 pb-3">
               <User className="w-4 h-4 text-primary" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">1. Data Pelamar</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
               <div className="space-y-1.5">
                 <Label htmlFor="fullname" className="text-xs font-semibold">Nama Lengkap <span className="text-red-500">*</span></Label>
                 <Input 
@@ -320,7 +320,7 @@ export default function PublicApplyPage({
           </div>
 
           {/* Domisili Map Picker */}
-          <div className="rounded-2xl border border-border/80 bg-card p-6 md:p-8 space-y-4 shadow-sm">
+          <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 space-y-4 shadow-sm">
             <div className="flex items-center gap-2 border-b border-border/60 pb-3">
               <MapPin className="w-4 h-4 text-primary" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">2. Lokasi Domisili Tempat Tinggal</h3>
@@ -338,7 +338,7 @@ export default function PublicApplyPage({
           </div>
 
           {/* Education */}
-          <div className="rounded-2xl border border-border/80 bg-card p-6 md:p-8 space-y-4 shadow-sm">
+          <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 space-y-4 shadow-sm">
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2">
                 <GraduationCap className="w-4 h-4 text-primary" />
@@ -399,7 +399,7 @@ export default function PublicApplyPage({
           </div>
 
           {/* Work Experience */}
-          <div className="rounded-2xl border border-border/80 bg-card p-6 md:p-8 space-y-4 shadow-sm">
+          <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 space-y-4 shadow-sm">
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4 text-primary" />
@@ -460,7 +460,7 @@ export default function PublicApplyPage({
           </div>
 
           {/* Upload CV */}
-          <div className="rounded-2xl border border-border/80 bg-card p-6 md:p-8 space-y-4 shadow-sm">
+          <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-8 space-y-4 shadow-sm">
             <div className="flex items-center gap-2 border-b border-border/60 pb-3">
               <Upload className="w-4 h-4 text-primary" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">5. Upload Curriculum Vitae (PDF) <span className="text-red-500">*</span></h3>
@@ -468,7 +468,7 @@ export default function PublicApplyPage({
 
             <div
               className={cn(
-                "border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer",
+                "border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all cursor-pointer",
                 file
                   ? "border-primary/40 bg-primary/5"
                   : "border-border/80 hover:border-primary/40 hover:bg-muted/20"
@@ -485,8 +485,8 @@ export default function PublicApplyPage({
               {file ? (
                 <div className="flex items-center justify-center gap-3">
                   <FileText className="w-8 h-8 text-primary shrink-0" />
-                  <div className="text-left">
-                    <p className="text-xs font-bold truncate max-w-[220px]">{file.name}</p>
+                  <div className="text-left min-w-0">
+                    <p className="text-xs font-bold truncate max-w-[180px] sm:max-w-[220px]">{file.name}</p>
                     <p className="text-[10px] text-muted-foreground uppercase font-mono">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                   </div>
                   <button
@@ -495,7 +495,7 @@ export default function PublicApplyPage({
                       e.stopPropagation();
                       setFile(null);
                     }}
-                    className="ml-3 p-1.5 rounded-lg bg-muted hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                    className="ml-2 p-1.5 rounded-lg bg-muted hover:bg-destructive/10 text-muted-foreground hover:text-destructive shrink-0"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -512,7 +512,7 @@ export default function PublicApplyPage({
 
           <Button
             type="submit"
-            className="w-full h-12 text-xs font-bold shadow-xl shadow-primary/20 rounded-xl gap-2"
+            className="w-full h-12 text-xs font-bold shadow-xl shadow-primary/20 rounded-xl gap-2 justify-center"
             disabled={loading}
           >
             {loading ? (

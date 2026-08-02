@@ -213,15 +213,15 @@ export default function CandidatesPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 page-enter">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-5 sm:space-y-6 page-enter">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="w-6 h-6 text-primary" />
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             Daftar Seluruh Kandidat
           </h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Kelola dan pantau seluruh pelamar kerja lintas lowongan perusahaan Anda
           </p>
         </div>
@@ -231,7 +231,7 @@ export default function CandidatesPage() {
             variant="outline"
             size="sm"
             onClick={loadData}
-            className="gap-1.5 text-xs h-9 rounded-xl bg-card/60"
+            className="gap-1.5 text-xs h-9 rounded-xl bg-card/60 flex-1 sm:flex-initial justify-center"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Refresh Data
@@ -240,7 +240,7 @@ export default function CandidatesPage() {
             variant="default"
             size="sm"
             onClick={handleExportCSV}
-            className="gap-1.5 text-xs h-9 rounded-xl shadow-lg shadow-primary/20"
+            className="gap-1.5 text-xs h-9 rounded-xl shadow-lg shadow-primary/20 flex-1 sm:flex-initial justify-center"
           >
             <Download className="w-3.5 h-3.5" />
             Export CSV
@@ -251,7 +251,7 @@ export default function CandidatesPage() {
       {/* Glassmorphic Candidates Card */}
       <div className="rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden">
         {/* Controls Bar */}
-        <div className="p-5 pb-4 flex items-center justify-between flex-wrap gap-4 border-b border-border/60">
+        <div className="p-4 sm:p-5 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60">
           <div className="flex items-center gap-3">
             <h2 className="text-sm font-bold flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-primary" />
@@ -262,21 +262,21 @@ export default function CandidatesPage() {
             </Badge>
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
             {/* Search Input */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Cari nama / email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-8 w-[180px] text-xs rounded-xl bg-muted/30"
+                className="pl-9 h-8 w-full sm:w-[170px] text-xs rounded-xl bg-muted/30"
               />
             </div>
 
             {/* Filter Lowongan */}
             <Select value={selectedJobId} onValueChange={(val: any) => setSelectedJobId(val || "all")}>
-              <SelectTrigger className="h-8 text-xs w-[170px] rounded-xl">
+              <SelectTrigger className="h-8 text-xs w-full sm:w-[160px] rounded-xl">
                 <SelectValue placeholder="Pilih Lowongan" />
               </SelectTrigger>
               <SelectContent>
@@ -291,7 +291,7 @@ export default function CandidatesPage() {
 
             {/* Filter Staff SR */}
             <Select value={selectedStaffFilter} onValueChange={(val: any) => setSelectedStaffFilter(val || "all")}>
-              <SelectTrigger className="h-8 text-xs w-[160px] rounded-xl">
+              <SelectTrigger className="h-8 text-xs w-full sm:w-[150px] rounded-xl">
                 <SelectValue placeholder="Filter Staf SR" />
               </SelectTrigger>
               <SelectContent>
@@ -324,7 +324,7 @@ export default function CandidatesPage() {
         </div>
 
         {/* Candidates Table */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full text-xs text-left">
             <thead>
               <tr className="border-b border-border/60 bg-muted/20 text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">
@@ -361,13 +361,13 @@ export default function CandidatesPage() {
                         isRejected && "opacity-60"
                       )}
                     >
-                      <td className="p-4">
+                      <td className="p-4 whitespace-nowrap">
                         <div>
                           <p className="font-bold text-foreground">{c.full_name}</p>
                           <p className="text-[11px] text-muted-foreground">{c.email}</p>
                         </div>
                       </td>
-                      <td className="p-4">
+                      <td className="p-4 whitespace-nowrap">
                         <Link
                           href={`/jobs/${c.job_id}`}
                           className="hover:underline font-semibold text-foreground flex items-center gap-1.5"
@@ -376,7 +376,7 @@ export default function CandidatesPage() {
                           <span>{c.jobs?.title || c.job_title || "—"}</span>
                         </Link>
                       </td>
-                      <td className="p-4 text-center">
+                      <td className="p-4 text-center whitespace-nowrap">
                         <Tooltip>
                           <TooltipTrigger
                             onClick={() => setInsightCandidate(c)}
@@ -392,7 +392,7 @@ export default function CandidatesPage() {
                           </TooltipContent>
                         </Tooltip>
                       </td>
-                      <td className="p-4 text-center">
+                      <td className="p-4 text-center whitespace-nowrap">
                         {mandatoryPassed ? (
                           <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px]">
                             ✓ Lulus
@@ -403,7 +403,7 @@ export default function CandidatesPage() {
                           </Badge>
                         )}
                       </td>
-                      <td className="p-4">
+                      <td className="p-4 whitespace-nowrap">
                         {c.assigned_staff_name ? (
                           <Badge
                             variant="outline"
@@ -416,15 +416,15 @@ export default function CandidatesPage() {
                           <span className="text-muted-foreground text-[11px]">Belum Ada</span>
                         )}
                       </td>
-                      <td className="p-4 text-center">
+                      <td className="p-4 text-center whitespace-nowrap">
                         <StatusBadge status={currentStageName} />
                       </td>
-                      <td className="p-4 text-[11px] text-muted-foreground font-mono">
+                      <td className="p-4 text-[11px] text-muted-foreground font-mono whitespace-nowrap">
                         {format(new Date(c.created_at), "d MMM yyyy", {
                           locale: localeId,
                         })}
                       </td>
-                      <td className="p-4 text-right">
+                      <td className="p-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-1">
                           {!isRejected && (
                             <Tooltip>

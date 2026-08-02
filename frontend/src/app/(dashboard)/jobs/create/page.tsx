@@ -204,7 +204,7 @@ export default function CreateJobPage() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-8 page-enter">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6 sm:space-y-8 page-enter">
       {/* Back Link */}
       <Link
         href="/jobs"
@@ -216,21 +216,21 @@ export default function CreateJobPage() {
 
       {/* Page Title */}
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Briefcase className="w-6 h-6 text-primary" />
+        <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+          <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
           Buat Lowongan Pekerjaan Baru
         </h1>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground mt-0.5">
           Konfigurasi syarat AI screening, alur tahapan rekrutmen, dan lokasi kerja
         </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-8">
+      <form onSubmit={handleSave} className="space-y-6 sm:space-y-8">
         {/* Section 1: Basic Information */}
-        <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm space-y-5">
+        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-5">
           <div className="flex items-center gap-2 border-b border-border/60 pb-3">
             <Sparkles className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-bold">1. Informasi Utama Posisi Lowongan</h3>
+            <h3 className="text-xs sm:text-sm font-bold">1. Informasi Utama Posisi Lowongan</h3>
           </div>
 
           <div className="space-y-2">
@@ -259,25 +259,25 @@ export default function CreateJobPage() {
           </div>
 
           {/* Generated Email Alias Badge */}
-          <div className="p-4 rounded-xl bg-primary/5 border border-primary/15 space-y-1">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-primary/5 border border-primary/15 space-y-1">
             <p className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-primary" />
-              Email Ingestion Alias (Dihasilkan Otomatis oleh Sistem)
+              <Mail className="w-3.5 h-3.5 text-primary shrink-0" />
+              Email Ingestion Alias (Dihasilkan Otomatis)
             </p>
             <p className="text-xs font-mono font-bold text-primary break-all">{generatedAlias}</p>
           </div>
         </div>
 
         {/* Section 2: Recruitment Stages Selection */}
-        <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm space-y-5">
+        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-5">
           <div className="flex items-center justify-between border-b border-border/60 pb-3">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-bold">2. Alur & Skema Tahapan Seleksi</h3>
+              <h3 className="text-xs sm:text-sm font-bold">2. Alur & Skema Tahapan Seleksi</h3>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div
               onClick={() => setUseCustomStages(false)}
               className={cn(
@@ -320,7 +320,7 @@ export default function CreateJobPage() {
           </div>
 
           {!useCustomStages ? (
-            <div className="p-4 rounded-xl bg-muted/20 border border-border/60 space-y-2">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-muted/20 border border-border/60 space-y-2">
               <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                 Preview Tahapan Default Perusahaan:
               </p>
@@ -407,7 +407,7 @@ export default function CreateJobPage() {
               </div>
 
               {/* Add Custom Stage Form */}
-              <div className="p-4 rounded-xl border border-dashed border-border/80 bg-card space-y-3">
+              <div className="p-3.5 sm:p-4 rounded-xl border border-dashed border-border/80 bg-card space-y-3">
                 <p className="text-xs font-bold">Tambah Tahapan Kustom Baru:</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Input
@@ -423,7 +423,7 @@ export default function CreateJobPage() {
                     className="text-xs h-9 rounded-lg"
                   />
                 </div>
-                <div className="flex items-center justify-between pt-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs text-muted-foreground">Warna Badge:</span>
                     {COLOR_PRESETS.map((c) => (
@@ -444,7 +444,7 @@ export default function CreateJobPage() {
                     variant="outline"
                     size="sm"
                     onClick={handleAddCustomStage}
-                    className="h-8 text-xs gap-1.5 rounded-lg"
+                    className="h-8 text-xs gap-1.5 rounded-lg w-full sm:w-auto"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Tambah Tahapan
@@ -456,11 +456,11 @@ export default function CreateJobPage() {
         </div>
 
         {/* Section 3: Location Radius Screening */}
-        <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm space-y-5">
+        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-5">
           <div className="flex items-center justify-between border-b border-border/60 pb-3">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-bold">3. Filter Radius Lokasi Domisili</h3>
+              <h3 className="text-xs sm:text-sm font-bold">3. Filter Radius Lokasi Domisili</h3>
             </div>
             <Switch
               checked={enableLocation}
@@ -476,7 +476,7 @@ export default function CreateJobPage() {
                 label="Tentukan Titik Koordinat Kantor / Tempat Kerja"
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 pt-2">
                 <div className="space-y-2">
                   <Label htmlFor="maxDistance" className="text-xs font-semibold">Batas Radius Maksimal (KM)</Label>
                   <div className="flex items-center gap-3">
@@ -518,10 +518,10 @@ export default function CreateJobPage() {
         </div>
 
         {/* Section 4: AI Criteria Builder */}
-        <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm space-y-6">
+        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-6">
           <div className="flex items-center gap-2 border-b border-border/60 pb-3">
             <SlidersHorizontal className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-bold">4. Kriteria Evaluasi AI Screening</h3>
+            <h3 className="text-xs sm:text-sm font-bold">4. Kriteria Evaluasi AI Screening</h3>
           </div>
 
           <CriteriaBuilder
@@ -544,10 +544,10 @@ export default function CreateJobPage() {
         </div>
 
         {/* Section 5: Passing Grade Slider */}
-        <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm space-y-4">
+        <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold">5. Threshold Passing Grade Skor AI</h3>
-            <span className="text-xl font-extrabold font-mono text-primary bg-primary/10 px-3 py-1 rounded-xl border border-primary/20">
+            <h3 className="text-xs sm:text-sm font-bold">5. Threshold Passing Grade Skor AI</h3>
+            <span className="text-lg sm:text-xl font-extrabold font-mono text-primary bg-primary/10 px-3 py-1 rounded-xl border border-primary/20">
               {passingGrade} Poin
             </span>
           </div>
@@ -564,7 +564,7 @@ export default function CreateJobPage() {
               step={5}
               className="py-2"
             />
-            <div className="flex justify-between text-[11px] text-muted-foreground px-1 font-medium">
+            <div className="flex justify-between text-[10px] text-muted-foreground px-1 font-medium">
               <span>0 (Ringan)</span>
               <span>50 (Standar)</span>
               <span>70 (Rekomendasi)</span>
@@ -574,14 +574,14 @@ export default function CreateJobPage() {
         </div>
 
         {/* Actions Bar */}
-        <div className="flex items-center justify-end gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
           <Link
             href="/jobs"
-            className={cn(buttonVariants({ variant: "outline" }), "h-10 text-xs rounded-xl")}
+            className={cn(buttonVariants({ variant: "outline" }), "h-10 text-xs rounded-xl w-full sm:w-auto justify-center")}
           >
             Batal
           </Link>
-          <Button type="submit" disabled={saving} className="h-10 text-xs gap-2 rounded-xl shadow-lg shadow-primary/20">
+          <Button type="submit" disabled={saving} className="h-10 text-xs gap-2 rounded-xl shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">
             {saving ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />

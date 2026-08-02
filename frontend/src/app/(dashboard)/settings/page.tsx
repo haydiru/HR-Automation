@@ -151,20 +151,20 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8 page-enter">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6 sm:space-y-8 page-enter">
       {/* Header & Sub-Nav */}
       <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Building2 className="w-6 h-6 text-primary" />
+        <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+          <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
           Pengaturan Perusahaan & Provider AI
         </h1>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground mt-0.5">
           Kelola profil perusahaan, kredensial AI, dan model penyaringan otomatis
         </p>
 
         {/* Sub-Navigation Pills */}
-        <div className="flex items-center gap-2 mt-6 border-b border-border/80 pb-2 overflow-x-auto scrollbar-thin">
-          <Link href="/settings">
+        <div className="flex items-center gap-2 mt-4 sm:mt-6 border-b border-border/80 pb-2 overflow-x-auto scrollbar-thin">
+          <Link href="/settings" className="shrink-0">
             <Button
               variant="secondary"
               size="sm"
@@ -174,19 +174,19 @@ export default function SettingsPage() {
               Profil & AI Config
             </Button>
           </Link>
-          <Link href="/settings/stages">
+          <Link href="/settings/stages" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Layers className="w-4 h-4" />
               Tahapan Rekrutmen
             </Button>
           </Link>
-          <Link href="/settings/team">
+          <Link href="/settings/team" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Users className="w-4 h-4" />
               Manajemen Tim
             </Button>
           </Link>
-          <Link href="/settings/integrations">
+          <Link href="/settings/integrations" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <CalendarDays className="w-4 h-4" />
               Integrasi Email & Kalender
@@ -198,11 +198,11 @@ export default function SettingsPage() {
       <form onSubmit={handleSave} className="space-y-6">
         {/* Company Profile Card */}
         <div className="rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-border/60 bg-muted/20 flex items-center gap-2">
+          <div className="p-4 sm:p-5 border-b border-border/60 bg-muted/20 flex items-center gap-2">
             <Building2 className="w-4 h-4 text-primary" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Identitas Perusahaan</h2>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-4 sm:p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="company-name" className="text-xs font-semibold">Nama Perusahaan</Label>
@@ -223,11 +223,11 @@ export default function SettingsPage() {
 
         {/* AI Engine Configuration Card */}
         <div className="rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-border/60 bg-muted/20 flex items-center gap-2">
+          <div className="p-4 sm:p-5 border-b border-border/60 bg-muted/20 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-500" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Konfigurasi Engine & Provider AI</h2>
           </div>
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-6">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -236,7 +236,7 @@ export default function SettingsPage() {
                     Semakin tinggi persentase, AI akan semakin selektif memberikan skor passing grade.
                   </p>
                 </div>
-                <span className="text-sm font-extrabold font-mono text-primary bg-primary/10 px-3 py-1 rounded-xl border border-primary/20">
+                <span className="text-sm font-extrabold font-mono text-primary bg-primary/10 px-3 py-1 rounded-xl border border-primary/20 shrink-0">
                   {strictness}%
                 </span>
               </div>
@@ -252,8 +252,8 @@ export default function SettingsPage() {
                 className="py-2"
               />
               <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
-                <span>0% - Ekspansif (Longgar)</span>
-                <span>50% - Standar Moderat</span>
+                <span>0% - Longgar</span>
+                <span>50% - Moderat</span>
                 <span>100% - Sangat Ketat</span>
               </div>
             </div>
@@ -261,7 +261,7 @@ export default function SettingsPage() {
             <Separator className="bg-border/60" />
 
             {/* Provider and key settings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
               <div className="space-y-2">
                 <Label htmlFor="ai-provider" className="text-xs font-semibold">Penyedia AI (AI Provider)</Label>
                 <Select
@@ -364,22 +364,22 @@ export default function SettingsPage() {
 
             <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-border/60">
               <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0" />
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold">Ringkasan Konfigurasi AI Aktif</p>
-                <p className="text-[11px] text-muted-foreground font-mono">
+                <p className="text-[11px] text-muted-foreground font-mono truncate">
                   {aiProvider.toUpperCase()} — {aiModel === "custom" ? (customModel || "Kustom Model") : aiModel}
                 </p>
               </div>
-              <Badge variant="outline" className="ml-auto text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
-                {aiApiKey ? "Custom Key Connected" : "Default System Key"}
+              <Badge variant="outline" className="ml-auto text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 shrink-0">
+                {aiApiKey ? "Custom Key" : "Default Key"}
               </Badge>
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end">
-          <Button type="submit" disabled={saving} className="px-8 text-xs h-10 rounded-xl gap-2 shadow-lg shadow-primary/20">
+        <div className="flex items-center justify-end pt-2">
+          <Button type="submit" disabled={saving} className="px-8 text-xs h-10 rounded-xl gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto justify-center">
             {saving ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
