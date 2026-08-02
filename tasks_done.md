@@ -117,6 +117,27 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - Mode **Reschedule** (Pendeteksian otomatis jadwal lama vs jadwal baru: Tanggal 1 ➔ Tanggal 2).
   - Switch toggle sinkronisasi otomatis ke Google Calendar & pengiriman notifikasi In-App.
 
+### Task 1.13: Refinement Pipeline Kandidat & Action Massal (`/jobs/[jobId]` - Part 4)
+- **Status:** ✅ Completed
+- **Kategori:** Frontend Page Refinement (Jobs Detail Pipeline)
+- **Rincian Fitur:**
+  - **Kolom Penguji / Mandat SR:** Badge ungu menampilkan nama staf SR yang ditugaskan per kandidat, atau label "Belum Ada".
+  - **Filter Staf SR Dropdown:** Filter pipeline berdasarkan staf SR yang ditugaskan (`Semua`, `Belum Diberikan Mandat`, atau per-staf).
+  - **Export CSV:** Tombol export seluruh data pipeline ke file CSV (ID, Nama, Email, Telepon, Skor AI, Mandatory, Status, Staf SR, Jarak, Tanggal Apply).
+  - **Checkbox Multi-Select:** Checkbox per-baris & select-all di header tabel untuk memilih beberapa kandidat sekaligus.
+  - **Bulk Action Bar:** Floating bar saat kandidat terpilih — Ubah Status Massal (Ready to Interview / Hired / Rejected) & Beri Mandat SR Staff.
+  - **Integrasi ScheduleInterviewModal:** Tombol Calendar per-baris & dari Bulk Action untuk langsung membuka modal penjadwalan wawancara.
+
+### Task 1.14: Refinement Profil Kandidat & Catatan Wawancara (`/candidates/[candidateId]` - Part 2)
+- **Status:** ✅ Completed
+- **Kategori:** Frontend Page Enhancement (Candidate Detail)
+- **Rincian Fitur:**
+  - **Card Info Penugasan Mandat:** 4-grid card menampilkan Penguji SR Staff (badge ungu), Jadwal Wawancara, Lokasi/Meeting Link, dan Status Wawancara. Placeholder jika belum dimandatkan.
+  - **Tombol Aksi Cepat Header:** Beri Mandat / Ubah Jadwal (membuka `ScheduleInterviewModal`) & Cetak PDF.
+  - **Section Catatan Internal HRD:** Textarea catatan internal yang hanya terlihat tim HRD, disimpan ke Supabase.
+  - **Section Evaluasi Wawancara:** Textarea hasil evaluasi penguji SR Staff dengan komentar & rekomendasi.
+  - **Cetak Ringkasan PDF:** Fungsi `handlePrintSummary()` membuka jendela baru dengan layout print-ready (skor AI, mandatory check, skills, analisis, catatan HRD & evaluasi).
+
 ---
 
 ## 📌 Phase 2: Backend APIs, Database, & AI Engine
