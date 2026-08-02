@@ -1,15 +1,16 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { CandidateStatus } from "@/types";
 
 interface StatusBadgeProps {
-  status: CandidateStatus;
+  status: string;
+  color?: string;
   className?: string;
 }
 
-const statusConfig: Record<
-  CandidateStatus,
+// Fallback config for known legacy statuses
+const legacyStatusConfig: Record<
+  string,
   { label: string; bg: string; text: string; dot: string }
 > = {
   Pending: {
@@ -38,20 +39,49 @@ const statusConfig: Record<
   },
 };
 
-export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const config = statusConfig[status];
+/**
+ * Dynamic StatusBadge — supports any stage name.
+ * If a known legacy status is matched, uses predefined styling.
+ * Otherwise, uses a neutral or custom color-based badge.
+ */
+export function StatusBadge({ status, color, className }: StatusBadgeProps) {
+  const legacyConfig = legacyStatusConfig[status];
+
+  if (legacyConfig) {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+          legacyConfig.bg,
+          legacyConfig.text,
+          className
+        )}
+      >
+        <span className={cn("w-1.5 h-1.5 rounded-full", legacyConfig.dot)} />
+        {legacyConfig.label}
+      </span>
+    );
+  }
+
+  // Dynamic stage name — use provided color or neutral styling
+  const dotStyle = color ? { backgroundColor: color } : undefined;
+  const textStyle = color ? { color } : undefined;
+  const bgStyle = color ? { backgroundColor: `${color}18` } : undefined;
 
   return (
     <span
       className={cn(
         "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-        config.bg,
-        config.text,
+        !color && "bg-muted text-muted-foreground",
         className
       )}
+      style={bgStyle}
     >
-      <span className={cn("w-1.5 h-1.5 rounded-full", config.dot)} />
-      {config.label}
+      <span
+        className={cn("w-1.5 h-1.5 rounded-full", !color && "bg-muted-foreground")}
+        style={dotStyle}
+      />
+      <span style={textStyle}>{status}</span>
     </span>
   );
 }

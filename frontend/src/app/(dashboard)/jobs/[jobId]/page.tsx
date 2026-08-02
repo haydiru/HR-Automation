@@ -16,9 +16,12 @@ import {
   UserCheck,
   Calendar,
   CheckSquare,
-  Square,
   SlidersHorizontal,
   RefreshCw,
+  ChevronRight,
+  Ban,
+  Layers,
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +60,15 @@ import { cn } from "@/lib/utils";
 import type { Candidate } from "@/types";
 import { createClient } from "@/lib/supabase/client";
 
+interface Stage {
+  id: string;
+  name: string;
+  description?: string;
+  order_index: number;
+  color: string;
+  is_system?: boolean;
+}
+
 export default function JobDetailPage({
   params,
 }: {
@@ -66,32 +78,40 @@ export default function JobDetailPage({
   const [job, setJob] = useState<any>(null);
   const [allCandidates, setAllCandidates] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [stages, setStages] = useState<Stage[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
   const [search, setSearch] = useState("");
   const [readyOnly, setReadyOnly] = useState(false);
-  const [selectedStaffFilter, setSelectedStaffFilter] = useState("all"); // 'all' | 'unassigned' | staff_id
+  const [selectedStaffFilter, setSelectedStaffFilter] = useState("all");
+  const [selectedStageFilter, setSelectedStageFilter] = useState("all");
 
   // Modals & Selection
   const [insightCandidate, setInsightCandidate] = useState<Candidate | null>(null);
   const [scheduleModalCandidate, setScheduleModalCandidate] = useState<any | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [updatingBulk, setUpdatingBulk] = useState(false);
+  const [advancingId, setAdvancingId] = useState<string | null>(null);
 
   const supabase = createClient();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [jobRes, candidatesRes, teamRes] = await Promise.all([
+        const [jobRes, candidatesRes, stagesRes, teamRes] = await Promise.all([
           fetch(`/api/jobs/${jobId}`),
           fetch(`/api/jobs/${jobId}/candidates`),
+          fetch(`/api/jobs/${jobId}/stages`),
           supabase.from("profiles").select("id, full_name, email, role"),
         ]);
-        
+
         if (jobRes.ok) setJob(await jobRes.json());
         if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
+        if (stagesRes.ok) {
+          const stagesData = await stagesRes.json();
+          setStages(stagesData.stages || []);
+        }
         if (teamRes.data) setTeamMembers(teamRes.data);
       } catch (error) {
         console.error("Fetch error:", error);
@@ -119,6 +139,18 @@ export default function JobDetailPage({
     );
   }
 
+  // Count candidates per stage
+  const stageCounts: Record<string, number> = {};
+  let rejectedCount = 0;
+  allCandidates.forEach((c) => {
+    const stageName = c.current_stage_name || c.status || "Pending";
+    if (stageName === "Rejected") {
+      rejectedCount++;
+    } else {
+      stageCounts[stageName] = (stageCounts[stageName] || 0) + 1;
+    }
+  });
+
   // Filter Candidates
   const filteredCandidates = allCandidates.filter((c) => {
     const matchSearch =
@@ -136,7 +168,16 @@ export default function JobDetailPage({
       matchStaff = c.assigned_to_user_id === selectedStaffFilter;
     }
 
-    return matchSearch && matchReady && matchStaff;
+    let matchStage = true;
+    if (selectedStageFilter === "rejected") {
+      const sn = c.current_stage_name || c.status || "Pending";
+      matchStage = sn === "Rejected";
+    } else if (selectedStageFilter !== "all") {
+      const sn = c.current_stage_name || c.status || "Pending";
+      matchStage = sn === selectedStageFilter;
+    }
+
+    return matchSearch && matchReady && matchStaff && matchStage;
   });
 
   const qualifiedCount = allCandidates.filter((c) => c.is_qualified).length;
@@ -158,27 +199,98 @@ export default function JobDetailPage({
     }
   };
 
-  // Bulk Status Update
-  const handleBulkStatusChange = async (newStatus: string) => {
+  // Advance candidate to next stage
+  const handleAdvance = async (candidateId: string) => {
+    setAdvancingId(candidateId);
+    try {
+      const res = await fetch(`/api/candidates/${candidateId}/advance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Refresh candidates list
+        const candidatesRes = await fetch(`/api/jobs/${jobId}/candidates`);
+        if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
+      } else {
+        alert(data.message || data.error || "Gagal memajukan kandidat.");
+      }
+    } catch (err: any) {
+      alert("Gagal: " + err.message);
+    } finally {
+      setAdvancingId(null);
+    }
+  };
+
+  // Reject candidate
+  const handleReject = async (candidateId: string, candidateName: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menolak ${candidateName}?`)) return;
+
+    try {
+      const res = await fetch(`/api/candidates/${candidateId}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      if (res.ok) {
+        const candidatesRes = await fetch(`/api/jobs/${jobId}/candidates`);
+        if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
+      } else {
+        const errData = await res.json();
+        alert(errData.error || "Gagal menolak kandidat.");
+      }
+    } catch (err: any) {
+      alert("Gagal: " + err.message);
+    }
+  };
+
+  // Bulk Stage Advance
+  const handleBulkAdvance = async () => {
     if (selectedIds.length === 0) return;
     setUpdatingBulk(true);
 
     try {
-      // Update local state
-      setAllCandidates((prev) =>
-        prev.map((c) => (selectedIds.includes(c.id) ? { ...c, status: newStatus } : c))
-      );
-
-      // Call API or Supabase update
-      await supabase
-        .from("candidates")
-        .update({ status: newStatus })
-        .in("id", selectedIds);
-
-      alert(`✅ Status ${selectedIds.length} kandidat berhasil diubah menjadi '${newStatus}'!`);
+      for (const id of selectedIds) {
+        await fetch(`/api/candidates/${id}/advance`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      }
+      const candidatesRes = await fetch(`/api/jobs/${jobId}/candidates`);
+      if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
       setSelectedIds([]);
+      alert(`✅ ${selectedIds.length} kandidat berhasil dimajukan ke tahapan selanjutnya!`);
     } catch (err: any) {
-      alert("Gagal memperbarui status: " + err.message);
+      alert("Gagal: " + err.message);
+    } finally {
+      setUpdatingBulk(false);
+    }
+  };
+
+  // Bulk Reject
+  const handleBulkReject = async () => {
+    if (selectedIds.length === 0) return;
+    if (!confirm(`Apakah Anda yakin ingin menolak ${selectedIds.length} kandidat?`)) return;
+
+    setUpdatingBulk(true);
+    try {
+      for (const id of selectedIds) {
+        await fetch(`/api/candidates/${id}/reject`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+      }
+      const candidatesRes = await fetch(`/api/jobs/${jobId}/candidates`);
+      if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
+      setSelectedIds([]);
+      alert(`✅ ${selectedIds.length} kandidat berhasil ditolak.`);
+    } catch (err: any) {
+      alert("Gagal: " + err.message);
     } finally {
       setUpdatingBulk(false);
     }
@@ -198,7 +310,7 @@ export default function JobDetailPage({
       "Telepon",
       "Skor AI",
       "Status Mandatory",
-      "Status Rekrutmen",
+      "Tahapan Saat Ini",
       "Staf SR Ditugaskan",
       "Jarak ke Kantor (KM)",
       "Tanggal Apply",
@@ -216,7 +328,7 @@ export default function JobDetailPage({
         `"${c.phone || ""}"`,
         c.total_score || 0,
         `"${mandatoryPassed}"`,
-        `"${c.status || "Pending"}"`,
+        `"${c.current_stage_name || c.status || "Pending"}"`,
         `"${c.assigned_staff_name || "Unassigned"}"`,
         c.distance_to_work ? c.distance_to_work.toFixed(1) : "-",
         `"${format(new Date(c.created_at), "yyyy-MM-dd HH:mm")}"`,
@@ -231,6 +343,12 @@ export default function JobDetailPage({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Find stage color for a given stage name
+  const getStageColor = (stageName: string) => {
+    const s = stages.find((st) => st.name === stageName);
+    return s?.color || undefined;
   };
 
   return (
@@ -355,6 +473,91 @@ export default function JobDetailPage({
         </div>
       </div>
 
+      {/* Dynamic Stages Stepper */}
+      {stages.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Distribusi Tahapan Seleksi
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 scrollbar-thin">
+            {stages.map((stg, idx) => {
+              const count = stageCounts[stg.name] || 0;
+              const isActive = selectedStageFilter === stg.name;
+
+              return (
+                <div key={stg.id} className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() =>
+                      setSelectedStageFilter(isActive ? "all" : stg.name)
+                    }
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all",
+                      isActive
+                        ? "ring-2 ring-primary scale-[1.02]"
+                        : "hover:scale-[1.01]"
+                    )}
+                    style={{
+                      borderColor: `${stg.color}40`,
+                      backgroundColor: isActive ? `${stg.color}20` : `${stg.color}08`,
+                      color: stg.color,
+                    }}
+                  >
+                    <span
+                      className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                      style={{ backgroundColor: stg.color }}
+                    >
+                      {idx + 1}
+                    </span>
+                    <span>{stg.name}</span>
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] h-5 ml-1 bg-black/5 dark:bg-white/10"
+                    >
+                      {count}
+                    </Badge>
+                  </button>
+
+                  {idx < stages.length - 1 && (
+                    <div className="w-3 h-0.5 bg-border shrink-0" />
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Rejected bucket */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="w-3 h-0.5 bg-border shrink-0" />
+              <button
+                onClick={() =>
+                  setSelectedStageFilter(
+                    selectedStageFilter === "rejected" ? "all" : "rejected"
+                  )
+                }
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all border-destructive/30 text-destructive",
+                  selectedStageFilter === "rejected"
+                    ? "ring-2 ring-destructive scale-[1.02] bg-destructive/10"
+                    : "bg-destructive/5 hover:scale-[1.01]"
+                )}
+              >
+                <Ban className="w-4 h-4" />
+                Ditolak
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] h-5 ml-1 bg-black/5 dark:bg-white/10"
+                >
+                  {rejectedCount}
+                </Badge>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Candidate Pipeline Card */}
       <div className="rounded-xl border border-border bg-card">
         {/* Pipeline Controls Bar */}
@@ -364,6 +567,17 @@ export default function JobDetailPage({
             <Badge variant="secondary" className="text-xs">
               {filteredCandidates.length} Terfilter
             </Badge>
+            {selectedStageFilter !== "all" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedStageFilter("all")}
+                className="h-6 text-xs gap-1 text-primary"
+              >
+                <XCircle className="w-3 h-3" />
+                Reset Filter
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
@@ -434,32 +648,26 @@ export default function JobDetailPage({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Bulk Status Update */}
-              <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Button size="sm" variant="secondary" className="h-7 text-xs gap-1.5">
-                    Ubah Status Massal
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel className="text-xs">Pilih Status Baru</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => handleBulkStatusChange("Ready to Interview")}>
-                    Ready to Interview
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleBulkStatusChange("Hired")}>
-                    Hired
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleBulkStatusChange("Rejected")} className="text-red-600">
-                    Rejected
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Bulk Advance */}
+              <Button
+                size="sm"
+                variant="default"
+                onClick={handleBulkAdvance}
+                disabled={updatingBulk}
+                className="h-7 text-xs gap-1.5"
+              >
+                {updatingBulk ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5" />
+                )}
+                Majukan ke Tahap Berikutnya
+              </Button>
 
               {/* Bulk Mandate Assign */}
               <Button
                 size="sm"
-                variant="default"
+                variant="secondary"
                 onClick={() => {
                   const firstSelected = allCandidates.find((c) => c.id === selectedIds[0]);
                   if (firstSelected) {
@@ -473,6 +681,18 @@ export default function JobDetailPage({
               >
                 <UserCheck className="w-3.5 h-3.5" />
                 Beri Mandat SR Staff
+              </Button>
+
+              {/* Bulk Reject */}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleBulkReject}
+                disabled={updatingBulk}
+                className="h-7 text-xs gap-1.5"
+              >
+                <Ban className="w-3.5 h-3.5" />
+                Tolak
               </Button>
 
               <Button
@@ -505,7 +725,7 @@ export default function JobDetailPage({
                 <th className="p-4 text-center">Skor AI</th>
                 <th className="p-4 text-center">Mandatory</th>
                 <th className="p-4">Penguji / Mandat SR</th>
-                <th className="p-4 text-center">Status</th>
+                <th className="p-4 text-center">Tahapan</th>
                 <th className="p-4">Tanggal</th>
                 <th className="p-4 text-right">Aksi</th>
               </tr>
@@ -516,13 +736,17 @@ export default function JobDetailPage({
                   (m: any) => m.passed
                 );
                 const isSelected = selectedIds.includes(c.id);
+                const currentStageName = c.current_stage_name || c.status || "Pending";
+                const isRejected = currentStageName === "Rejected";
+                const stageColor = getStageColor(currentStageName);
 
                 return (
                   <tr
                     key={c.id}
                     className={cn(
                       "hover:bg-muted/30 transition-colors",
-                      isSelected && "bg-primary/5"
+                      isSelected && "bg-primary/5",
+                      isRejected && "opacity-60"
                     )}
                   >
                     <td className="p-4 text-center">
@@ -580,7 +804,7 @@ export default function JobDetailPage({
                       )}
                     </td>
                     <td className="p-4 text-center">
-                      <StatusBadge status={c.status} />
+                      <StatusBadge status={currentStageName} color={stageColor} />
                     </td>
                     <td className="p-4 text-[11px] text-muted-foreground font-mono">
                       {format(new Date(c.created_at), "d MMM yyyy", {
@@ -589,6 +813,36 @@ export default function JobDetailPage({
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {/* Advance to Next Stage */}
+                        {!isRejected && (
+                          <Tooltip>
+                            <TooltipTrigger
+                              onClick={() => handleAdvance(c.id)}
+                              className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-500/10 transition-colors"
+                            >
+                              {advancingId === c.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4" />
+                              )}
+                            </TooltipTrigger>
+                            <TooltipContent className="text-xs">Majukan ke Tahap Berikutnya</TooltipContent>
+                          </Tooltip>
+                        )}
+
+                        {/* Reject */}
+                        {!isRejected && (
+                          <Tooltip>
+                            <TooltipTrigger
+                              onClick={() => handleReject(c.id, c.full_name)}
+                              className="p-1.5 rounded-md text-destructive hover:bg-destructive/10 transition-colors"
+                            >
+                              <Ban className="w-4 h-4" />
+                            </TooltipTrigger>
+                            <TooltipContent className="text-xs">Tolak Kandidat</TooltipContent>
+                          </Tooltip>
+                        )}
+
                         {/* Mandate & Schedule Button */}
                         <Tooltip>
                           <TooltipTrigger
@@ -638,7 +892,9 @@ export default function JobDetailPage({
         {filteredCandidates.length === 0 && (
           <div className="text-center py-12">
             <p className="text-sm text-muted-foreground">
-              {readyOnly
+              {selectedStageFilter !== "all"
+                ? `Tidak ada kandidat di tahapan "${selectedStageFilter === "rejected" ? "Ditolak" : selectedStageFilter}".`
+                : readyOnly
                 ? "Tidak ada kandidat yang siap interview."
                 : "Belum ada kandidat untuk lowongan ini."}
             </p>

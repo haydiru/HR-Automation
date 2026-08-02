@@ -51,15 +51,16 @@ export interface Candidate {
   analysis_result: AnalysisResult;
   total_score: number;
   is_qualified: boolean;
-  status: CandidateStatus;
+  status: string;
+  current_stage_id?: string;
+  current_stage_name?: string;
+  assigned_to_user_id?: string;
+  assigned_staff_name?: string;
   created_at: string;
 }
 
-export type CandidateStatus =
-  | "Pending"
-  | "Ready to Interview"
-  | "Rejected"
-  | "Hired";
+/** Dynamic status — can be any stage name or legacy status */
+export type CandidateStatus = string;
 
 export interface DashboardStats {
   total_applicants_today: number;

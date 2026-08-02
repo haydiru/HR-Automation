@@ -15,26 +15,21 @@ import {
   MapPin,
   UserCheck,
   CalendarDays,
-  RefreshCw,
   Clock,
   MessageSquare,
   Printer,
   Save,
-  Send,
   Video,
   Loader2,
+  ChevronRight,
+  Ban,
+  Layers,
+  History,
 } from "lucide-react";
 import { DistanceMap } from "@/components/ui/distance-map";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { ScoreCircle } from "@/components/ui/score-circle";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -42,8 +37,23 @@ import { ScheduleInterviewModal } from "@/components/ui/schedule-interview-modal
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import type { CandidateStatus } from "@/types";
 import { createClient } from "@/lib/supabase/client";
+
+interface Stage {
+  id: string;
+  name: string;
+  order_index: number;
+  color: string;
+}
+
+interface StageHistoryEntry {
+  id: string;
+  from_stage_name: string;
+  to_stage_name: string;
+  notes?: string;
+  created_at: string;
+  profiles?: { full_name?: string; email?: string };
+}
 
 export default function CandidateDetailPage({
   params,
@@ -53,7 +63,8 @@ export default function CandidateDetailPage({
   const { candidateId } = use(params);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<CandidateStatus>("Pending");
+  const [stages, setStages] = useState<Stage[]>([]);
+  const [stageHistory, setStageHistory] = useState<StageHistoryEntry[]>([]);
 
   // Interview modal
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -65,44 +76,90 @@ export default function CandidateDetailPage({
   const [savingNotes, setSavingNotes] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
 
+  // Advance/Reject loading
+  const [advancing, setAdvancing] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+
   const supabase = createClient();
   const printRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    async function fetchCandidate() {
-      try {
-        const [res, teamRes] = await Promise.all([
-          fetch(`/api/candidates/${candidateId}`),
-          supabase.from("profiles").select("id, full_name, email, role"),
-        ]);
+  async function fetchAllData() {
+    try {
+      const [res, teamRes, historyRes] = await Promise.all([
+        fetch(`/api/candidates/${candidateId}`),
+        supabase.from("profiles").select("id, full_name, email, role"),
+        fetch(`/api/candidates/${candidateId}/stage-history`),
+      ]);
 
-        if (res.ok) {
-          const json = await res.json();
-          setData(json);
-          setStatus(json.status);
-          setHrNotes(json.hr_notes || "");
-          setEvaluationComments(json.evaluation_comments || "");
+      if (res.ok) {
+        const json = await res.json();
+        setData(json);
+        setHrNotes(json.hr_notes || "");
+        setEvaluationComments(json.evaluation_comments || "");
+
+        // Fetch stages for this job
+        if (json.job_id) {
+          const stagesRes = await fetch(`/api/jobs/${json.job_id}/stages`);
+          if (stagesRes.ok) {
+            const stagesData = await stagesRes.json();
+            setStages(stagesData.stages || []);
+          }
         }
-
-        if (teamRes.data) setTeamMembers(teamRes.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
       }
+
+      if (teamRes.data) setTeamMembers(teamRes.data);
+      if (historyRes.ok) setStageHistory(await historyRes.json());
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    fetchCandidate();
+  }
+
+  useEffect(() => {
+    fetchAllData();
   }, [candidateId]);
 
-  const handleStatusChange = async (newStatus: CandidateStatus) => {
-    setStatus(newStatus);
+  const handleAdvance = async () => {
+    setAdvancing(true);
     try {
-      await fetch(`/api/candidates/${candidateId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ status: newStatus }),
+      const res = await fetch(`/api/candidates/${candidateId}/advance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
       });
-    } catch (err) {
-      console.error("Failed to update status", err);
+      const result = await res.json();
+      if (result.success) {
+        await fetchAllData();
+      } else {
+        alert(result.message || result.error || "Gagal memajukan kandidat.");
+      }
+    } catch (err: any) {
+      alert("Gagal: " + err.message);
+    } finally {
+      setAdvancing(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!confirm(`Apakah Anda yakin ingin menolak ${data?.full_name}?`)) return;
+    setRejecting(true);
+    try {
+      const res = await fetch(`/api/candidates/${candidateId}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      if (res.ok) {
+        await fetchAllData();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || "Gagal menolak kandidat.");
+      }
+    } catch (err: any) {
+      alert("Gagal: " + err.message);
+    } finally {
+      setRejecting(false);
     }
   };
 
@@ -187,13 +244,6 @@ export default function CandidateDetailPage({
         <h2>Analisis AI</h2>
         <p style="font-size:13px;line-height:1.6">${analysis?.reasoning || "-"}</p>
 
-        ${data.assigned_staff_name ? `
-          <h2>Penugasan & Jadwal Wawancara</h2>
-          <p style="font-size:13px">Penguji SR Staff: <strong>${data.assigned_staff_name}</strong></p>
-          ${data.scheduled_at ? `<p style="font-size:13px">Jadwal: <strong>${format(new Date(data.scheduled_at), "d MMMM yyyy, HH:mm", { locale: localeId })}</strong></p>` : ""}
-          ${data.location ? `<p style="font-size:13px">Lokasi: ${data.location}</p>` : ""}
-        ` : ""}
-
         ${hrNotes ? `<h2>Catatan Internal HRD</h2><div class="notes-section">${hrNotes}</div>` : ""}
         ${evaluationComments ? `<h2>Hasil Evaluasi Wawancara</h2><div class="notes-section">${evaluationComments}</div>` : ""}
 
@@ -227,8 +277,13 @@ export default function CandidateDetailPage({
   }
 
   const candidate = data;
-  const job = data.jobs; 
+  const job = data.jobs;
   const analysis = candidate.analysis_result;
+  const currentStageName = candidate.current_stage_name || candidate.status || "Pending";
+  const isRejected = currentStageName === "Rejected";
+
+  // Determine current stage index in stepper
+  const currentStageIndex = stages.findIndex((s) => s.name === currentStageName);
 
   return (
     <div className="p-6 space-y-6" ref={printRef}>
@@ -263,7 +318,7 @@ export default function CandidateDetailPage({
             {candidate.domicile_address && (
               <span className="flex items-center gap-1.5 text-xs text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10">
                 <MapPin className="w-3.5 h-3.5" />
-                Domisili: {candidate.domicile_address} 
+                Domisili: {candidate.domicile_address}
                 {candidate.distance_to_work !== null && candidate.distance_to_work !== undefined && (
                   <span className="font-bold">
                     &nbsp;({candidate.distance_to_work.toFixed(1)} km dari kantor)
@@ -276,31 +331,53 @@ export default function CandidateDetailPage({
             <Badge variant="secondary" className="text-xs">
               {candidate.job_title}
             </Badge>
-            <StatusBadge status={status} />
+            <StatusBadge
+              status={currentStageName}
+              color={stages.find((s) => s.name === currentStageName)?.color}
+            />
           </div>
         </div>
 
-        {/* Status Updater + Quick Actions */}
+        {/* Quick Actions */}
         <div className="flex items-center gap-2 flex-wrap">
-          <Select
-            value={status}
-            onValueChange={(v: any) => handleStatusChange(v as CandidateStatus)}
-          >
-            <SelectTrigger className="w-[160px] h-9">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Ready to Interview">
-                Siap Interview
-              </SelectItem>
-              <SelectItem value="Rejected">Ditolak</SelectItem>
-              <SelectItem value="Hired">Diterima</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Advance Button */}
+          {!isRejected && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleAdvance}
+              disabled={advancing}
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {advancing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
+              Majukan Tahapan
+            </Button>
+          )}
+
+          {/* Reject Button */}
+          {!isRejected && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleReject}
+              disabled={rejecting}
+              className="gap-1.5"
+            >
+              {rejecting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Ban className="w-4 h-4" />
+              )}
+              Tolak
+            </Button>
+          )}
 
           <Button
-            variant="default"
+            variant="outline"
             size="sm"
             onClick={() => setShowScheduleModal(true)}
             className="gap-1.5"
@@ -321,6 +398,72 @@ export default function CandidateDetailPage({
         </div>
       </div>
 
+      {/* Dynamic Stage Stepper */}
+      {stages.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Progres Tahapan Seleksi Kandidat
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 scrollbar-thin">
+            {stages.map((stg, idx) => {
+              const isPassed = currentStageIndex > idx;
+              const isCurrent = currentStageIndex === idx;
+              const isFuture = currentStageIndex < idx;
+
+              return (
+                <div key={stg.id} className="flex items-center gap-2 shrink-0">
+                  <div
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all",
+                      isCurrent && "ring-2 ring-primary shadow-sm scale-[1.02]",
+                      isPassed && "opacity-90",
+                      isFuture && "opacity-40",
+                      isRejected && "opacity-30"
+                    )}
+                    style={{
+                      borderColor: isPassed || isCurrent ? `${stg.color}60` : `${stg.color}20`,
+                      backgroundColor: isCurrent ? `${stg.color}20` : isPassed ? `${stg.color}10` : `${stg.color}05`,
+                      color: stg.color,
+                    }}
+                  >
+                    <span
+                      className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                      )}
+                      style={{ backgroundColor: isPassed || isCurrent ? stg.color : `${stg.color}40` }}
+                    >
+                      {isPassed ? "✓" : idx + 1}
+                    </span>
+                    <span>{stg.name}</span>
+                  </div>
+
+                  {idx < stages.length - 1 && (
+                    <div
+                      className={cn("w-4 h-0.5 shrink-0", isPassed ? "bg-primary/40" : "bg-border")}
+                    />
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Rejected indicator */}
+            {isRejected && (
+              <>
+                <div className="w-4 h-0.5 bg-destructive/30 shrink-0" />
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-xs font-semibold ring-2 ring-destructive shadow-sm">
+                  <Ban className="w-4 h-4" />
+                  Ditolak
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Interview Assignment Card */}
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center gap-2 mb-4">
@@ -330,7 +473,6 @@ export default function CandidateDetailPage({
 
         {candidate.assigned_to_user_id ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Assigned Staff */}
             <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-500/5 border border-purple-500/15">
               <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
                 <UserCheck className="w-4 h-4 text-purple-500" />
@@ -341,7 +483,6 @@ export default function CandidateDetailPage({
               </div>
             </div>
 
-            {/* Scheduled Date */}
             <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/15">
               <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
                 <CalendarDays className="w-4 h-4 text-blue-500" />
@@ -356,7 +497,6 @@ export default function CandidateDetailPage({
               </div>
             </div>
 
-            {/* Location */}
             <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/15">
               <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
                 <Video className="w-4 h-4 text-green-500" />
@@ -369,7 +509,6 @@ export default function CandidateDetailPage({
               </div>
             </div>
 
-            {/* Interview Status */}
             <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/15">
               <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
                 <Clock className="w-4 h-4 text-amber-500" />
@@ -401,6 +540,63 @@ export default function CandidateDetailPage({
         )}
       </div>
 
+      {/* Stage History Timeline */}
+      {stageHistory.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <History className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Riwayat Perpindahan Tahapan
+            </h3>
+          </div>
+          <div className="space-y-0 relative ml-3">
+            <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-border" />
+            {stageHistory.map((entry, idx) => (
+              <div key={entry.id} className="flex items-start gap-3 py-2 relative">
+                <div className={cn(
+                  "w-[15px] h-[15px] rounded-full border-2 shrink-0 z-10",
+                  entry.to_stage_name === "Rejected"
+                    ? "bg-destructive border-destructive"
+                    : "bg-primary border-primary"
+                )} />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-[10px]">
+                      {entry.from_stage_name}
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground">→</span>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-[10px]",
+                        entry.to_stage_name === "Rejected" && "border-destructive/30 text-destructive"
+                      )}
+                    >
+                      {entry.to_stage_name}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[10px] text-muted-foreground">
+                      {format(new Date(entry.created_at), "d MMM yyyy, HH:mm", { locale: localeId })}
+                    </span>
+                    {entry.profiles?.full_name && (
+                      <span className="text-[10px] text-muted-foreground">
+                        oleh {entry.profiles.full_name}
+                      </span>
+                    )}
+                  </div>
+                  {entry.notes && (
+                    <p className="text-[11px] text-muted-foreground mt-0.5 italic">
+                      {entry.notes}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Main Content: CV + Analysis */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* CV Viewer — Left */}
@@ -411,9 +607,9 @@ export default function CandidateDetailPage({
               <span className="text-sm font-medium">Curriculum Vitae</span>
             </div>
             {candidate.signed_cv_url && (
-              <a 
-                href={candidate.signed_cv_url} 
-                target="_blank" 
+              <a
+                href={candidate.signed_cv_url}
+                target="_blank"
                 rel="noopener noreferrer"
                 className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
               >
@@ -595,7 +791,6 @@ export default function CandidateDetailPage({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {/* HR Internal Notes */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Catatan Internal HRD
@@ -611,7 +806,6 @@ export default function CandidateDetailPage({
             </p>
           </div>
 
-          {/* Interview Evaluation */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Hasil Evaluasi Wawancara
@@ -647,13 +841,7 @@ export default function CandidateDetailPage({
           }}
           teamMembers={teamMembers}
           onSuccess={() => {
-            // Refresh candidate data
-            fetch(`/api/candidates/${candidateId}`)
-              .then((res) => res.json())
-              .then((json) => {
-                setData(json);
-                setStatus(json.status);
-              });
+            fetchAllData();
           }}
         />
       )}
