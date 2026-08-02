@@ -159,6 +159,14 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - **Preview Visual Stepper:** Horizontal stepper preview alur seleksi resmi perusahaan.
   - **Sub-Header Navigation Tabs:** Tab navigasi "Tahapan Rekrutmen" di seluruh halaman settings (`/settings`, `/settings/stages`, `/settings/team`, `/settings/integrations`).
 
+### Task 1.17: Revisi Buat Lowongan — Opsi Override Tahapan (`/jobs/create` Revisi)
+- **Status:** ✅ Completed
+- **Kategori:** Frontend Page Enhancement (Jobs Management)
+- **Rincian Fitur:**
+  - **Option 1 (Default):** "Gunakan Template Default Perusahaan" dengan preview readonly stepper horizontal dari template perusahaan.
+  - **Option 2 (Custom):** "Kustomisasi Tahapan Khusus Lowongan Ini" dengan form editor interaktif (tambah tahapan, reorder naik/turun, hapus, dan pilih warna badge).
+  - **Integrasi API:** Otomatis memicu `PATCH /api/jobs/[jobId]/stages` saat pembuatan lowongan baru jika opsi custom diaktifkan.
+
 ---
 
 ## 📌 Phase 2: Backend APIs, Database, & AI Engine
@@ -205,6 +213,14 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
 - **Rincian Fitur:**
   - Route `/api/auth/google/connect`: Membuat URL otorisasi Google OAuth 2.0 dengan scope dinamik (`gmail.readonly` untuk Direct Gmail & `calendar.events` untuk Google Calendar Sync).
   - Route `/api/auth/google/callback`: Menangani pertukaran OAuth authorization code dengan `access_token` & `refresh_token`, menginisialisasi profil Gmail terhubung, dan menyimpan token terenkripsi di database.
+
+### Task 2.10: API Tahapan Per Lowongan (`/api/jobs/[jobId]/stages`)
+- **Status:** ✅ Completed
+- **Kategori:** Backend API Route
+- **Rincian Fitur:**
+  - GET endpoint yang mengembalikan tahapan efektif lowongan (`job_stages` jika custom, fallback ke `recruitment_stages` perusahaan).
+  - POST endpoint yang meng-copy template default perusahaan ke lowongan spesifik.
+  - PATCH endpoint untuk batch update / kustomisasi tahapan per lowongan (`use_custom_stages` & array `stages`).
 
 ---
 
