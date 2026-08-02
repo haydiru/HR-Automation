@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Save, Building2, Sparkles, ShieldCheck, CreditCard, Users, CalendarDays, Sliders, Layers } from "lucide-react";
+import { Save, Building2, Sparkles, ShieldCheck, CreditCard, Users, CalendarDays, Sliders, Layers, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -141,42 +141,53 @@ export default function SettingsPage() {
     setSaving(false);
   };
 
-  if (loading) return <div className="p-12 text-center animate-pulse">Memuat pengaturan...</div>;
+  if (loading) {
+    return (
+      <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-xs font-medium text-muted-foreground">Memuat pengaturan perusahaan...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-8">
+    <div className="p-6 max-w-5xl mx-auto space-y-8 page-enter">
+      {/* Header & Sub-Nav */}
       <div>
-        <h1 className="text-2xl font-bold">Pengaturan Perusahaan</h1>
-        <p className="text-sm text-muted-foreground">
-          Kelola profil perusahaan dan konfigurasi kecerdasan buatan (AI)
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Building2 className="w-6 h-6 text-primary" />
+          Pengaturan Perusahaan & Provider AI
+        </h1>
+        <p className="text-xs text-muted-foreground">
+          Kelola profil perusahaan, kredensial AI, dan model penyaringan otomatis
         </p>
 
-        {/* Sub-Navigation Tabs */}
-        <div className="flex items-center gap-2 mt-6 border-b border-border pb-1">
+        {/* Sub-Navigation Pills */}
+        <div className="flex items-center gap-2 mt-6 border-b border-border/80 pb-2 overflow-x-auto scrollbar-thin">
           <Link href="/settings">
             <Button
               variant="secondary"
               size="sm"
-              className="gap-2 text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/15"
+              className="gap-2 text-xs font-bold rounded-xl bg-primary/10 text-primary border border-primary/20"
             >
               <Sliders className="w-4 h-4" />
               Profil & AI Config
             </Button>
           </Link>
           <Link href="/settings/stages">
-            <Button variant="ghost" size="sm" className="gap-2 text-xs">
+            <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Layers className="w-4 h-4" />
               Tahapan Rekrutmen
             </Button>
           </Link>
           <Link href="/settings/team">
-            <Button variant="ghost" size="sm" className="gap-2 text-xs">
+            <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Users className="w-4 h-4" />
               Manajemen Tim
             </Button>
           </Link>
           <Link href="/settings/integrations">
-            <Button variant="ghost" size="sm" className="gap-2 text-xs">
+            <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <CalendarDays className="w-4 h-4" />
               Integrasi Email & Kalender
             </Button>
@@ -185,52 +196,49 @@ export default function SettingsPage() {
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
-        {/* Company Profile */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <div className="p-5 border-b border-border bg-muted/20 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-primary" />
-            <h2 className="text-sm font-semibold">Profil Perusahaan</h2>
+        {/* Company Profile Card */}
+        <div className="rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-border/60 bg-muted/20 flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-primary" />
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Identitas Perusahaan</h2>
           </div>
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="company-name">Nama Perusahaan</Label>
+                <Label htmlFor="company-name" className="text-xs font-semibold">Nama Perusahaan</Label>
                 <Input 
                   id="company-name" 
                   name="company-name"
                   defaultValue={profile?.company_name} 
+                  className="text-xs h-9 rounded-xl"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="industry">Industri</Label>
-                <Input id="industry" placeholder="Contoh: Teknologi, Kreatif" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
-                <Input id="website" placeholder="https://domain.com" />
+                <Label htmlFor="industry" className="text-xs font-semibold">Sektor Industri</Label>
+                <Input id="industry" placeholder="Contoh: Teknologi Informasi / Fintek" className="text-xs h-9 rounded-xl" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* AI Configuration */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <div className="p-5 border-b border-border bg-muted/20 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-[oklch(0.72_0.19_145)]" />
-            <h2 className="text-sm font-semibold">Konfigurasi AI Screening</h2>
+        {/* AI Engine Configuration Card */}
+        <div className="rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-border/60 bg-muted/20 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-500" />
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Konfigurasi Engine & Provider AI</h2>
           </div>
           <div className="p-6 space-y-6">
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Tingkat Ketat Penyaringan (Strictness)</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Semakin tinggi, AI akan semakin ketat dalam memberikan skor.
+                  <Label className="text-xs font-semibold">Tingkat Ketat Penyaringan (Strictness Threshold)</Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Semakin tinggi persentase, AI akan semakin selektif memberikan skor passing grade.
                   </p>
                 </div>
-                <div className="w-12 h-8 rounded bg-muted/50 flex items-center justify-center font-mono font-bold text-primary">
+                <span className="text-sm font-extrabold font-mono text-primary bg-primary/10 px-3 py-1 rounded-xl border border-primary/20">
                   {strictness}%
-                </div>
+                </span>
               </div>
               <Slider
                 value={[strictness]}
@@ -241,38 +249,38 @@ export default function SettingsPage() {
                 max={100}
                 min={0}
                 step={5}
-                className="py-4"
+                className="py-2"
               />
-              <div className="flex justify-between text-[10px] text-muted-foreground">
-                <span>Ekspansif (Banyak Kandidat)</span>
-                <span>Standar</span>
-                <span>Ketat (Terpilih)</span>
+              <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
+                <span>0% - Ekspansif (Longgar)</span>
+                <span>50% - Standar Moderat</span>
+                <span>100% - Sangat Ketat</span>
               </div>
             </div>
 
-            <Separator />
+            <Separator className="bg-border/60" />
 
             {/* Provider and key settings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
-                <Label htmlFor="ai-provider">Penyedia Layanan AI (Model Format)</Label>
+                <Label htmlFor="ai-provider" className="text-xs font-semibold">Penyedia AI (AI Provider)</Label>
                 <Select
                   value={aiProvider}
                   onValueChange={(val: any) => handleProviderChange(val)}
                 >
-                  <SelectTrigger id="ai-provider" className="w-full">
+                  <SelectTrigger id="ai-provider" className="w-full text-xs h-9 rounded-xl">
                     <SelectValue placeholder="Pilih Penyedia AI" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="gemini">Google Gemini AI (Default)</SelectItem>
-                    <SelectItem value="openai">OpenAI API Format (Proxy/Direct)</SelectItem>
-                    <SelectItem value="anthropic">Anthropic API Format (Proxy/Direct)</SelectItem>
+                    <SelectItem value="gemini">Google Gemini AI (Bawaan / Default)</SelectItem>
+                    <SelectItem value="openai">OpenAI Format (GPT-4o / Proxy)</SelectItem>
+                    <SelectItem value="anthropic">Anthropic Format (Claude 3.5 / Proxy)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="ai-api-key">Kunci API (API Key)</Label>
+                <Label htmlFor="ai-api-key" className="text-xs font-semibold">Kunci API (API Key)</Label>
                 <Input
                   id="ai-api-key"
                   type="password"
@@ -285,11 +293,12 @@ export default function SettingsPage() {
                       ? "sk-..."
                       : "sk-ant-..."
                   }
+                  className="text-xs h-9 rounded-xl font-mono"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="ai-model">Model AI</Label>
+                <Label htmlFor="ai-model" className="text-xs font-semibold">Pilihan Model AI</Label>
                 <Select
                   value={aiModel}
                   onValueChange={(val: any) => {
@@ -297,7 +306,7 @@ export default function SettingsPage() {
                     if (val !== "custom") setCustomModel("");
                   }}
                 >
-                  <SelectTrigger id="ai-model" className="w-full">
+                  <SelectTrigger id="ai-model" className="w-full text-xs h-9 rounded-xl">
                     <SelectValue placeholder="Pilih Model AI" />
                   </SelectTrigger>
                   <SelectContent>
@@ -306,13 +315,13 @@ export default function SettingsPage() {
                         {model.label}
                       </SelectItem>
                     ))}
-                    <SelectItem value="custom">Kustom (Tulis Sendiri)</SelectItem>
+                    <SelectItem value="custom">Kustom (Tulis Identifier Model)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="custom-model">
+                <Label htmlFor="custom-model" className="text-xs font-semibold">
                   {aiModel === "custom" ? "Nama Model Kustom" : "Model Aktif (Read Only)"}
                 </Label>
                 <Input
@@ -326,82 +335,61 @@ export default function SettingsPage() {
                   disabled={aiModel !== "custom"}
                   placeholder={
                     aiModel === "custom"
-                      ? "Masukkan identifier model (misal: deepseek-chat)"
+                      ? "Contoh: deepseek-chat / llama-3"
                       : "Diambil dari dropdown model"
                   }
+                  className="text-xs h-9 rounded-xl font-mono"
                 />
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="ai-proxy-url">URL Proxy / Endpoint Kustom</Label>
+                <Label htmlFor="ai-proxy-url" className="text-xs font-semibold">URL Proxy / Custom Endpoint (Opsional)</Label>
                 <Input
                   id="ai-proxy-url"
                   value={aiProxyUrl}
                   onChange={(e) => setAiProxyUrl(e.target.value)}
                   placeholder={
                     aiProvider === "gemini"
-                      ? "https://generativelanguage.googleapis.com (Opsional)"
+                      ? "https://generativelanguage.googleapis.com (Biarkan kosong untuk server resmi)"
                       : aiProvider === "openai"
-                      ? "https://api.openai.com/v1 (Opsional)"
-                      : "https://api.anthropic.com/v1 (Opsional)"
+                      ? "https://api.openai.com/v1 (Biarkan kosong untuk server resmi)"
+                      : "https://api.anthropic.com/v1 (Biarkan kosong untuk server resmi)"
                   }
+                  className="text-xs h-9 rounded-xl font-mono"
                 />
-                <p className="text-[10px] text-muted-foreground leading-normal mt-1">
-                  Biarkan kosong untuk langsung menghubungi server utama. Masukkan endpoint proxy kustom (misal: openrouter, dll) jika Anda menggunakannya.
-                </p>
               </div>
             </div>
 
-            <Separator />
+            <Separator className="bg-border/60" />
 
-            <div className="flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-muted-foreground" />
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-border/60">
+              <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0" />
               <div>
-                <p className="text-sm font-medium">Model AI Aktif</p>
-                <p className="text-xs text-muted-foreground font-mono">
-                  {aiProvider.toUpperCase()} — {aiModel === "custom" ? (customModel || "(Kustom model belum ditentukan)") : aiModel}
+                <p className="text-xs font-bold">Ringkasan Konfigurasi AI Aktif</p>
+                <p className="text-[11px] text-muted-foreground font-mono">
+                  {aiProvider.toUpperCase()} — {aiModel === "custom" ? (customModel || "Kustom Model") : aiModel}
                 </p>
               </div>
-              <Badge variant="secondary" className="ml-auto">
-                {aiProvider === "gemini" && !aiApiKey ? "Default System" : "Custom Configuration"}
+              <Badge variant="outline" className="ml-auto text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
+                {aiApiKey ? "Custom Key Connected" : "Default System Key"}
               </Badge>
             </div>
           </div>
         </div>
 
-        {/* Plan & Billing Placeholder */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <div className="p-5 border-b border-border bg-muted/20 flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-muted-foreground" />
-            <h2 className="text-sm font-semibold">Langganan & Tagihan</h2>
-          </div>
-          <div className="p-6">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/20">
-              <div className="space-y-1">
-                <p className="text-sm font-bold text-primary">Paket Institusi (Internal Only)</p>
-                <p className="text-xs text-muted-foreground">
-                  Akses penuh ke semua fitur otomasi rekrutmen.
-                </p>
-              </div>
-              <Button variant="outline" size="sm" className="bg-background">
-                Lihat Detail
-              </Button>
-            </div>
-          </div>
-        </div>
-
+        {/* Actions */}
         <div className="flex items-center justify-end">
-          <Button type="submit" disabled={saving} className="px-8">
+          <Button type="submit" disabled={saving} className="px-8 text-xs h-10 rounded-xl gap-2 shadow-lg shadow-primary/20">
             {saving ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
                 Menyimpan...
-              </span>
+              </>
             ) : (
-              <span className="flex items-center gap-2">
+              <>
                 <Save className="w-4 h-4" />
                 Simpan Perubahan
-              </span>
+              </>
             )}
           </Button>
         </div>

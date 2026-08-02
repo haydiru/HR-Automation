@@ -1,8 +1,9 @@
 "use client";
 
-import { Bell, Search, LogOut } from "lucide-react";
+import { Search, LogOut, Sparkles, Building2, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,12 +14,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { logout } from "@/app/(auth)/actions";
 import Link from "next/link";
-
 import { NotificationPopover } from "./notification-popover";
 
 export function Header() {
@@ -45,69 +44,86 @@ export function Header() {
   };
 
   const displayName = profile?.full_name || profile?.email?.split("@")[0] || "User";
+  const companyName = profile?.company_name || "Perusahaan Saya";
+  const initials = displayName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
-    <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-6 gap-4">
-      {/* Search */}
+    <header className="h-16 border-b border-border/80 bg-card/60 backdrop-blur-xl flex items-center justify-between px-6 gap-4 sticky top-0 z-10 transition-colors">
+      {/* Search Bar */}
       <div className="relative max-w-md flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="Cari lowongan, kandidat..."
-          className="pl-10 bg-muted/50 border-transparent focus:border-primary/50 h-9 text-sm"
+          placeholder="Cari lowongan, kandidat, atau staf..."
+          className="pl-9 bg-muted/40 border-border/60 focus:border-primary/50 focus:bg-background h-9 text-xs rounded-xl shadow-inner transition-all"
         />
       </div>
 
-      {/* Right side */}
-      <div className="flex items-center gap-2">
+      {/* Right Controls */}
+      <div className="flex items-center gap-3">
         <ThemeToggle />
-        
+
         {/* Notifications Popover */}
         <NotificationPopover />
 
-        <div className="w-[1px] h-6 bg-border mx-1" />
+        <div className="w-[1px] h-6 bg-border/80 mx-0.5" />
 
-        {/* User */}
+        {/* User Profile Dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-accent transition-colors text-left">
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
-                {displayName.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+          <DropdownMenuTrigger className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-accent/60 transition-all text-left group border border-transparent hover:border-border/60">
+            <Avatar className="w-8 h-8 ring-2 ring-primary/20 transition-transform group-hover:scale-105">
+              <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                {initials}
               </AvatarFallback>
             </Avatar>
             <div className="hidden md:block">
-              <p className="text-xs font-semibold">
+              <p className="text-xs font-bold leading-tight flex items-center gap-1.5">
                 {displayName}
               </p>
-              <p className="text-[10px] text-muted-foreground">
-                {profile?.company_name || "Perusahaan Saya"}
+              <p className="text-[10px] text-muted-foreground leading-tight flex items-center gap-1">
+                <Building2 className="w-2.5 h-2.5" />
+                {companyName}
               </p>
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-60 p-2 shadow-xl border-border rounded-xl">
             <DropdownMenuGroup>
-              <DropdownMenuLabel>
-                <div className="py-1">
-                  <p className="text-sm font-medium">{displayName}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {profile?.email}
-                  </p>
+              <DropdownMenuLabel className="p-2">
+                <div className="space-y-1">
+                  <p className="text-xs font-bold">{displayName}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{profile?.email}</p>
+                  <div className="pt-1">
+                    <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-primary/20">
+                      {profile?.role === "super_admin" ? "Super Admin" : "SR Recruiter"}
+                    </Badge>
+                  </div>
                 </div>
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Link href="/settings" className="w-full">Profil Saya</Link>
+            <DropdownMenuItem className="p-0">
+              <Link href="/settings" className="w-full px-2 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
+                <User className="w-4 h-4 text-muted-foreground" />
+                Profil Saya & Provider AI
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link href="/settings" className="w-full">Pengaturan</Link>
+            <DropdownMenuItem className="p-0">
+              <Link href="/settings/stages" className="w-full px-2 py-1.5 text-xs flex items-center gap-2 cursor-pointer">
+                <Sparkles className="w-4 h-4 text-muted-foreground" />
+                Tahapan Rekrutmen
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={handleLogout}
-              className="text-destructive focus:bg-destructive/10 focus:text-destructive gap-2 cursor-pointer"
+              className="text-xs gap-2 py-2 text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
-              Keluar
+              Keluar dari Sistem
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

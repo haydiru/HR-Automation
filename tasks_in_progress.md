@@ -6,4 +6,4 @@ Dokumen ini mencatat task yang **saat ini sedang aktif dikerjakan, diuji (testin
 
 ## ⏳ Active Tasks
 
-*Tidak ada task yang sedang berjalan saat ini. Seluruh halaman frontend (termasuk /candidates) dan integrasi Notifikasi In-App telah selesai!*
+*(Saat ini tidak ada task yang sedang berjalan. Seluruh task Phase 4 UI/UX Redesign "Obsidian Talent OS" telah selesai 100% dan dicatat di `tasks_done.md`.)*

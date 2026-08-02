@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -91,7 +91,6 @@ export default function TeamSettingsPage() {
       setCurrentUser(user);
 
       if (user) {
-        // Fetch current user's profile
         const { data: profile } = await supabase
           .from("profiles")
           .select("*")
@@ -100,7 +99,6 @@ export default function TeamSettingsPage() {
 
         setCurrentProfile(profile);
 
-        // Fetch team members from current profile's company
         const { data: members } = await supabase
           .from("profiles")
           .select("*")
@@ -118,7 +116,6 @@ export default function TeamSettingsPage() {
 
           setTeamMembers(formattedMembers);
         } else {
-          // Fallback mock team data if only single profile exists
           setTeamMembers([
             {
               id: user.id,
@@ -143,7 +140,6 @@ export default function TeamSettingsPage() {
     setSendingInvite(true);
 
     try {
-      // Create new invited member entry in state
       const newMember: TeamMember = {
         id: `invite-${Date.now()}`,
         email: inviteEmail,
@@ -178,7 +174,6 @@ export default function TeamSettingsPage() {
         )
       );
 
-      // Try updating in Supabase if it's a real profile ID
       if (!selectedMember.id.startsWith("invite-")) {
         await supabase
           .from("profiles")
@@ -222,30 +217,33 @@ export default function TeamSettingsPage() {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Memuat data tim perusahaan...</p>
+        <p className="text-xs font-medium text-muted-foreground">Memuat data tim perusahaan...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8">
-      {/* Settings Navigation Header */}
+    <div className="p-6 max-w-5xl mx-auto space-y-8 page-enter">
+      {/* Header & Sub-Nav */}
       <div>
-        <h1 className="text-2xl font-bold">Pengaturan Perusahaan</h1>
-        <p className="text-sm text-muted-foreground">
-          Kelola profil, integrasi AI, kalender, dan anggota tim perusahaan Anda
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Building2 className="w-6 h-6 text-primary" />
+          Pengaturan Tim & Staf Wawancara
+        </h1>
+        <p className="text-xs text-muted-foreground">
+          Kelola daftar penguji, undang anggota tim baru, dan atur matriks hak akses
         </p>
 
-        {/* Sub-Navigation Tabs */}
-        <div className="flex items-center gap-2 mt-6 border-b border-border pb-1">
+        {/* Sub-Navigation Pills */}
+        <div className="flex items-center gap-2 mt-6 border-b border-border/80 pb-2 overflow-x-auto scrollbar-thin">
           <Link href="/settings">
-            <Button variant="ghost" size="sm" className="gap-2 text-xs">
+            <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Sliders className="w-4 h-4" />
               Profil & AI Config
             </Button>
           </Link>
           <Link href="/settings/stages">
-            <Button variant="ghost" size="sm" className="gap-2 text-xs">
+            <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <Layers className="w-4 h-4" />
               Tahapan Rekrutmen
             </Button>
@@ -254,14 +252,14 @@ export default function TeamSettingsPage() {
             <Button
               variant="secondary"
               size="sm"
-              className="gap-2 text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/15"
+              className="gap-2 text-xs font-bold rounded-xl bg-primary/10 text-primary border border-primary/20"
             >
               <Users className="w-4 h-4" />
               Manajemen Tim
             </Button>
           </Link>
           <Link href="/settings/integrations">
-            <Button variant="ghost" size="sm" className="gap-2 text-xs">
+            <Button variant="ghost" size="sm" className="gap-2 text-xs rounded-xl text-muted-foreground hover:text-foreground">
               <CalendarDays className="w-4 h-4" />
               Integrasi Email & Kalender
             </Button>
@@ -269,8 +267,8 @@ export default function TeamSettingsPage() {
         </div>
       </div>
 
-      {/* Super Admin Notice Banner */}
-      <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex items-start gap-3">
+      {/* Super Admin Banner */}
+      <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5 flex items-start gap-3 shadow-sm">
         <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
         <div className="space-y-1 text-xs">
           <p className="font-bold text-foreground">Area Pengelolaan Tim (Khusus Super Admin)</p>
@@ -281,41 +279,41 @@ export default function TeamSettingsPage() {
       </div>
 
       {/* Team Members List Card */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="p-5 border-b border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" />
+            <Users className="w-4 h-4 text-primary" />
             <div>
-              <h2 className="text-sm font-semibold">Anggota Tim Perusahaan</h2>
-              <p className="text-xs text-muted-foreground">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Anggota Tim Perusahaan</h2>
+              <p className="text-xs font-semibold text-foreground mt-0.5">
                 Total {teamMembers.length} anggota tim terdaftar
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Search Input */}
             <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Cari anggota tim..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 text-xs"
+                className="pl-9 h-8 text-xs rounded-xl bg-muted/30"
               />
             </div>
 
-            {/* Invite Button */}
             <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-              <DialogTrigger>
-                <Button size="sm" className="gap-2 shrink-0">
-                  <UserPlus className="w-4 h-4" />
-                  Undang Anggota Tim
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogTrigger
+                render={
+                  <Button size="sm" className="gap-2 h-8 text-xs rounded-xl shadow-md shadow-primary/20 shrink-0">
+                    <UserPlus className="w-3.5 h-3.5" />
+                    Undang Anggota Tim
+                  </Button>
+                }
+              />
+              <DialogContent className="sm:max-w-md rounded-2xl">
                 <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
+                  <DialogTitle className="flex items-center gap-2 text-base">
                     <UserPlus className="w-5 h-5 text-primary" />
                     Undang Anggota Tim Baru
                   </DialogTitle>
@@ -326,7 +324,7 @@ export default function TeamSettingsPage() {
 
                 <form onSubmit={handleSendInvite} className="space-y-4 py-2">
                   <div className="space-y-2">
-                    <Label htmlFor="invite-email" className="text-xs">
+                    <Label htmlFor="invite-email" className="text-xs font-semibold">
                       Alamat Email Anggota Tim <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -336,12 +334,12 @@ export default function TeamSettingsPage() {
                       placeholder="nama@perusahaan.com"
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
-                      className="text-xs"
+                      className="text-xs h-9 rounded-xl"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="invite-name" className="text-xs">
+                    <Label htmlFor="invite-name" className="text-xs font-semibold">
                       Nama Lengkap (Opsional)
                     </Label>
                     <Input
@@ -349,19 +347,19 @@ export default function TeamSettingsPage() {
                       placeholder="Contoh: Budi Santoso"
                       value={inviteName}
                       onChange={(e) => setInviteName(e.target.value)}
-                      className="text-xs"
+                      className="text-xs h-9 rounded-xl"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="invite-role" className="text-xs">
+                    <Label htmlFor="invite-role" className="text-xs font-semibold">
                       Peran & Hak Akses (Role)
                     </Label>
                     <Select
                       value={inviteRole}
                       onValueChange={(val: any) => setInviteRole(val)}
                     >
-                      <SelectTrigger id="invite-role" className="w-full text-xs">
+                      <SelectTrigger id="invite-role" className="w-full text-xs h-9 rounded-xl">
                         <SelectValue placeholder="Pilih Peran" />
                       </SelectTrigger>
                       <SelectContent>
@@ -391,14 +389,15 @@ export default function TeamSettingsPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => setIsInviteOpen(false)}
+                      className="text-xs rounded-xl"
                     >
                       Batal
                     </Button>
-                    <Button type="submit" size="sm" disabled={sendingInvite}>
+                    <Button type="submit" size="sm" disabled={sendingInvite} className="text-xs rounded-xl">
                       {sendingInvite ? (
                         <span className="flex items-center gap-2">
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          Mengirim Undangan...
+                          Mengirim...
                         </span>
                       ) : (
                         <span className="flex items-center gap-2">
@@ -414,10 +413,10 @@ export default function TeamSettingsPage() {
           </div>
         </div>
 
-        {/* Members Table */}
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-muted/40 border-b border-border text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">
+            <thead className="bg-muted/20 border-b border-border/60 text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">
               <tr>
                 <th className="p-4">Anggota Tim</th>
                 <th className="p-4">Peran (Role)</th>
@@ -426,7 +425,7 @@ export default function TeamSettingsPage() {
                 <th className="p-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {filteredMembers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-8 text-center text-muted-foreground">
@@ -435,7 +434,7 @@ export default function TeamSettingsPage() {
                 </tr>
               ) : (
                 filteredMembers.map((member) => (
-                  <tr key={member.id} className="hover:bg-muted/20 transition-colors">
+                  <tr key={member.id} className="hover:bg-muted/30 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="w-8 h-8 border border-border">
@@ -460,7 +459,7 @@ export default function TeamSettingsPage() {
                       {member.role === "super_admin" ? (
                         <Badge
                           variant="secondary"
-                          className="gap-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 font-semibold"
+                          className="gap-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 font-bold text-[10px]"
                         >
                           <Shield className="w-3 h-3" />
                           Super Admin
@@ -468,7 +467,7 @@ export default function TeamSettingsPage() {
                       ) : (
                         <Badge
                           variant="outline"
-                          className="gap-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 font-semibold"
+                          className="gap-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 font-bold text-[10px]"
                         >
                           <Users className="w-3 h-3" />
                           Recruiter / SR Staff
@@ -477,12 +476,12 @@ export default function TeamSettingsPage() {
                     </td>
                     <td className="p-4">
                       {member.status === "active" ? (
-                        <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+                        <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           Aktif
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
+                        <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold">
                           <Clock className="w-3.5 h-3.5" />
                           Undangan Terkirim
                         </span>
@@ -497,12 +496,14 @@ export default function TeamSettingsPage() {
                     </td>
                     <td className="p-4 text-right">
                       <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuTrigger
+                          render={
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          }
+                        />
+                        <DropdownMenuContent align="end" className="w-48 p-1 rounded-xl shadow-xl">
                           <DropdownMenuLabel className="text-xs">Kelola Akses</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -519,7 +520,7 @@ export default function TeamSettingsPage() {
                           <DropdownMenuItem
                             onClick={() => handleRevokeMember(member)}
                             disabled={member.id === currentUser?.id}
-                            className="text-xs gap-2 text-red-600 dark:text-red-400 focus:text-red-600 cursor-pointer"
+                            className="text-xs gap-2 text-destructive focus:text-destructive cursor-pointer"
                           >
                             <UserX className="w-4 h-4" />
                             Cabut Akses Tim
@@ -537,9 +538,9 @@ export default function TeamSettingsPage() {
 
       {/* Edit Role Dialog */}
       <Dialog open={isEditRoleOpen} onOpenChange={setIsEditRoleOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-base">
               <ShieldCheck className="w-5 h-5 text-primary" />
               Ubah Peran Anggota Tim
             </DialogTitle>
@@ -550,12 +551,12 @@ export default function TeamSettingsPage() {
 
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label className="text-xs">Pilih Peran Baru</Label>
+              <Label className="text-xs font-semibold">Pilih Peran Baru</Label>
               <Select
                 value={newRole}
                 onValueChange={(val: any) => setNewRole(val)}
               >
-                <SelectTrigger className="w-full text-xs">
+                <SelectTrigger className="w-full text-xs h-9 rounded-xl">
                   <SelectValue placeholder="Pilih Peran" />
                 </SelectTrigger>
                 <SelectContent>
@@ -576,10 +577,11 @@ export default function TeamSettingsPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsEditRoleOpen(false)}
+              className="text-xs rounded-xl"
             >
               Batal
             </Button>
-            <Button size="sm" onClick={handleUpdateRole} disabled={updatingRole}>
+            <Button size="sm" onClick={handleUpdateRole} disabled={updatingRole} className="text-xs rounded-xl">
               {updatingRole ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

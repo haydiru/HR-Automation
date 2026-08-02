@@ -18,6 +18,7 @@ import {
   Briefcase,
   Loader2,
   RefreshCw,
+  SlidersHorizontal,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -90,7 +91,6 @@ export default function CandidatesPage() {
     loadData();
   }, []);
 
-  // Action: Advance
   const handleAdvance = async (candidateId: string) => {
     setAdvancingId(candidateId);
     try {
@@ -113,7 +113,6 @@ export default function CandidatesPage() {
     }
   };
 
-  // Action: Reject
   const handleReject = async (candidateId: string, candidateName: string) => {
     if (!confirm(`Apakah Anda yakin ingin menolak ${candidateName}?`)) return;
 
@@ -135,7 +134,6 @@ export default function CandidatesPage() {
     }
   };
 
-  // Export CSV
   const handleExportCSV = () => {
     if (filteredCandidates.length === 0) {
       alert("Tidak ada data kandidat untuk di-export.");
@@ -186,7 +184,6 @@ export default function CandidatesPage() {
     document.body.removeChild(link);
   };
 
-  // Filter candidates
   const filteredCandidates = candidates.filter((c) => {
     const matchSearch =
       c.full_name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -210,13 +207,13 @@ export default function CandidatesPage() {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Memuat seluruh data kandidat...</p>
+        <p className="text-xs font-medium text-muted-foreground">Memuat seluruh data kandidat...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 max-w-7xl mx-auto space-y-6 page-enter">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -224,7 +221,7 @@ export default function CandidatesPage() {
             <Users className="w-6 h-6 text-primary" />
             Daftar Seluruh Kandidat
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Kelola dan pantau seluruh pelamar kerja lintas lowongan perusahaan Anda
           </p>
         </div>
@@ -234,16 +231,16 @@ export default function CandidatesPage() {
             variant="outline"
             size="sm"
             onClick={loadData}
-            className="gap-1.5 text-xs"
+            className="gap-1.5 text-xs h-9 rounded-xl bg-card/60"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            Refresh
+            Refresh Data
           </Button>
           <Button
             variant="default"
             size="sm"
             onClick={handleExportCSV}
-            className="gap-1.5 text-xs"
+            className="gap-1.5 text-xs h-9 rounded-xl shadow-lg shadow-primary/20"
           >
             <Download className="w-3.5 h-3.5" />
             Export CSV
@@ -251,32 +248,35 @@ export default function CandidatesPage() {
         </div>
       </div>
 
-      {/* Candidates List Card */}
-      <div className="rounded-xl border border-border bg-card">
+      {/* Glassmorphic Candidates Card */}
+      <div className="rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden">
         {/* Controls Bar */}
-        <div className="p-5 pb-4 flex items-center justify-between flex-wrap gap-4 border-b border-border">
+        <div className="p-5 pb-4 flex items-center justify-between flex-wrap gap-4 border-b border-border/60">
           <div className="flex items-center gap-3">
-            <h2 className="text-sm font-semibold">Semua Pelamar</h2>
-            <Badge variant="secondary" className="text-xs">
+            <h2 className="text-sm font-bold flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-primary" />
+              Filter Pelamar
+            </h2>
+            <Badge variant="secondary" className="text-xs font-semibold">
               {filteredCandidates.length} Terfilter
             </Badge>
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
-            {/* Search */}
+            {/* Search Input */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Cari nama / email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-8 w-[180px] text-xs"
+                className="pl-9 h-8 w-[180px] text-xs rounded-xl bg-muted/30"
               />
             </div>
 
             {/* Filter Lowongan */}
             <Select value={selectedJobId} onValueChange={(val: any) => setSelectedJobId(val || "all")}>
-              <SelectTrigger className="h-8 text-xs w-[170px]">
+              <SelectTrigger className="h-8 text-xs w-[170px] rounded-xl">
                 <SelectValue placeholder="Pilih Lowongan" />
               </SelectTrigger>
               <SelectContent>
@@ -291,12 +291,12 @@ export default function CandidatesPage() {
 
             {/* Filter Staff SR */}
             <Select value={selectedStaffFilter} onValueChange={(val: any) => setSelectedStaffFilter(val || "all")}>
-              <SelectTrigger className="h-8 text-xs w-[160px]">
+              <SelectTrigger className="h-8 text-xs w-[160px] rounded-xl">
                 <SelectValue placeholder="Filter Staf SR" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Staf SR</SelectItem>
-                <SelectItem value="unassigned">Belum Diberikan Mandat</SelectItem>
+                <SelectItem value="unassigned">Belum Ada Mandat</SelectItem>
                 {teamMembers.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.full_name || m.email}
@@ -305,8 +305,8 @@ export default function CandidatesPage() {
               </SelectContent>
             </Select>
 
-            {/* Qualified Only Switch */}
-            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-[oklch(0.72_0.19_145/8%)] border border-[oklch(0.72_0.19_145/20%)]">
+            {/* Qualified Switch */}
+            <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
               <Switch
                 id="qualified-filter"
                 checked={qualifiedOnly}
@@ -315,7 +315,7 @@ export default function CandidatesPage() {
               />
               <Label
                 htmlFor="qualified-filter"
-                className="text-xs font-medium text-[oklch(0.72_0.19_145)] cursor-pointer whitespace-nowrap"
+                className="text-xs font-bold text-emerald-500 cursor-pointer whitespace-nowrap"
               >
                 Hanya Qualified
               </Label>
@@ -327,22 +327,22 @@ export default function CandidatesPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
             <thead>
-              <tr className="border-b border-border bg-muted/20 text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">
+              <tr className="border-b border-border/60 bg-muted/20 text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">
                 <th className="p-4">Kandidat</th>
-                <th className="p-4">Lowongan</th>
+                <th className="p-4">Posisi Lowongan</th>
                 <th className="p-4 text-center">Skor AI</th>
                 <th className="p-4 text-center">Mandatory</th>
                 <th className="p-4">Penguji SR Staff</th>
-                <th className="p-4 text-center">Tahapan</th>
+                <th className="p-4 text-center">Tahapan Saat Ini</th>
                 <th className="p-4">Tanggal Apply</th>
                 <th className="p-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {filteredCandidates.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="p-12 text-center text-muted-foreground">
-                    Tidak ada data kandidat yang cocok.
+                    Tidak ada data kandidat yang cocok dengan filter.
                   </td>
                 </tr>
               ) : (
@@ -363,14 +363,14 @@ export default function CandidatesPage() {
                     >
                       <td className="p-4">
                         <div>
-                          <p className="font-semibold text-foreground">{c.full_name}</p>
+                          <p className="font-bold text-foreground">{c.full_name}</p>
                           <p className="text-[11px] text-muted-foreground">{c.email}</p>
                         </div>
                       </td>
                       <td className="p-4">
                         <Link
                           href={`/jobs/${c.job_id}`}
-                          className="hover:underline font-medium text-foreground flex items-center gap-1.5"
+                          className="hover:underline font-semibold text-foreground flex items-center gap-1.5"
                         >
                           <Briefcase className="w-3.5 h-3.5 text-primary shrink-0" />
                           <span>{c.jobs?.title || c.job_title || "—"}</span>
@@ -394,7 +394,7 @@ export default function CandidatesPage() {
                       </td>
                       <td className="p-4 text-center">
                         {mandatoryPassed ? (
-                          <Badge className="bg-[oklch(0.72_0.19_145/15%)] text-[oklch(0.72_0.19_145)] text-[10px]">
+                          <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px]">
                             ✓ Lulus
                           </Badge>
                         ) : (
@@ -426,12 +426,11 @@ export default function CandidatesPage() {
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          {/* Advance */}
                           {!isRejected && (
                             <Tooltip>
                               <TooltipTrigger
                                 onClick={() => handleAdvance(c.id)}
-                                className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-500/10 transition-colors"
+                                className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-500/10 transition-colors"
                               >
                                 {advancingId === c.id ? (
                                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -443,12 +442,11 @@ export default function CandidatesPage() {
                             </Tooltip>
                           )}
 
-                          {/* Reject */}
                           {!isRejected && (
                             <Tooltip>
                               <TooltipTrigger
                                 onClick={() => handleReject(c.id, c.full_name)}
-                                className="p-1.5 rounded-md text-destructive hover:bg-destructive/10 transition-colors"
+                                className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
                               >
                                 <Ban className="w-4 h-4" />
                               </TooltipTrigger>
@@ -456,7 +454,6 @@ export default function CandidatesPage() {
                             </Tooltip>
                           )}
 
-                          {/* Schedule / Mandate */}
                           <Tooltip>
                             <TooltipTrigger
                               onClick={() =>
@@ -465,30 +462,28 @@ export default function CandidatesPage() {
                                   job_title: c.jobs?.title || c.job_title,
                                 })
                               }
-                              className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-primary transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-primary transition-colors"
                             >
                               <Calendar className="w-4 h-4" />
                             </TooltipTrigger>
                             <TooltipContent className="text-xs">Beri Mandat / Jadwal Wawancara</TooltipContent>
                           </Tooltip>
 
-                          {/* AI Insight */}
                           <Tooltip>
                             <TooltipTrigger
                               onClick={() => setInsightCandidate(c)}
-                              className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-primary transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-primary transition-colors"
                             >
                               <Sparkles className="w-4 h-4" />
                             </TooltipTrigger>
                             <TooltipContent className="text-xs">Insight AI</TooltipContent>
                           </Tooltip>
 
-                          {/* Detail Link */}
                           <Link
                             href={`/candidates/${c.id}`}
                             className={cn(
                               buttonVariants({ variant: "ghost", size: "sm" }),
-                              "h-7 w-7 p-0"
+                              "h-7 w-7 p-0 rounded-lg"
                             )}
                           >
                             <Eye className="w-4 h-4" />

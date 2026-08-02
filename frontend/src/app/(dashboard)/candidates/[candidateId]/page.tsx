@@ -97,7 +97,6 @@ export default function CandidateDetailPage({
         setHrNotes(json.hr_notes || "");
         setEvaluationComments(json.evaluation_comments || "");
 
-        // Fetch stages for this job
         if (json.job_id) {
           const stagesRes = await fetch(`/api/jobs/${json.job_id}/stages`);
           if (stagesRes.ok) {
@@ -248,7 +247,7 @@ export default function CandidateDetailPage({
         ${evaluationComments ? `<h2>Hasil Evaluasi Wawancara</h2><div class="notes-section">${evaluationComments}</div>` : ""}
 
         <div style="margin-top:32px;padding-top:16px;border-top:1px solid #ddd;font-size:11px;color:#999;text-align:center">
-          Dicetak pada ${format(new Date(), "d MMMM yyyy, HH:mm", { locale: localeId })} — HR Automation System
+          Dicetak pada ${format(new Date(), "d MMMM yyyy, HH:mm", { locale: localeId })} — Obsidian Talent OS
         </div>
       </body>
       </html>
@@ -261,9 +260,9 @@ export default function CandidateDetailPage({
 
   if (loading) {
     return (
-      <div className="p-12 text-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-sm text-muted-foreground">Memuat data kandidat...</p>
+      <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-xs font-medium text-muted-foreground">Memuat data kandidat...</p>
       </div>
     );
   }
@@ -271,107 +270,92 @@ export default function CandidateDetailPage({
   if (!data) {
     return (
       <div className="p-6 text-center">
-        <p className="text-muted-foreground">Kandidat tidak ditemukan.</p>
+        <p className="text-muted-foreground text-sm">Kandidat tidak ditemukan.</p>
       </div>
     );
   }
 
   const candidate = data;
   const job = data.jobs;
-  const analysis = candidate.analysis_result;
+  const analysis = candidate.analysis_result || {};
   const currentStageName = candidate.current_stage_name || candidate.status || "Pending";
   const isRejected = currentStageName === "Rejected";
 
-  // Determine current stage index in stepper
   const currentStageIndex = stages.findIndex((s) => s.name === currentStageName);
 
   return (
-    <div className="p-6 space-y-6" ref={printRef}>
-      {/* Back */}
+    <div className="p-6 max-w-7xl mx-auto space-y-6 page-enter" ref={printRef}>
+      {/* Back Link */}
       <Link
         href={`/jobs/${candidate.job_id}`}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
       >
         <ArrowLeft className="w-4 h-4" />
-        Kembali ke {candidate.job_title}
+        Kembali ke Pipeline Lowongan {candidate.job_title}
       </Link>
 
-      {/* Candidate Header */}
-      <div className="rounded-xl border border-border bg-card p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-xl font-bold">{candidate.full_name}</h1>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <Mail className="w-4 h-4" />
-              {candidate.email}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Phone className="w-4 h-4" />
-              {candidate.phone}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4" />
-              {format(new Date(candidate.created_at), "d MMMM yyyy, HH:mm", {
-                locale: localeId,
-              })}
-            </span>
-            {candidate.domicile_address && (
-              <span className="flex items-center gap-1.5 text-xs text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10">
-                <MapPin className="w-3.5 h-3.5" />
-                Domisili: {candidate.domicile_address}
-                {candidate.distance_to_work !== null && candidate.distance_to_work !== undefined && (
-                  <span className="font-bold">
-                    &nbsp;({candidate.distance_to_work.toFixed(1)} km dari kantor)
-                  </span>
-                )}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 pt-1.5">
-            <Badge variant="secondary" className="text-xs">
-              {candidate.job_title}
-            </Badge>
+      {/* Hero Profile Header */}
+      <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-extrabold tracking-tight">{candidate.full_name}</h1>
             <StatusBadge
               status={currentStageName}
               color={stages.find((s) => s.name === currentStageName)?.color}
             />
           </div>
+
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5 bg-muted/30 px-2.5 py-1 rounded-lg border border-border/40">
+              <Mail className="w-3.5 h-3.5 text-primary" />
+              {candidate.email}
+            </span>
+            <span className="flex items-center gap-1.5 bg-muted/30 px-2.5 py-1 rounded-lg border border-border/40">
+              <Phone className="w-3.5 h-3.5 text-primary" />
+              {candidate.phone || "—"}
+            </span>
+            <span className="flex items-center gap-1.5 bg-muted/30 px-2.5 py-1 rounded-lg border border-border/40">
+              <Calendar className="w-3.5 h-3.5 text-primary" />
+              {format(new Date(candidate.created_at), "d MMMM yyyy, HH:mm", { locale: localeId })}
+            </span>
+            {candidate.domicile_address && (
+              <span className="flex items-center gap-1.5 text-xs text-primary bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/20 font-medium">
+                <MapPin className="w-3.5 h-3.5" />
+                Domisili: {candidate.domicile_address}
+                {candidate.distance_to_work !== null && candidate.distance_to_work !== undefined && (
+                  <span className="font-bold">
+                    &nbsp;({candidate.distance_to_work.toFixed(1)} km dari lokasi kantor)
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Advance Button */}
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           {!isRejected && (
             <Button
               variant="default"
               size="sm"
               onClick={handleAdvance}
               disabled={advancing}
-              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="gap-1.5 text-xs h-9 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
             >
-              {advancing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
-              )}
+              {advancing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4" />}
               Majukan Tahapan
             </Button>
           )}
 
-          {/* Reject Button */}
           {!isRejected && (
             <Button
               variant="destructive"
               size="sm"
               onClick={handleReject}
               disabled={rejecting}
-              className="gap-1.5"
+              className="gap-1.5 text-xs h-9 rounded-xl shadow-lg shadow-destructive/20"
             >
-              {rejecting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Ban className="w-4 h-4" />
-              )}
+              {rejecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
               Tolak
             </Button>
           )}
@@ -380,9 +364,9 @@ export default function CandidateDetailPage({
             variant="outline"
             size="sm"
             onClick={() => setShowScheduleModal(true)}
-            className="gap-1.5"
+            className="gap-1.5 text-xs h-9 rounded-xl"
           >
-            <CalendarDays className="w-4 h-4" />
+            <CalendarDays className="w-4 h-4 text-purple-500" />
             {candidate.assigned_to_user_id ? "Ubah Jadwal" : "Beri Mandat"}
           </Button>
 
@@ -390,7 +374,7 @@ export default function CandidateDetailPage({
             variant="outline"
             size="sm"
             onClick={handlePrintSummary}
-            className="gap-1.5"
+            className="gap-1.5 text-xs h-9 rounded-xl"
           >
             <Printer className="w-4 h-4" />
             Cetak PDF
@@ -398,9 +382,9 @@ export default function CandidateDetailPage({
         </div>
       </div>
 
-      {/* Dynamic Stage Stepper */}
+      {/* Dynamic Stage Stepper Bar */}
       {stages.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+        <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-sm">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -418,8 +402,8 @@ export default function CandidateDetailPage({
                 <div key={stg.id} className="flex items-center gap-2 shrink-0">
                   <div
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all",
-                      isCurrent && "ring-2 ring-primary shadow-sm scale-[1.02]",
+                      "flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition-all shadow-sm",
+                      isCurrent && "ring-2 ring-primary scale-[1.02]",
                       isPassed && "opacity-90",
                       isFuture && "opacity-40",
                       isRejected && "opacity-30"
@@ -431,9 +415,7 @@ export default function CandidateDetailPage({
                     }}
                   >
                     <span
-                      className={cn(
-                        "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
-                      )}
+                      className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-sm"
                       style={{ backgroundColor: isPassed || isCurrent ? stg.color : `${stg.color}40` }}
                     >
                       {isPassed ? "✓" : idx + 1}
@@ -442,19 +424,16 @@ export default function CandidateDetailPage({
                   </div>
 
                   {idx < stages.length - 1 && (
-                    <div
-                      className={cn("w-4 h-0.5 shrink-0", isPassed ? "bg-primary/40" : "bg-border")}
-                    />
+                    <div className={cn("w-4 h-0.5 shrink-0", isPassed ? "bg-primary/50" : "bg-border")} />
                   )}
                 </div>
               );
             })}
 
-            {/* Rejected indicator */}
             {isRejected && (
               <>
-                <div className="w-4 h-0.5 bg-destructive/30 shrink-0" />
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-xs font-semibold ring-2 ring-destructive shadow-sm">
+                <div className="w-4 h-0.5 bg-destructive/40 shrink-0" />
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-xs font-semibold ring-2 ring-destructive shadow-sm">
                   <Ban className="w-4 h-4" />
                   Ditolak
                 </div>
@@ -464,73 +443,73 @@ export default function CandidateDetailPage({
         </div>
       )}
 
-      {/* Interview Assignment Card */}
-      <div className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <UserCheck className="w-4 h-4 text-primary" />
-          <h3 className="text-sm font-semibold">Penugasan Mandat & Jadwal Wawancara</h3>
+      {/* Mandate & Interview Assignment Card */}
+      <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm space-y-4">
+        <div className="flex items-center gap-2 border-b border-border/60 pb-3">
+          <UserCheck className="w-4 h-4 text-purple-500" />
+          <h3 className="text-sm font-bold">Penugasan Mandat & Status Wawancara</h3>
         </div>
 
         {candidate.assigned_to_user_id ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-500/5 border border-purple-500/15">
-              <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0">
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/15">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
                 <UserCheck className="w-4 h-4 text-purple-500" />
               </div>
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Penguji SR Staff</p>
-                <p className="text-sm font-bold mt-0.5">{candidate.assigned_staff_name || "—"}</p>
+                <p className="text-xs font-bold mt-0.5">{candidate.assigned_staff_name || "—"}</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/15">
-              <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-blue-500/5 border border-blue-500/15">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
                 <CalendarDays className="w-4 h-4 text-blue-500" />
               </div>
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Jadwal Wawancara</p>
-                <p className="text-sm font-bold mt-0.5">
+                <p className="text-xs font-bold mt-0.5">
                   {candidate.scheduled_at
-                    ? format(new Date(candidate.scheduled_at), "d MMM yyyy, HH:mm", { locale: localeId })
+                    ? format(new Date(candidate.scheduled_at), "d MMM yyyy, HH:mm", { locale: localeId }) + " WIB"
                     : "Belum Dijadwalkan"}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/15">
-              <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
-                <Video className="w-4 h-4 text-green-500" />
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <Video className="w-4 h-4 text-emerald-500" />
               </div>
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Lokasi / Meeting</p>
-                <p className="text-sm font-medium mt-0.5 break-all">
+                <p className="text-xs font-semibold mt-0.5 break-all">
                   {candidate.location || "—"}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/15">
-              <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/15">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
                 <Clock className="w-4 h-4 text-amber-500" />
               </div>
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Status Wawancara</p>
-                <p className="text-sm font-bold mt-0.5">
+                <p className="text-xs font-bold mt-0.5">
                   {candidate.interview_status || "Menunggu"}
                 </p>
               </div>
             </div>
           </div>
         ) : (
-          <div className="text-center py-6 bg-muted/20 rounded-lg border border-dashed border-border">
+          <div className="text-center py-6 bg-muted/10 rounded-xl border border-dashed border-border/60">
             <UserCheck className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Kandidat belum dimandatkan ke SR Staff.
             </p>
             <Button
               variant="outline"
               size="sm"
-              className="mt-3 gap-1.5"
+              className="mt-3 gap-1.5 text-xs rounded-xl"
               onClick={() => setShowScheduleModal(true)}
             >
               <CalendarDays className="w-4 h-4" />
@@ -540,18 +519,18 @@ export default function CandidateDetailPage({
         )}
       </div>
 
-      {/* Stage History Timeline */}
+      {/* Stage History Log */}
       {stageHistory.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-          <div className="flex items-center gap-2">
+        <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-sm">
+          <div className="flex items-center gap-2 border-b border-border/60 pb-3">
             <History className="w-4 h-4 text-primary" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Riwayat Perpindahan Tahapan
+              Riwayat Log Perpindahan Tahapan
             </h3>
           </div>
-          <div className="space-y-0 relative ml-3">
-            <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-border" />
-            {stageHistory.map((entry, idx) => (
+          <div className="space-y-0 relative ml-3 pt-1">
+            <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-border/60" />
+            {stageHistory.map((entry) => (
               <div key={entry.id} className="flex items-start gap-3 py-2 relative">
                 <div className={cn(
                   "w-[15px] h-[15px] rounded-full border-2 shrink-0 z-10",
@@ -576,7 +555,7 @@ export default function CandidateDetailPage({
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[10px] text-muted-foreground font-mono">
                       {format(new Date(entry.created_at), "d MMM yyyy, HH:mm", { locale: localeId })}
                     </span>
                     {entry.profiles?.full_name && (
@@ -587,7 +566,7 @@ export default function CandidateDetailPage({
                   </div>
                   {entry.notes && (
                     <p className="text-[11px] text-muted-foreground mt-0.5 italic">
-                      {entry.notes}
+                      "{entry.notes}"
                     </p>
                   )}
                 </div>
@@ -597,28 +576,28 @@ export default function CandidateDetailPage({
         </div>
       )}
 
-      {/* Main Content: CV + Analysis */}
+      {/* Main Split Content: CV Viewer (Left) + AI Analysis Breakdown (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* CV Viewer — Left */}
-        <div className="lg:col-span-3 rounded-xl border border-border bg-card overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-muted/30">
+        {/* CV Viewer */}
+        <div className="lg:col-span-3 rounded-2xl border border-border/80 bg-card overflow-hidden flex flex-col shadow-sm">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-border/60 bg-muted/20">
             <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Curriculum Vitae</span>
+              <FileText className="w-4 h-4 text-primary" />
+              <span className="text-xs font-bold">Curriculum Vitae (CV) Preview</span>
             </div>
             {candidate.signed_cv_url && (
               <a
                 href={candidate.signed_cv_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-7 text-xs rounded-lg gap-1.5")}
               >
-                <Download className="w-4 h-4 mr-1.5" />
-                Unduh
+                <Download className="w-3.5 h-3.5" />
+                Unduh PDF
               </a>
             )}
           </div>
-          <div className="flex-1 h-[700px] bg-muted/20">
+          <div className="flex-1 h-[700px] bg-muted/10">
             {candidate.signed_cv_url ? (
               <iframe
                 src={`${candidate.signed_cv_url}#toolbar=0`}
@@ -626,43 +605,41 @@ export default function CandidateDetailPage({
                 title="CV Preview"
               />
             ) : (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center space-y-3">
-                  <div className="w-16 h-16 rounded-xl bg-muted/50 flex items-center justify-center mx-auto">
+              <div className="h-full flex items-center justify-center p-8 text-center">
+                <div className="space-y-3">
+                  <div className="w-16 h-16 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto">
                     <FileText className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">Dokumen tidak tersedia</p>
-                  </div>
+                  <p className="text-xs text-muted-foreground">Dokumen CV tidak tersedia.</p>
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* AI Analysis — Right */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* AI Analysis Sidebar */}
+        <div className="lg:col-span-2 space-y-5">
           {/* Score Card */}
-          <div className="rounded-xl border border-border bg-card p-5 flex flex-col items-center">
+          <div className="rounded-2xl border border-border/80 bg-card p-6 flex flex-col items-center shadow-sm">
             <ScoreCircle
-              score={analysis.total_score}
-              size={140}
+              score={analysis.total_score || 0}
+              size={130}
               strokeWidth={10}
               passingGrade={job?.passing_grade}
             />
-            <p className="text-sm font-medium mt-3 text-center">
+            <p className="text-xs font-semibold mt-3 text-center leading-relaxed">
               {analysis.summary || analysis.reasoning?.slice(0, 100)}
             </p>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-3">
               {candidate.is_qualified ? (
-                <Badge className="bg-[oklch(0.72_0.19_145/15%)] text-[oklch(0.72_0.19_145)]">
-                  <CheckCircle2 className="w-3 h-3 mr-1" />
-                  Qualified
+                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs px-2.5 py-0.5 font-bold">
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                  QUALIFIED
                 </Badge>
               ) : (
-                <Badge className="bg-destructive/15 text-destructive">
-                  <XCircle className="w-3 h-3 mr-1" />
-                  Not Qualified
+                <Badge className="bg-destructive/15 text-destructive border border-destructive/20 text-xs px-2.5 py-0.5 font-bold">
+                  <XCircle className="w-3.5 h-3.5 mr-1" />
+                  NOT QUALIFIED
                 </Badge>
               )}
               {job && (
@@ -673,30 +650,30 @@ export default function CandidateDetailPage({
             </div>
           </div>
 
-          {/* Mandatory Check */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Syarat Wajib
+          {/* Mandatory Check Breakdown */}
+          <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-sm">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Evaluasi Syarat Wajib
             </h3>
             <div className="space-y-2">
-              {analysis.mandatory_check.map((item: any, i: number) => (
+              {analysis.mandatory_check?.map((item: any, i: number) => (
                 <div
                   key={i}
                   className={cn(
-                    "flex items-start gap-2.5 p-3 rounded-lg text-xs",
+                    "flex items-start gap-2.5 p-3 rounded-xl text-xs border transition-colors",
                     item.passed
-                      ? "bg-[oklch(0.72_0.19_145/8%)] border border-[oklch(0.72_0.19_145/15%)]"
-                      : "bg-destructive/8 border border-destructive/15"
+                      ? "bg-emerald-500/5 border-emerald-500/15"
+                      : "bg-destructive/5 border-destructive/15"
                   )}
                 >
                   {item.passed ? (
-                    <CheckCircle2 className="w-4 h-4 text-[oklch(0.72_0.19_145)] shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                   ) : (
                     <XCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
                   )}
                   <div>
-                    <p className="font-medium">{item.criteria}</p>
-                    <p className="text-muted-foreground mt-0.5">{item.note}</p>
+                    <p className="font-bold">{item.criteria}</p>
+                    <p className="text-muted-foreground text-[11px] mt-0.5 leading-relaxed">{item.note}</p>
                   </div>
                 </div>
               ))}
@@ -712,7 +689,7 @@ export default function CandidateDetailPage({
             job?.work_latitude !== undefined &&
             job?.work_longitude !== null &&
             job?.work_longitude !== undefined && (
-              <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+              <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-sm">
                 <DistanceMap
                   workLocation={{
                     lat: job.work_latitude,
@@ -729,16 +706,16 @@ export default function CandidateDetailPage({
             )}
 
           {/* Skills Found */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Keahlian Ditemukan
+          <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-sm">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Keahlian Ditemukan oleh AI
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {(analysis.skills_found || analysis.found_skills || []).map((skill: string) => (
                 <Badge
                   key={skill}
                   variant="secondary"
-                  className="text-xs px-2 py-0.5"
+                  className="text-xs px-2.5 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20"
                 >
                   {skill}
                 </Badge>
@@ -747,28 +724,28 @@ export default function CandidateDetailPage({
           </div>
 
           {/* AI Reasoning */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-sm">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
-              Analisis AI
+              Analisis Pertimbangan AI
             </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">
               {analysis.reasoning}
             </p>
           </div>
         </div>
       </div>
 
-      {/* HR Notes & Evaluation Section */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-5">
-        <div className="flex items-center justify-between">
+      {/* HR Internal Notes & Evaluation */}
+      <div className="rounded-2xl border border-border/80 bg-card p-6 space-y-5 shadow-sm">
+        <div className="flex items-center justify-between border-b border-border/60 pb-3">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-semibold">Catatan Internal HRD & Evaluasi Wawancara</h3>
+            <h3 className="text-sm font-bold">Catatan Internal HRD & Evaluasi Wawancara</h3>
           </div>
           <div className="flex items-center gap-2">
             {notesSaved && (
-              <span className="text-xs text-[oklch(0.72_0.19_145)] flex items-center gap-1 animate-in fade-in duration-300">
+              <span className="text-xs text-emerald-500 flex items-center gap-1 animate-in fade-in duration-300 font-semibold">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Tersimpan!
               </span>
@@ -778,52 +755,42 @@ export default function CandidateDetailPage({
               size="sm"
               onClick={handleSaveNotes}
               disabled={savingNotes}
-              className="gap-1.5"
+              className="gap-1.5 text-xs h-8 rounded-xl shadow-md shadow-primary/20"
             >
-              {savingNotes ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Save className="w-3.5 h-3.5" />
-              )}
+              {savingNotes ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
               Simpan Catatan
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Catatan Internal HRD
             </label>
             <Textarea
               value={hrNotes}
               onChange={(e) => setHrNotes(e.target.value)}
               placeholder="Tulis catatan internal mengenai kandidat ini... (hanya terlihat oleh tim HRD)"
-              className="min-h-[140px] text-sm resize-y"
+              className="min-h-[140px] text-xs rounded-xl resize-y"
             />
-            <p className="text-[11px] text-muted-foreground">
-              Catatan ini bersifat internal dan hanya terlihat oleh tim HRD perusahaan.
-            </p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Hasil Evaluasi Wawancara
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              Hasil Evaluasi Wawancara SR Staff
             </label>
             <Textarea
               value={evaluationComments}
               onChange={(e) => setEvaluationComments(e.target.value)}
-              placeholder="Tulis hasil evaluasi wawancara oleh penguji SR Staff... (komentar, penilaian, rekomendasi)"
-              className="min-h-[140px] text-sm resize-y"
+              placeholder="Tulis hasil evaluasi wawancara oleh penguji... (komentar, penilaian, rekomendasi)"
+              className="min-h-[140px] text-xs rounded-xl resize-y"
             />
-            <p className="text-[11px] text-muted-foreground">
-              Hasil evaluasi dari penguji wawancara (SR Staff) terhadap kandidat.
-            </p>
           </div>
         </div>
       </div>
 
-      {/* Schedule & Mandate Modal */}
+      {/* Schedule Modal */}
       {showScheduleModal && (
         <ScheduleInterviewModal
           isOpen={showScheduleModal}

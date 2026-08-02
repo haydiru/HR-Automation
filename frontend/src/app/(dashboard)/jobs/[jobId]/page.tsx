@@ -16,12 +16,12 @@ import {
   UserCheck,
   Calendar,
   CheckSquare,
-  SlidersHorizontal,
-  RefreshCw,
   ChevronRight,
   Ban,
   Layers,
   Loader2,
+  MapPin,
+  Check,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -80,6 +80,7 @@ export default function JobDetailPage({
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [stages, setStages] = useState<Stage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copiedAlias, setCopiedAlias] = useState(false);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -124,9 +125,9 @@ export default function JobDetailPage({
 
   if (loading) {
     return (
-      <div className="p-12 text-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-sm text-muted-foreground">Memuat data lowongan & pipeline...</p>
+      <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin text-primary" />
+        <p className="text-xs font-medium text-muted-foreground">Memuat pipeline lowongan...</p>
       </div>
     );
   }
@@ -134,7 +135,7 @@ export default function JobDetailPage({
   if (!job) {
     return (
       <div className="p-6 text-center">
-        <p className="text-muted-foreground">Lowongan tidak ditemukan.</p>
+        <p className="text-muted-foreground text-sm">Lowongan tidak ditemukan.</p>
       </div>
     );
   }
@@ -199,7 +200,7 @@ export default function JobDetailPage({
     }
   };
 
-  // Advance candidate to next stage
+  // Advance candidate
   const handleAdvance = async (candidateId: string) => {
     setAdvancingId(candidateId);
     try {
@@ -211,7 +212,6 @@ export default function JobDetailPage({
       const data = await res.json();
 
       if (data.success) {
-        // Refresh candidates list
         const candidatesRes = await fetch(`/api/jobs/${jobId}/candidates`);
         if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
       } else {
@@ -247,7 +247,7 @@ export default function JobDetailPage({
     }
   };
 
-  // Bulk Stage Advance
+  // Bulk Advance
   const handleBulkAdvance = async () => {
     if (selectedIds.length === 0) return;
     setUpdatingBulk(true);
@@ -263,7 +263,6 @@ export default function JobDetailPage({
       const candidatesRes = await fetch(`/api/jobs/${jobId}/candidates`);
       if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
       setSelectedIds([]);
-      alert(`✅ ${selectedIds.length} kandidat berhasil dimajukan ke tahapan selanjutnya!`);
     } catch (err: any) {
       alert("Gagal: " + err.message);
     } finally {
@@ -288,7 +287,6 @@ export default function JobDetailPage({
       const candidatesRes = await fetch(`/api/jobs/${jobId}/candidates`);
       if (candidatesRes.ok) setAllCandidates(await candidatesRes.json());
       setSelectedIds([]);
-      alert(`✅ ${selectedIds.length} kandidat berhasil ditolak.`);
     } catch (err: any) {
       alert("Gagal: " + err.message);
     } finally {
@@ -296,7 +294,7 @@ export default function JobDetailPage({
     }
   };
 
-  // CSV Export Handler
+  // Export CSV
   const handleExportCSV = () => {
     if (filteredCandidates.length === 0) {
       alert("Tidak ada data kandidat untuk di-export.");
@@ -335,151 +333,151 @@ export default function JobDetailPage({
       ];
     });
 
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `kandidat-${job.title.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${format(new Date(), "yyyyMMdd")}.csv`);
+    link.setAttribute("download", `pipeline-${job.title.toLowerCase().replace(/[^a-z0-9]/g, "-")}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // Find stage color for a given stage name
   const getStageColor = (stageName: string) => {
     const s = stages.find((st) => st.name === stageName);
     return s?.color || undefined;
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Back */}
+    <div className="p-6 max-w-7xl mx-auto space-y-6 page-enter">
+      {/* Back Link */}
       <Link
         href="/jobs"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
       >
         <ArrowLeft className="w-4 h-4" />
-        Kembali ke Lowongan
+        Kembali ke Manajemen Lowongan
       </Link>
 
-      {/* Job Header */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-xl font-bold">{job.title}</h1>
+      {/* Job Header Hero Card */}
+      <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm space-y-5">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl md:text-2xl font-bold tracking-tight">{job.title}</h1>
               <Badge
+                variant={job.status === "active" ? "default" : "secondary"}
                 className={cn(
-                  "text-[10px]",
+                  "text-[10px] font-bold px-2.5 py-0.5 rounded-full border",
                   job.status === "active"
-                    ? "bg-[oklch(0.72_0.19_145/15%)] text-[oklch(0.72_0.19_145)]"
-                    : "bg-muted text-muted-foreground"
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                    : "bg-muted text-muted-foreground border-border"
                 )}
               >
-                {job.status === "active" ? "Aktif" : "Ditutup"}
+                {job.status === "active" ? "🟢 Lowongan Aktif" : "Ditutup"}
               </Badge>
             </div>
-            <div className="mt-4 prose prose-sm dark:prose-invert max-w-none">
-              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                {job.description}
-              </p>
+            <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap max-w-3xl">
+              {job.description}
+            </p>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              navigator.clipboard.writeText(job.alias_email);
+              setCopiedAlias(true);
+              setTimeout(() => setCopiedAlias(false), 2000);
+            }}
+            className="gap-1.5 text-xs rounded-xl border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 shrink-0"
+          >
+            <Mail className="w-3.5 h-3.5" />
+            {copiedAlias ? "Tersalin!" : "Salin Email Ingestion"}
+            {copiedAlias ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5 opacity-60" />}
+          </Button>
+        </div>
+
+        {/* Metric Badges */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-border/50">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Users className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground uppercase font-semibold">Total Pelamar</p>
+              <p className="text-sm font-extrabold font-mono">{allCandidates.length}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground uppercase font-semibold">Lolos Mandatory AI</p>
+              <p className="text-sm font-extrabold text-emerald-500 font-mono">{qualifiedCount}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-500/5 border border-purple-500/15">
+            <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4 text-purple-500" />
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground uppercase font-semibold">Passing Grade</p>
+              <p className="text-sm font-extrabold text-purple-500 font-mono">{job.passing_grade} Poin</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/15">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+              <Layers className="w-4 h-4 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground uppercase font-semibold">Jumlah Tahapan</p>
+              <p className="text-sm font-extrabold text-blue-500 font-mono">{stages.length} Tahap</p>
             </div>
           </div>
         </div>
 
-        {/* Stats + Meta */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border">
-            <Users className="w-4 h-4 text-muted-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">Pelamar</p>
-              <p className="text-sm font-bold">{allCandidates.length}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border">
-            <CheckCircle2 className="w-4 h-4 text-[oklch(0.72_0.19_145)]" />
-            <div>
-              <p className="text-xs text-muted-foreground">Qualified</p>
-              <p className="text-sm font-bold">{qualifiedCount}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <div>
-              <p className="text-xs text-muted-foreground">Passing Grade</p>
-              <p className="text-sm font-bold font-mono">{job.passing_grade}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 border border-border">
-            <Mail className="w-4 h-4 text-muted-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">Email Alias</p>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(job.alias_email);
-                  alert("Email alias berhasil disalin!");
-                }}
-                className="text-xs font-mono text-primary hover:underline flex items-center gap-1"
-              >
-                {job.alias_email?.length > 25
-                  ? job.alias_email.slice(0, 25) + "..."
-                  : job.alias_email}
-                <Copy className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Criteria */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-destructive uppercase tracking-wider">
-              Syarat Wajib
-            </h4>
-            <div className="space-y-1">
-              {job.distance_mandatory && job.max_distance && (
-                <div className="flex items-start gap-2 text-xs font-medium text-destructive">
-                  <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                  <span>Domisili dalam radius maks {job.max_distance} KM dari {job.work_address || "kantor"}</span>
-                </div>
-              )}
+        {/* Criteria Tags */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/60">
+          <div className="space-y-1.5">
+            <h4 className="text-[11px] font-bold text-destructive uppercase tracking-wider">Syarat Wajib (Mandatory)</h4>
+            <div className="flex flex-wrap gap-1.5">
               {job.mandatory_criteria?.map((c: string, i: number) => (
-                <div key={i} className="flex items-start gap-2 text-xs">
-                  <XCircle className="w-3.5 h-3.5 text-destructive shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">{c}</span>
-                </div>
+                <Badge key={i} variant="outline" className="text-[10px] border-destructive/30 text-destructive bg-destructive/5">
+                  <XCircle className="w-3 h-3 mr-1 shrink-0" />
+                  {c}
+                </Badge>
               ))}
             </div>
           </div>
-          <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Syarat Opsional
-            </h4>
-            <div className="space-y-1">
-              {!job.distance_mandatory && job.max_distance && (
-                <div className="flex items-start gap-2 text-xs font-medium text-primary">
-                  <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                  <span>Domisili dalam radius maks {job.max_distance} KM dari {job.work_address || "kantor"}</span>
-                </div>
-              )}
+
+          <div className="space-y-1.5">
+            <h4 className="text-[11px] font-bold text-primary uppercase tracking-wider">Syarat Opsional (Bonus)</h4>
+            <div className="flex flex-wrap gap-1.5">
               {job.optional_criteria?.map((c: string, i: number) => (
-                <div key={i} className="flex items-start gap-2 text-xs">
-                  <Sparkles className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">{c}</span>
-                </div>
+                <Badge key={i} variant="outline" className="text-[10px] border-primary/30 text-primary bg-primary/5">
+                  <Sparkles className="w-3 h-3 mr-1 shrink-0" />
+                  {c}
+                </Badge>
               ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Dynamic Stages Stepper */}
+      {/* Dynamic Stages Stepper Bar */}
       {stages.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+        <div className="rounded-2xl border border-border/80 bg-card p-5 space-y-3 shadow-sm">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Distribusi Tahapan Seleksi
+              Alur Stepper & Distribusi Pelamar per Tahapan
             </h3>
           </div>
 
@@ -491,32 +489,25 @@ export default function JobDetailPage({
               return (
                 <div key={stg.id} className="flex items-center gap-2 shrink-0">
                   <button
-                    onClick={() =>
-                      setSelectedStageFilter(isActive ? "all" : stg.name)
-                    }
+                    onClick={() => setSelectedStageFilter(isActive ? "all" : stg.name)}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all",
-                      isActive
-                        ? "ring-2 ring-primary scale-[1.02]"
-                        : "hover:scale-[1.01]"
+                      "flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition-all shadow-sm",
+                      isActive ? "ring-2 ring-primary scale-[1.02]" : "hover:scale-[1.01]"
                     )}
                     style={{
-                      borderColor: `${stg.color}40`,
-                      backgroundColor: isActive ? `${stg.color}20` : `${stg.color}08`,
+                      borderColor: `${stg.color}50`,
+                      backgroundColor: isActive ? `${stg.color}25` : `${stg.color}08`,
                       color: stg.color,
                     }}
                   >
                     <span
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                      className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-sm"
                       style={{ backgroundColor: stg.color }}
                     >
                       {idx + 1}
                     </span>
                     <span>{stg.name}</span>
-                    <Badge
-                      variant="secondary"
-                      className="text-[10px] h-5 ml-1 bg-black/5 dark:bg-white/10"
-                    >
+                    <Badge variant="secondary" className="text-[10px] h-5 ml-1 bg-black/5 dark:bg-white/10 font-mono">
                       {count}
                     </Badge>
                   </button>
@@ -528,28 +519,21 @@ export default function JobDetailPage({
               );
             })}
 
-            {/* Rejected bucket */}
+            {/* Rejected Bucket */}
             <div className="flex items-center gap-2 shrink-0">
               <div className="w-3 h-0.5 bg-border shrink-0" />
               <button
-                onClick={() =>
-                  setSelectedStageFilter(
-                    selectedStageFilter === "rejected" ? "all" : "rejected"
-                  )
-                }
+                onClick={() => setSelectedStageFilter(selectedStageFilter === "rejected" ? "all" : "rejected")}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all border-destructive/30 text-destructive",
+                  "flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition-all border-destructive/30 text-destructive shadow-sm",
                   selectedStageFilter === "rejected"
-                    ? "ring-2 ring-destructive scale-[1.02] bg-destructive/10"
+                    ? "ring-2 ring-destructive scale-[1.02] bg-destructive/15"
                     : "bg-destructive/5 hover:scale-[1.01]"
                 )}
               >
                 <Ban className="w-4 h-4" />
                 Ditolak
-                <Badge
-                  variant="secondary"
-                  className="text-[10px] h-5 ml-1 bg-black/5 dark:bg-white/10"
-                >
+                <Badge variant="secondary" className="text-[10px] h-5 ml-1 bg-black/5 dark:bg-white/10 font-mono">
                   {rejectedCount}
                 </Badge>
               </button>
@@ -558,13 +542,13 @@ export default function JobDetailPage({
         </div>
       )}
 
-      {/* Candidate Pipeline Card */}
-      <div className="rounded-xl border border-border bg-card">
-        {/* Pipeline Controls Bar */}
-        <div className="p-5 pb-3 flex items-center justify-between flex-wrap gap-4 border-b border-border">
+      {/* Candidate Pipeline Table Card */}
+      <div className="rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden">
+        {/* Controls Bar */}
+        <div className="p-5 pb-4 flex items-center justify-between flex-wrap gap-4 border-b border-border/60">
           <div className="flex items-center gap-3">
-            <h2 className="text-sm font-semibold">Pipeline Kandidat</h2>
-            <Badge variant="secondary" className="text-xs">
+            <h2 className="text-sm font-bold">Pipeline Pelamar</h2>
+            <Badge variant="secondary" className="text-xs font-semibold">
               {filteredCandidates.length} Terfilter
             </Badge>
             {selectedStageFilter !== "all" && (
@@ -588,13 +572,13 @@ export default function JobDetailPage({
                 placeholder="Cari nama / email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-8 w-[180px] text-xs"
+                className="pl-9 h-8 w-[180px] text-xs rounded-xl"
               />
             </div>
 
             {/* Filter Staff SR */}
             <Select value={selectedStaffFilter} onValueChange={(val: any) => setSelectedStaffFilter(val || "all")}>
-              <SelectTrigger className="h-8 text-xs w-[160px]">
+              <SelectTrigger className="h-8 text-xs w-[160px] rounded-xl">
                 <SelectValue placeholder="Filter Staf SR" />
               </SelectTrigger>
               <SelectContent>
@@ -608,8 +592,8 @@ export default function JobDetailPage({
               </SelectContent>
             </Select>
 
-            {/* Ready Only Filter Switch */}
-            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-[oklch(0.72_0.19_145/8%)] border border-[oklch(0.72_0.19_145/20%)]">
+            {/* Ready Only Switch */}
+            <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
               <Switch
                 id="ready-filter"
                 checked={readyOnly}
@@ -618,18 +602,18 @@ export default function JobDetailPage({
               />
               <Label
                 htmlFor="ready-filter"
-                className="text-xs font-medium text-[oklch(0.72_0.19_145)] cursor-pointer whitespace-nowrap"
+                className="text-xs font-bold text-emerald-500 cursor-pointer whitespace-nowrap"
               >
                 Siap Interview
               </Label>
             </div>
 
-            {/* Export CSV Button */}
+            {/* Export CSV */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleExportCSV}
-              className="h-8 gap-1.5 text-xs"
+              className="h-8 gap-1.5 text-xs rounded-xl"
             >
               <Download className="w-3.5 h-3.5" />
               Export CSV
@@ -637,9 +621,9 @@ export default function JobDetailPage({
           </div>
         </div>
 
-        {/* BULK ACTION FLOATING BAR (when items are selected) */}
+        {/* Floating Bulk Action Bar */}
         {selectedIds.length > 0 && (
-          <div className="p-3 bg-primary/10 border-b border-primary/20 flex items-center justify-between gap-4 animate-in fade-in duration-200">
+          <div className="p-3.5 bg-primary/10 border-b border-primary/20 flex items-center justify-between gap-4 animate-in fade-in duration-200">
             <div className="flex items-center gap-2">
               <CheckSquare className="w-4 h-4 text-primary" />
               <span className="text-xs font-bold text-primary">
@@ -648,23 +632,17 @@ export default function JobDetailPage({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Bulk Advance */}
               <Button
                 size="sm"
                 variant="default"
                 onClick={handleBulkAdvance}
                 disabled={updatingBulk}
-                className="h-7 text-xs gap-1.5"
+                className="h-7 text-xs gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white"
               >
-                {updatingBulk ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <ChevronRight className="w-3.5 h-3.5" />
-                )}
-                Majukan ke Tahap Berikutnya
+                {updatingBulk ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                Majukan Tahapan
               </Button>
 
-              {/* Bulk Mandate Assign */}
               <Button
                 size="sm"
                 variant="secondary"
@@ -677,19 +655,18 @@ export default function JobDetailPage({
                     });
                   }
                 }}
-                className="h-7 text-xs gap-1.5"
+                className="h-7 text-xs gap-1.5 rounded-lg"
               >
                 <UserCheck className="w-3.5 h-3.5" />
                 Beri Mandat SR Staff
               </Button>
 
-              {/* Bulk Reject */}
               <Button
                 size="sm"
                 variant="destructive"
                 onClick={handleBulkReject}
                 disabled={updatingBulk}
-                className="h-7 text-xs gap-1.5"
+                className="h-7 text-xs gap-1.5 rounded-lg"
               >
                 <Ban className="w-3.5 h-3.5" />
                 Tolak
@@ -707,11 +684,11 @@ export default function JobDetailPage({
           </div>
         )}
 
-        {/* Candidates Table */}
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
             <thead>
-              <tr className="border-b border-border bg-muted/20 text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">
+              <tr className="border-b border-border/60 bg-muted/20 text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">
                 <th className="p-4 w-10 text-center">
                   <Checkbox
                     checked={
@@ -724,13 +701,13 @@ export default function JobDetailPage({
                 <th className="p-4">Kandidat</th>
                 <th className="p-4 text-center">Skor AI</th>
                 <th className="p-4 text-center">Mandatory</th>
-                <th className="p-4">Penguji / Mandat SR</th>
-                <th className="p-4 text-center">Tahapan</th>
-                <th className="p-4">Tanggal</th>
+                <th className="p-4">Penguji SR Staff</th>
+                <th className="p-4 text-center">Tahapan Saat Ini</th>
+                <th className="p-4">Tanggal Apply</th>
                 <th className="p-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {filteredCandidates.map((c) => {
                 const mandatoryPassed = c.analysis_result?.mandatory_check?.every(
                   (m: any) => m.passed
@@ -759,7 +736,7 @@ export default function JobDetailPage({
                     </td>
                     <td className="p-4">
                       <div>
-                        <p className="font-semibold text-foreground">{c.full_name}</p>
+                        <p className="font-bold text-foreground">{c.full_name}</p>
                         <p className="text-[11px] text-muted-foreground">{c.email}</p>
                       </div>
                     </td>
@@ -781,7 +758,7 @@ export default function JobDetailPage({
                     </td>
                     <td className="p-4 text-center">
                       {mandatoryPassed ? (
-                        <Badge className="bg-[oklch(0.72_0.19_145/15%)] text-[oklch(0.72_0.19_145)] text-[10px]">
+                        <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px]">
                           ✓ Lulus
                         </Badge>
                       ) : (
@@ -813,12 +790,11 @@ export default function JobDetailPage({
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        {/* Advance to Next Stage */}
                         {!isRejected && (
                           <Tooltip>
                             <TooltipTrigger
                               onClick={() => handleAdvance(c.id)}
-                              className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-500/10 transition-colors"
+                              className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-500/10 transition-colors"
                             >
                               {advancingId === c.id ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -826,16 +802,15 @@ export default function JobDetailPage({
                                 <ChevronRight className="w-4 h-4" />
                               )}
                             </TooltipTrigger>
-                            <TooltipContent className="text-xs">Majukan ke Tahap Berikutnya</TooltipContent>
+                            <TooltipContent className="text-xs">Majukan Tahapan</TooltipContent>
                           </Tooltip>
                         )}
 
-                        {/* Reject */}
                         {!isRejected && (
                           <Tooltip>
                             <TooltipTrigger
                               onClick={() => handleReject(c.id, c.full_name)}
-                              className="p-1.5 rounded-md text-destructive hover:bg-destructive/10 transition-colors"
+                              className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
                             >
                               <Ban className="w-4 h-4" />
                             </TooltipTrigger>
@@ -843,7 +818,6 @@ export default function JobDetailPage({
                           </Tooltip>
                         )}
 
-                        {/* Mandate & Schedule Button */}
                         <Tooltip>
                           <TooltipTrigger
                             onClick={() =>
@@ -852,30 +826,28 @@ export default function JobDetailPage({
                                 job_title: job.title,
                               })
                             }
-                            className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-primary transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-primary transition-colors"
                           >
                             <Calendar className="w-4 h-4" />
                           </TooltipTrigger>
                           <TooltipContent className="text-xs">Beri Mandat / Jadwal Wawancara</TooltipContent>
                         </Tooltip>
 
-                        {/* AI Insight */}
                         <Tooltip>
                           <TooltipTrigger
                             onClick={() => setInsightCandidate(c)}
-                            className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-primary transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-primary transition-colors"
                           >
                             <Sparkles className="w-4 h-4" />
                           </TooltipTrigger>
                           <TooltipContent className="text-xs">Insight AI</TooltipContent>
                         </Tooltip>
 
-                        {/* Detail Link */}
                         <Link
                           href={`/candidates/${c.id}`}
                           className={cn(
                             buttonVariants({ variant: "ghost", size: "sm" }),
-                            "h-7 w-7 p-0"
+                            "h-7 w-7 p-0 rounded-lg"
                           )}
                         >
                           <Eye className="w-4 h-4" />
@@ -893,10 +865,10 @@ export default function JobDetailPage({
           <div className="text-center py-12">
             <p className="text-sm text-muted-foreground">
               {selectedStageFilter !== "all"
-                ? `Tidak ada kandidat di tahapan "${selectedStageFilter === "rejected" ? "Ditolak" : selectedStageFilter}".`
+                ? `Tidak ada pelamar di tahapan "${selectedStageFilter === "rejected" ? "Ditolak" : selectedStageFilter}".`
                 : readyOnly
-                ? "Tidak ada kandidat yang siap interview."
-                : "Belum ada kandidat untuk lowongan ini."}
+                ? "Tidak ada pelamar yang siap interview."
+                : "Belum ada pelamar untuk lowongan ini."}
             </p>
           </div>
         )}
@@ -921,7 +893,6 @@ export default function JobDetailPage({
           candidate={scheduleModalCandidate}
           teamMembers={teamMembers}
           onSuccess={() => {
-            // Refresh list
             fetch(`/api/jobs/${jobId}/candidates`)
               .then((res) => res.json())
               .then((data) => setAllCandidates(data));

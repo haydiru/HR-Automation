@@ -144,3 +144,39 @@ Dokumen ini mencatat secara resmi seluruh task yang **telah selesai dikerjakan, 
 ### Task 3.3: Support Multi-File Attachment Ingestion
 - **Status:** ✅ Completed
 - **Rincian Fitur:** Pemrosesan multi-file attachment (CV PDF, portfolio, sertifikat) pada webhook ingestion.
+
+---
+
+## 📌 Phase 4: UI/UX Redesign & Brand Identity Overhaul ("Obsidian Talent OS")
+
+### Task 4.1: Design Tokens, Global CSS & Layout Base (`globals.css`, `Sidebar`, `Header`)
+- **Status:** ✅ Completed
+- **Kategori:** UI/UX Design Token Foundation
+
+### Task 4.2: Redesign Dashboard Utama (`/dashboard`)
+- **Status:** ✅ Completed
+- **Kategori:** UI/UX Redesign
+
+### Task 4.3: Redesign Halaman Jobs & Form Buat Job (`/jobs` & `/jobs/create`)
+- **Status:** ✅ Completed
+- **Kategori:** UI/UX Redesign
+
+### Task 4.4: Redesign Pipeline Lowongan (`/jobs/[jobId]`)
+- **Status:** ✅ Completed
+- **Kategori:** UI/UX Redesign
+
+### Task 4.5: Redesign Daftar Semua Kandidat (`/candidates`)
+- **Status:** ✅ Completed
+- **Kategori:** UI/UX Redesign
+
+### Task 4.6: Redesign Detail Kandidat (`/candidates/[candidateId]`)
+- **Status:** ✅ Completed
+- **Kategori:** UI/UX Redesign
+
+### Task 4.7: Redesign Halaman Settings (`/settings`, `/settings/stages`, `/settings/team`, `/settings/integrations`)
+- **Status:** ✅ Completed
+- **Kategori:** UI/UX Redesign
+
+### Task 4.8: Redesign Form Lamaran Publik (`/apply/[jobId]`)
+- **Status:** ✅ Completed
+- **Kategori:** UI/UX Redesign
