@@ -82,6 +82,15 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - Select Model AI: Preset model standar (`gemini-1.5-flash`, `gpt-4o-mini`, `claude-3-5-sonnet`, dll) + **Mode Kustom (Tulis Sendiri)**.
   - Input Masked Kunci API (API Key) & Input URL Proxy / Endpoint Kustom.
 
+### Task 1.9: Halaman Manajemen Tim Perusahaan (`/settings/team`)
+- **Status:** ✅ Completed
+- **Kategori:** Frontend Page (Khusus Super Admin Perusahaan)
+- **Rincian Fitur:**
+  - Tab Navigasi Sub-Header untuk berpindah antara Profil/AI Config, Manajemen Tim, dan Integrasi.
+  - Form & Modal Undang Anggota Tim Baru via Email dengan pilihan role (`Super Admin` vs `Recruiter / SR Staff`).
+  - Tabel Daftar Anggota Tim Perusahaan (Nama, Email, Role Badge, Status Aktif/Diundang, Tanggal Bergabung).
+  - Dropdown Menu Kelola Akses: Modal Ubah Role Anggota Tim & Tombol Pencabutan Akses Tim.
+
 ---
 
 ## 📌 Phase 2: Backend APIs, Database, & AI Engine

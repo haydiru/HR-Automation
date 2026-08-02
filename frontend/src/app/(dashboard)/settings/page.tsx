@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Save, Building2, Sparkles, ShieldCheck, CreditCard } from "lucide-react";
+import { Save, Building2, Sparkles, ShieldCheck, CreditCard, Users, CalendarDays, Sliders } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -145,10 +146,36 @@ export default function SettingsPage() {
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Pengaturan</h1>
+        <h1 className="text-2xl font-bold">Pengaturan Perusahaan</h1>
         <p className="text-sm text-muted-foreground">
           Kelola profil perusahaan dan konfigurasi kecerdasan buatan (AI)
         </p>
+
+        {/* Sub-Navigation Tabs */}
+        <div className="flex items-center gap-2 mt-6 border-b border-border pb-1">
+          <Link href="/settings">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="gap-2 text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/15"
+            >
+              <Sliders className="w-4 h-4" />
+              Profil & AI Config
+            </Button>
+          </Link>
+          <Link href="/settings/team">
+            <Button variant="ghost" size="sm" className="gap-2 text-xs">
+              <Users className="w-4 h-4" />
+              Manajemen Tim
+            </Button>
+          </Link>
+          <Link href="/settings/integrations">
+            <Button variant="ghost" size="sm" className="gap-2 text-xs">
+              <CalendarDays className="w-4 h-4" />
+              Integrasi Email & Kalender
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
