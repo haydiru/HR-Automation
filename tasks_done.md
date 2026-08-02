@@ -148,6 +148,17 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - **Dynamic User Role Detection:** Otomatis mendeteksi role & nama user dari Supabase untuk personalisasi dashboard.
   - **Active Jobs List Terintegrasi:** Daftar lowongan aktif dipindahkan ke sidebar donut chart untuk layout lebih efisien.
 
+### Task 1.16: Halaman Pengaturan Tahapan Rekrutmen (`/settings/stages`)
+- **Status:** ✅ Completed
+- **Kategori:** Frontend Page (Khusus Super Admin)
+- **Rincian Fitur:**
+  - **Daftar Tahapan Seleksi Perusahaan:** Card list sortable dengan urutan, badge warna, dan deskripsi.
+  - **Modal Tambah & Edit Tahapan:** Form input nama tahapan, deskripsi, dan preset picker warna badge.
+  - **Reorder 1-Klik:** Tombol naik/turun urutan tahapan yang tersinkronisasi otomatis via API `/api/stages/reorder`.
+  - **Proteksi System Stage:** Tahapan bawaan sistem (`is_system = true`) seperti "Apply & AI Screening" terlindung dari penghapusan.
+  - **Preview Visual Stepper:** Horizontal stepper preview alur seleksi resmi perusahaan.
+  - **Sub-Header Navigation Tabs:** Tab navigasi "Tahapan Rekrutmen" di seluruh halaman settings (`/settings`, `/settings/stages`, `/settings/team`, `/settings/integrations`).
+
 ---
 
 ## 📌 Phase 2: Backend APIs, Database, & AI Engine

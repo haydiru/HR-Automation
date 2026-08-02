@@ -19,6 +19,7 @@ import {
   Loader2,
   Trash2,
   Sparkles,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -228,6 +229,12 @@ function monitorGmailHR() {
             <Button variant="ghost" size="sm" className="gap-2 text-xs">
               <Sliders className="w-4 h-4" />
               Profil & AI Config
+            </Button>
+          </Link>
+          <Link href="/settings/stages">
+            <Button variant="ghost" size="sm" className="gap-2 text-xs">
+              <Layers className="w-4 h-4" />
+              Tahapan Rekrutmen
             </Button>
           </Link>
           <Link href="/settings/team">

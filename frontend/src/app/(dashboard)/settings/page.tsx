@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Save, Building2, Sparkles, ShieldCheck, CreditCard, Users, CalendarDays, Sliders } from "lucide-react";
+import { Save, Building2, Sparkles, ShieldCheck, CreditCard, Users, CalendarDays, Sliders, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -161,6 +161,12 @@ export default function SettingsPage() {
             >
               <Sliders className="w-4 h-4" />
               Profil & AI Config
+            </Button>
+          </Link>
+          <Link href="/settings/stages">
+            <Button variant="ghost" size="sm" className="gap-2 text-xs">
+              <Layers className="w-4 h-4" />
+              Tahapan Rekrutmen
             </Button>
           </Link>
           <Link href="/settings/team">
