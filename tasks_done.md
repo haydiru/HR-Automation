@@ -138,6 +138,16 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - **Section Evaluasi Wawancara:** Textarea hasil evaluasi penguji SR Staff dengan komentar & rekomendasi.
   - **Cetak Ringkasan PDF:** Fungsi `handlePrintSummary()` membuka jendela baru dengan layout print-ready (skor AI, mandatory check, skills, analisis, catatan HRD & evaluasi).
 
+### Task 1.15: Dashboard Widget Personal SR Staff (`/dashboard` - Part 2)
+- **Status:** ✅ Completed
+- **Kategori:** Frontend Page Enhancement (Dashboard)
+- **Rincian Fitur:**
+  - **Widget "Jadwal Wawancara Saya Hari Ini":** Card grid menampilkan daftar wawancara hari ini khusus user Recruiter / SR Staff (nama kandidat, email, jam, lokasi/meet, skor AI, link detail).
+  - **Donut Chart Distribusi Kelulusan:** Pie chart donat menampilkan persentase Qualified vs Not Qualified dari seluruh pelamar.
+  - **Filter Rentang Waktu Analytics:** Dropdown Select (7 Hari / 14 Hari / 30 Hari / 90 Hari) yang memfilter data grafik tren pelamar.
+  - **Dynamic User Role Detection:** Otomatis mendeteksi role & nama user dari Supabase untuk personalisasi dashboard.
+  - **Active Jobs List Terintegrasi:** Daftar lowongan aktif dipindahkan ke sidebar donut chart untuk layout lebih efisien.
+
 ---
 
 ## 📌 Phase 2: Backend APIs, Database, & AI Engine

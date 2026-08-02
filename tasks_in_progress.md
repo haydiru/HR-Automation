@@ -6,4 +6,4 @@ Dokumen ini mencatat task yang **saat ini sedang aktif dikerjakan, diuji (testin
 
 ## ⏳ Active Tasks
 
-*Tidak ada task yang sedang berjalan saat ini. Siap menerima task berikutnya dari Phase 1 (`tasks_todo.md`).*
+*Tidak ada task yang sedang berjalan saat ini. Phase 1 Frontend selesai! Siap masuk Phase 2 Backend.*
