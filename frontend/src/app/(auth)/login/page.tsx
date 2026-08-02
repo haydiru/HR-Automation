@@ -26,7 +26,6 @@ export default function LoginPage() {
       setErrorMessage(result.error);
       setLoading(false);
     }
-    // Success is handled by redirect in the action
   };
 
   return (
@@ -47,29 +46,28 @@ export default function LoginPage() {
               <Zap className="w-7 h-7 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold gradient-text">HR Automation</h1>
-              <p className="text-xs text-muted-foreground">Rekrutmen Cerdas</p>
+              <h1 className="text-2xl font-bold gradient-text">Obsidian Talent</h1>
+              <p className="text-xs text-muted-foreground">Smart HR Automation OS</p>
             </div>
           </div>
 
           <div className="space-y-4 max-w-md">
             <h2 className="text-3xl font-bold leading-tight text-white">
-              Otomatisasi <span className="gradient-text">Penyaringan CV</span>{" "}
-              dengan Kecerdasan Buatan
+              Automate <span className="gradient-text">CV Screening</span>{" "}
+              with Artificial Intelligence
             </h2>
             <p className="text-white/60 leading-relaxed">
-              Hemat waktu rekrutmen Anda hingga 80%. Biarkan AI menganalisis dan
-              memberikan skor pada setiap kandidat secara otomatis berdasarkan
-              kriteria yang Anda termtentukan.
+              Save up to 80% of your recruitment time. Let AI analyze and score
+              every applicant automatically based on your custom requirements.
             </p>
           </div>
 
           {/* Stats */}
           <div className="flex gap-8 pt-4">
             {[
-              { value: "80%", label: "Hemat Waktu" },
-              { value: "2.5k+", label: "CV Diproses" },
-              { value: "99%", label: "Akurasi AI" },
+              { value: "80%", label: "Time Saved" },
+              { value: "2.5k+", label: "CVs Processed" },
+              { value: "99%", label: "AI Match Score" },
             ].map((stat) => (
               <div key={stat.label}>
                 <p className="text-2xl font-bold gradient-text">{stat.value}</p>
@@ -88,13 +86,13 @@ export default function LoginPage() {
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary glow-primary">
               <Zap className="w-6 h-6 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold gradient-text">HR Automation</h1>
+            <h1 className="text-xl font-bold gradient-text">Obsidian Talent</h1>
           </div>
 
           <div className="space-y-2 text-center lg:text-left">
-            <h2 className="text-2xl font-bold">Masuk</h2>
+            <h2 className="text-2xl font-bold">Sign In</h2>
             <p className="text-sm text-muted-foreground">
-              Masuk ke dashboard rekrutmen Anda
+              Log in to access your recruitment dashboard
             </p>
           </div>
 
@@ -107,12 +105,12 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="nama@perusahaan.com"
+                placeholder="name@company.com"
                 required
               />
             </div>
@@ -124,7 +122,7 @@ export default function LoginPage() {
                   href="#"
                   className="text-xs text-primary hover:underline"
                 >
-                  Lupa password?
+                  Forgot password?
                 </Link>
               </div>
               <Input
@@ -142,7 +140,7 @@ export default function LoginPage() {
                 htmlFor="remember"
                 className="text-sm font-normal text-muted-foreground cursor-pointer"
               >
-                Ingat saya
+                Remember me
               </Label>
             </div>
 
@@ -154,11 +152,11 @@ export default function LoginPage() {
               {loading ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  Memproses...
+                  Processing...
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  Masuk
+                  Sign In
                   <ArrowRight className="w-4 h-4" />
                 </span>
               )}
@@ -166,9 +164,9 @@ export default function LoginPage() {
           </form>
 
           <p className="text-sm text-center text-muted-foreground">
-            Belum punya akun?{" "}
+            Don't have an account?{" "}
             <Link href="/register" className="text-primary hover:underline font-medium">
-              Daftar sekarang
+              Sign up now
             </Link>
           </p>
         </div>

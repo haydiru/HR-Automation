@@ -13,6 +13,7 @@ Dokumen ini memuat seluruh **rencana pengerjaan** aplikasi HR Automation System,
 - [x] **Task 6.5: All Candidates List & Candidate Detail Pages (`/candidates/page.tsx` & `/candidates/[candidateId]/page.tsx`)**
 - [x] **Task 6.6: Settings Suite Pages (`/settings/page.tsx`, `/settings/stages/page.tsx`, `/settings/team/page.tsx`, `/settings/integrations/page.tsx`)**
 - [x] **Task 6.7: Public Job Application Form (`/apply/[jobId]/page.tsx`)**
+- [x] **Task 6.8: Auth Suite Pages (`/login` & `/register`)**
 
 ---
-*Seluruh pengerjaan lokalisasi halaman ke Bahasa Inggris (English by Default) telah selesai 100%.*
+*Seluruh pengerjaan lokalisasi halaman ke Bahasa Inggris (English by Default) termasuk Login & Register telah selesai 100%.*

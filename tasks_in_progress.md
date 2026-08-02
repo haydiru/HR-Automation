@@ -6,4 +6,4 @@ Dokumen ini mencatat task yang **saat ini sedang aktif dikerjakan, diuji (testin
 
 ## ⏳ Active Tasks
 
-*(Saat ini tidak ada task yang sedang berjalan. Seluruh task Phase 6 English Default Localization telah selesai 100% dan dicatat di `tasks_done.md`.)*
+*(Saat ini tidak ada task yang sedang berjalan. Seluruh task Phase 6 English Default Localization termasuk Auth Suite Pages telah selesai 100% dan dicatat di `tasks_done.md`.)*

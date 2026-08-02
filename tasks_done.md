@@ -172,28 +172,25 @@ Dokumen ini mencatat secara resmi seluruh task yang **telah selesai dikerjakan, 
 
 ### Task 6.1: Base Navigation & Global Layouts (`sidebar.tsx`, `header.tsx`, `notification-popover.tsx`)
 - **Status:** ✅ Completed
-- **Details:** Translated Sidebar navigation links ("Dashboard", "Jobs", "All Candidates", "Settings", "Log Out"), Header search placeholders, dropdowns, and Notification Center to English by default.
 
 ### Task 6.2: Dashboard Page (`/dashboard/page.tsx`)
 - **Status:** ✅ Completed
-- **Details:** Translated Welcome banner, Stat Cards ("Active Jobs", "Total Applicants", "Qualified Candidates", "Interview Mandates"), trend charts, AI qualification pie chart, interview schedule widget, and recent applicants feed table to English by default.
 
 ### Task 6.3: Jobs & Create Job Pages (`/jobs/page.tsx` & `/jobs/create/page.tsx`)
 - **Status:** ✅ Completed
-- **Details:** Translated Jobs management page, status filters, position card metrics, and Create Job form sections (Primary Position Information, Selection Stage Scheme, Location Radius Filter, AI Screening Criteria, and Passing Grade Threshold) to English by default.
 
 ### Task 6.4: Candidate Pipeline Page (`/jobs/[jobId]/page.tsx`)
 - **Status:** ✅ Completed
-- **Details:** Translated Job hero overview cards, criteria requirement tags ("Mandatory Requirements", "Optional Requirements"), dynamic selection stage stepper, controls bar, and floating bulk action bar to English by default.
 
 ### Task 6.5: All Candidates List & Candidate Detail Pages (`/candidates/page.tsx` & `/candidates/[candidateId]/page.tsx`)
 - **Status:** ✅ Completed
-- **Details:** Translated All Candidates list filter controls and Candidate Detail page (Hero profile header, action controls "Advance Stage", "Reject", "Assign Mandate", "Print PDF Summary", CV previewer, AI match score circle, mandatory evaluation breakdown, detected skills, AI reasoning, and HR internal notes) to English by default.
 
 ### Task 6.6: Settings Suite Pages (`/settings/page.tsx`, `/settings/stages/page.tsx`, `/settings/team/page.tsx`, `/settings/integrations/page.tsx`)
 - **Status:** ✅ Completed
-- **Details:** Translated sub-navigation pills, Company Profile & AI Provider settings, Recruitment Stages settings, Team Management settings, and Email & Calendar Integrations settings to English by default.
 
 ### Task 6.7: Public Job Application Form (`/apply/[jobId]/page.tsx`)
 - **Status:** ✅ Completed
-- **Details:** Translated public application portal header, job info hero card, applicant information form, domicile map picker, education background list, work experience list, PDF CV upload zone, and submission confirmation to English by default.
+
+### Task 6.8: Auth Suite Pages (`/login` & `/register`)
+- **Status:** ✅ Completed
+- **Details:** Translated Login page (`/login`) and Registration page (`/register`) to English by default ("Sign In", "Create Account", "Remember me", "Forgot password?", "Terms & Conditions", etc.).
