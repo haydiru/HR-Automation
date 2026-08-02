@@ -99,6 +99,14 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - Tab Fallback: Kode Skrip Otomasi Google Apps Script v4 dengan tombol copy satu klik.
   - Card 2 (Per-User / SR Staff): **Sinkronisasi Google Calendar** via Google OAuth 2.0 (`calendar.events`). Switch toggle auto-sync & auto-reschedule jadwal wawancara.
 
+### Task 1.11: Header Notification Center Component (`notification-popover.tsx`)
+- **Status:** ✅ Completed
+- **Kategori:** UI Component (Header Topbar)
+- **Rincian Fitur:**
+  - Tombol Ikon Lonceng Notifikasi di Header Topbar dengan *Unread Badge Count*.
+  - Popover dropdown list notifikasi in-app: Penugasan mandat kandidat ke SR Staff, jadwal wawancara baru, reschedule (Tgl 1 ➔ Tgl 2), dan AI screening notifications.
+  - Tombol "Tandai Semua Dibaca" & navigasi otomatis 1-klik ke profil kandidat.
+
 ---
 
 ## 📌 Phase 2: Backend APIs, Database, & AI Engine

@@ -19,6 +19,8 @@ import { useEffect, useState } from "react";
 import { logout } from "@/app/(auth)/actions";
 import Link from "next/link";
 
+import { NotificationPopover } from "./notification-popover";
+
 export function Header() {
   const [profile, setProfile] = useState<any>(null);
   const supabase = createClient();
@@ -59,11 +61,8 @@ export function Header() {
       <div className="flex items-center gap-2">
         <ThemeToggle />
         
-        {/* Notifications */}
-        <button className="relative p-2 rounded-lg hover:bg-accent transition-colors">
-          <Bell className="w-5 h-5 text-muted-foreground" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary animate-pulse" />
-        </button>
+        {/* Notifications Popover */}
+        <NotificationPopover />
 
         <div className="w-[1px] h-6 bg-border mx-1" />
 
