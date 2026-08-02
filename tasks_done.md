@@ -107,6 +107,16 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - Popover dropdown list notifikasi in-app: Penugasan mandat kandidat ke SR Staff, jadwal wawancara baru, reschedule (Tgl 1 ➔ Tgl 2), dan AI screening notifications.
   - Tombol "Tandai Semua Dibaca" & navigasi otomatis 1-klik ke profil kandidat.
 
+### Task 1.12: Modal Penugasan Mandat & Penjadwalan Wawancara (`schedule-interview-modal.tsx`)
+- **Status:** ✅ Completed
+- **Kategori:** Interactive Modal Component
+- **Rincian Fitur:**
+  - Select Dropdown Anggota Tim SR Staff yang diberikan mandat (*Assignee*).
+  - Date & Time Picker untuk menentukan jadwal wawancara (`datetime-local`).
+  - Input Lokasi Ruangan / Link Google Meet Wawancara & Catatan Instruksi Penguji.
+  - Mode **Reschedule** (Pendeteksian otomatis jadwal lama vs jadwal baru: Tanggal 1 ➔ Tanggal 2).
+  - Switch toggle sinkronisasi otomatis ke Google Calendar & pengiriman notifikasi In-App.
+
 ---
 
 ## 📌 Phase 2: Backend APIs, Database, & AI Engine
