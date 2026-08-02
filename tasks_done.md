@@ -91,6 +91,14 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - Tabel Daftar Anggota Tim Perusahaan (Nama, Email, Role Badge, Status Aktif/Diundang, Tanggal Bergabung).
   - Dropdown Menu Kelola Akses: Modal Ubah Role Anggota Tim & Tombol Pencabutan Akses Tim.
 
+### Task 1.10: Halaman Integrasi Email & Kalender (`/settings/integrations`)
+- **Status:** ✅ Completed
+- **Kategori:** Frontend Page & OAuth Triggers
+- **Rincian Fitur:**
+  - Card 1 (Khusus Super Admin): **Direct Gmail Integration 1-Click** via Google OAuth 2.0 (`gmail.readonly`). Status badge terhubung, email terhubung, & tombol putuskan koneksi.
+  - Tab Fallback: Kode Skrip Otomasi Google Apps Script v4 dengan tombol copy satu klik.
+  - Card 2 (Per-User / SR Staff): **Sinkronisasi Google Calendar** via Google OAuth 2.0 (`calendar.events`). Switch toggle auto-sync & auto-reschedule jadwal wawancara.
+
 ---
 
 ## 📌 Phase 2: Backend APIs, Database, & AI Engine
@@ -130,6 +138,13 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - Auto-runner berbasis `instrumentation.ts` yang berjalan setiap kali server/build di-deploy.
   - Koneksi langsung via driver PostgreSQL (`DATABASE_URL`).
   - Tabel pelacak `_migrations` untuk memastikan file `.sql` hanya dijalankan 1 kali secara kronologis.
+
+### Task 2.5: OAuth 2.0 Auth Callback Routes (`/api/auth/google/*`)
+- **Status:** ✅ Completed
+- **Kategori:** Backend API Routes (OAuth 2.0)
+- **Rincian Fitur:**
+  - Route `/api/auth/google/connect`: Membuat URL otorisasi Google OAuth 2.0 dengan scope dinamik (`gmail.readonly` untuk Direct Gmail & `calendar.events` untuk Google Calendar Sync).
+  - Route `/api/auth/google/callback`: Menangani pertukaran OAuth authorization code dengan `access_token` & `refresh_token`, menginisialisasi profil Gmail terhubung, dan menyimpan token terenkripsi di database.
 
 ---
 
