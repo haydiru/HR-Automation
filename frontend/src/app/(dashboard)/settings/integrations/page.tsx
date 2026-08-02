@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -27,7 +27,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 
-export default function IntegrationsSettingsPage() {
+function IntegrationsContent() {
   const searchParams = useSearchParams();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -453,5 +453,20 @@ function monitorGmailHR() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function IntegrationsSettingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Memuat integrasi...</p>
+        </div>
+      }
+    >
+      <IntegrationsContent />
+    </Suspense>
   );
 }
