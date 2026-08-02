@@ -32,7 +32,7 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - Action Button untuk membuka detail lowongan atau membuat lowongan baru.
 
 ### Task 1.4: Halaman Buat Lowongan Baru (`/jobs/create`)
-- **Status:** ✅ Completed
+- **Status:** ⚠️ Completed — **PERLU REVISI** (Dipindahkan ke TODO sebagai Task 1.17: tambah opsi tahapan seleksi default/custom)
 - **Kategori:** Frontend Page (Jobs Management - Part 2)
 - **Rincian Fitur:**
   - Form Input: Judul Pekerjaan, Deskripsi, Passing Grade (0–100%).
@@ -43,7 +43,7 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - Auto-generate Email Alias (misal: `useirbar+job-slug-xxxx@gmail.com`).
 
 ### Task 1.5: Halaman Detail Lowongan & Candidate Pipeline (`/jobs/[jobId]`)
-- **Status:** ✅ Completed
+- **Status:** ⚠️ Completed — **PERLU REVISI** (Dipindahkan ke TODO sebagai Task 1.18: kolom tahapan dinamis, bukan status hardcoded)
 - **Kategori:** Frontend Page (Jobs Management - Part 3)
 - **Rincian Fitur:**
   - Header Info Lowongan + Salin Email Alias + Salin Public Application URL.
@@ -63,7 +63,7 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - Same-Origin Security Bypass ke API Ingestion untuk pengiriman aman dari browser.
 
 ### Task 1.7: Halaman Detail Kandidat & Viewer (`/candidates/[candidateId]`)
-- **Status:** ✅ Completed
+- **Status:** ⚠️ Completed — **PERLU REVISI** (Dipindahkan ke TODO sebagai Task 1.19: dropdown status dinamis berbasis tahapan)
 - **Kategori:** Frontend Page (Candidate Profile)
 - **Rincian Fitur:**
   - Embedded CV Viewer menggunakan Supabase Private Bucket **Signed URL**.
@@ -118,7 +118,7 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - Switch toggle sinkronisasi otomatis ke Google Calendar & pengiriman notifikasi In-App.
 
 ### Task 1.13: Refinement Pipeline Kandidat & Action Massal (`/jobs/[jobId]` - Part 4)
-- **Status:** ✅ Completed
+- **Status:** ⚠️ Completed — **PERLU REVISI** (Dipindahkan ke TODO sebagai Task 1.18: bulk action tahapan dinamis)
 - **Kategori:** Frontend Page Refinement (Jobs Detail Pipeline)
 - **Rincian Fitur:**
   - **Kolom Penguji / Mandat SR:** Badge ungu menampilkan nama staf SR yang ditugaskan per kandidat, atau label "Belum Ada".
@@ -129,7 +129,7 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
   - **Integrasi ScheduleInterviewModal:** Tombol Calendar per-baris & dari Bulk Action untuk langsung membuka modal penjadwalan wawancara.
 
 ### Task 1.14: Refinement Profil Kandidat & Catatan Wawancara (`/candidates/[candidateId]` - Part 2)
-- **Status:** ✅ Completed
+- **Status:** ⚠️ Completed — **PERLU REVISI** (Dipindahkan ke TODO sebagai Task 1.19: stepper & card tahapan aktif)
 - **Kategori:** Frontend Page Enhancement (Candidate Detail)
 - **Rincian Fitur:**
   - **Card Info Penugasan Mandat:** 4-grid card menampilkan Penguji SR Staff (badge ungu), Jadwal Wawancara, Lokasi/Meeting Link, dan Status Wawancara. Placeholder jika belum dimandatkan.
@@ -153,7 +153,7 @@ Dokumen ini mencatat seluruh task yang telah **100% selesai dikerjakan, diverifi
 ## 📌 Phase 2: Backend APIs, Database, & AI Engine
 
 ### Task 2.1: Skema Database & Row Level Security (Supabase PostgreSQL)
-- **Status:** ✅ Completed
+- **Status:** ⚠️ Completed — **PERLU REVISI** (Dipindahkan ke TODO sebagai Task 2.8: tabel recruitment_stages, job_stages, candidate_stage_history)
 - **Kategori:** Backend Database
 - **Rincian Fitur:**
   - Tabel `profiles`: Menyimpan data HR, provider AI, API Key, proxy URL, & model AI.
