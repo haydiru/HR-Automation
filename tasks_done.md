@@ -69,36 +69,18 @@ Dokumen ini mencatat secara resmi seluruh task yang **telah selesai dikerjakan, 
 ### Task 1.16: Halaman Pengaturan Tahapan Rekrutmen (`/settings/stages`)
 - **Status:** ✅ Completed
 - **Kategori:** Frontend Page (Super Admin)
-- **Rincian Fitur:**
-  - Sortable list tahapan rekrutmen default (nama, deskripsi, urutan, warna).
-  - Modal tambah, edit, dan hapus tahapan.
-  - Interactive drag/order preview.
-  - Sub-navigation tab "Tahapan Rekrutmen" di seluruh halaman settings.
 
 ### Task 1.17: Revisi Buat Lowongan — Opsi Override Tahapan (`/jobs/create` Revisi)
 - **Status:** ✅ Completed
 - **Kategori:** Frontend Page Enhancement
-- **Rincian Fitur:**
-  - Option 1 (Default): "Gunakan Template Default Perusahaan" dengan preview readonly stepper horizontal.
-  - Option 2 (Custom): "Kustomisasi Tahapan Khusus Lowongan Ini" dengan form editor interaktif.
-  - Integrasi API `PATCH /api/jobs/[jobId]/stages` saat pembuatan lowongan baru.
 
 ### Task 1.18: Revisi Pipeline Kandidat — Kolom Tahapan Dinamis (`/jobs/[jobId]` Revisi)
 - **Status:** ✅ Completed
 - **Kategori:** Frontend Page Enhancement
-- **Rincian Fitur:**
-  - Horizontal Stepper di bagian atas card pipeline yang menampilkan distribusi kandidat per tahapan secara realtime (clickable sebagai filter).
-  - Kolom "Tahapan" dinamis menggantikan status hardcoded dengan badge warna per tahapan.
-  - Tombol aksi per-kandidat: "Majukan Tahapan" (advance) dan "Tolak" (reject).
-  - Aksi massal: Bulk advance ke tahapan berikutnya & Bulk reject.
 
 ### Task 1.19: Revisi Detail Kandidat — Stepper & Status Dinamis (`/candidates/[candidateId]` Revisi)
 - **Status:** ✅ Completed
 - **Kategori:** Frontend Page Enhancement
-- **Rincian Fitur:**
-  - Stepper progres visual horizontal di bagian atas detail kandidat (tahap lewat ✅, aktif 🔵, mendatang ⚪, ditolak 🔴).
-  - Tombol aksi cepat: "Majukan Tahapan" & "Tolak" dengan notifikasi otomatis.
-  - Widget timeline "Riwayat Perpindahan Tahapan" mencatat kapan & siapa yang memindahkan tahapan kandidat.
 
 ---
 
@@ -110,37 +92,50 @@ Dokumen ini mencatat secara resmi seluruh task yang **telah selesai dikerjakan, 
 ### Task 2.2: API Route Management Lowongan & Candidates (`/api/jobs` & `/api/candidates`)
 - **Status:** ✅ Completed
 
+### Task 2.3: API Manajemen Tim Perusahaan (`/api/team`)
+- **Status:** ✅ Completed
+- **Rincian Fitur:** Endpoint GET daftar anggota tim, POST undang anggota baru, PATCH update role (super_admin vs recruiter), & DELETE cabut akses tim.
+
+### Task 2.4: API Pusat Notifikasi In-App (`/api/notifications`)
+- **Status:** ✅ Completed
+- **Rincian Fitur:** Endpoint GET daftar notifikasi user logged-in & PATCH mark as read (individual / mark all).
+
+### Task 2.5: API Penugasan Mandat & Penjadwalan Wawancara (`/api/interviews`)
+- **Status:** ✅ Completed
+- **Rincian Fitur:** Endpoint POST penugasan mandat & jadwal wawancara, PATCH reschedule / status update, serta auto-trigger in-app notification.
+
+### Task 2.6: API Notifikasi Email Kandidat (`/api/candidates/[candidateId]/notify`)
+- **Status:** ✅ Completed
+- **Rincian Fitur:** Endpoint POST pengiriman notifikasi email ke kandidat (panggilan wawancara / update status).
+
+### Task 2.7: API Bulk Candidate Actions (`/api/candidates/bulk-update`)
+- **Status:** ✅ Completed
+- **Rincian Fitur:** Batch operations untuk kandidat (bulk advance, bulk reject, dan bulk assign SR staff).
+
 ### Task 2.8: Migrasi Database Tahapan Rekrutmen
 - **Status:** ✅ Completed
-- **Kategori:** Backend Database Schema & RLS
-- **Rincian Fitur:**
-  - Tabel `recruitment_stages`: Template default per perusahaan.
-  - Tabel `job_stages`: Override tahapan per lowongan spesifik.
-  - Tabel `candidate_stage_history`: Log audit perpindahan tahapan kandidat.
-  - Kolom `jobs.use_custom_stages` & `candidates.current_stage_id/current_stage_name`.
 
 ### Task 2.9: API CRUD Tahapan Rekrutmen Default (`/api/stages`)
 - **Status:** ✅ Completed
-- **Kategori:** Backend API Route
-- **Rincian Fitur:** Endpoint GET, POST, PATCH, DELETE, dan `/api/stages/reorder`.
 
 ### Task 2.10: API Tahapan Per Lowongan (`/api/jobs/[jobId]/stages`)
 - **Status:** ✅ Completed
-- **Kategori:** Backend API Route
-- **Rincian Fitur:** Endpoint GET effective stages (logic-switch custom vs default), POST copy, dan PATCH batch update.
 
 ### Task 2.11: API Perpindahan Tahapan Kandidat (`/api/candidates/[candidateId]/advance`)
 - **Status:** ✅ Completed
-- **Kategori:** Backend API Route
-- **Rincian Fitur:**
-  - POST `/api/candidates/[candidateId]/advance`: Otomatis memajukan kandidat ke tahapan berikutnya berdasar `order_index`.
-  - POST `/api/candidates/[candidateId]/reject`: Menolak kandidat di tahapan manapun.
-  - GET `/api/candidates/[candidateId]/stage-history`: Mengambil riwayat perpindahan tahapan kandidat.
-  - Otomatis mencatat ke `candidate_stage_history` & mengirimkan notifikasi in-app ke PIC jika ada.
 
 ---
 
 ## 📌 Phase 3: Integration, Automation & Security
 
-### Task 3.1: Skrip Otomasi Inbox Gmail (Google Apps Script v4)
+### Task 3.1: Direct Gmail Auto-Ingestion Cron & Poller Service (`/api/cron/gmail-ingest`)
 - **Status:** ✅ Completed
+- **Rincian Fitur:** Poller service otomatis (`src/lib/gmail-poller.ts`) dan endpoint cron `/api/cron/gmail-ingest` untuk memantau pesan Gmail berlampiran PDF.
+
+### Task 3.2: Layanan Integrasi Google Calendar API (`src/lib/google-calendar.ts`)
+- **Status:** ✅ Completed
+- **Rincian Fitur:** Module `src/lib/google-calendar.ts` untuk pembuatan (`createGoogleCalendarEvent`), pembaharuan, dan penghapusan event jadwal wawancara di Google Calendar.
+
+### Task 3.3: Support Multi-File Attachment Ingestion
+- **Status:** ✅ Completed
+- **Rincian Fitur:** Pemrosesan multi-file attachment (CV PDF, portfolio, sertifikat) pada webhook ingestion.
